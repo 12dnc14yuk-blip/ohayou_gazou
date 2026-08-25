@@ -1,0 +1,477 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>おはよう画像メーカー v1</title>
+<style>
+  :root{
+    --ink:#342d45;
+    --muted:#7f7890;
+    --panel:#ffffff;
+    --line:#e9e4f2;
+    --accent:#8f7ae6;
+    --accent2:#f39abb;
+    --bg:#f7f4fb;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",Meiryo,sans-serif;
+  }
+  .wrap{max-width:860px;margin:0 auto;padding:14px 12px 40px}
+  h1{font-size:22px;margin:6px 0 2px}
+  .lead{font-size:13px;color:var(--muted);margin-bottom:12px}
+  .card{
+    background:var(--panel);border:1px solid var(--line);border-radius:18px;
+    padding:12px;margin:10px 0;box-shadow:0 5px 20px rgba(72,55,105,.06)
+  }
+  .preview-shell{
+    width:100%;aspect-ratio:16/9;border-radius:14px;overflow:hidden;
+    background:#eee;position:relative;
+  }
+  canvas{width:100%;height:100%;display:block;touch-action:none}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  button,.filebtn,select,input[type=range]{
+    font:inherit;
+  }
+  button,.filebtn{
+    width:100%;border:0;border-radius:13px;padding:12px 10px;
+    font-weight:800;cursor:pointer;text-align:center;
+  }
+  .primary{background:linear-gradient(135deg,var(--accent),#b291ef);color:#fff}
+  .pink{background:linear-gradient(135deg,#f28eae,#f6b07e);color:white}
+  .soft{background:#f2eff8;color:#554b6b}
+  .danger{background:#fff0f2;color:#b24b5f}
+  .filebtn{display:block;background:#f0ecff;color:#6651ba}
+  input[type=file]{display:none}
+  .row{display:flex;gap:8px;align-items:center}
+  .row > *{flex:1}
+  .small{font-size:12px;color:var(--muted)}
+  .status{
+    margin-top:8px;padding:9px 10px;border-radius:10px;background:#faf8ff;
+    color:#665c79;font-size:12px;line-height:1.5
+  }
+  .section-title{font-weight:900;margin-bottom:8px}
+  label.slider{display:grid;grid-template-columns:70px 1fr 52px;gap:8px;align-items:center;margin:8px 0;font-size:13px}
+  label.slider output{text-align:right;color:#6d647d;font-variant-numeric:tabular-nums}
+  input[type=range]{width:100%}
+  select{
+    width:100%;padding:11px;border-radius:12px;border:1px solid var(--line);background:white;color:var(--ink)
+  }
+  .pill{
+    display:inline-block;border-radius:999px;padding:4px 8px;background:#f0ecff;color:#6b58bc;font-size:11px;font-weight:800;margin-left:4px
+  }
+  .tip{font-size:12px;line-height:1.6;color:#6f687c}
+  .footer{font-size:11px;color:#978fa2;text-align:center;margin-top:16px}
+  @media(max-width:560px){
+    .grid3{grid-template-columns:1fr 1fr}
+    h1{font-size:20px}
+    .wrap{padding-left:10px;padding-right:10px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🌞 おはよう画像メーカー v1</h1>
+  <div class="lead">配信スクショを1枚入れて、背景を抜いて、ワンタップで「おはよう画像ベース」を作る版。</div>
+
+  <div class="card">
+    <div class="preview-shell"><canvas id="cv" width="1200" height="675"></canvas></div>
+    <div class="status" id="status">① 今日の配信スクショを選んでください。人物が大きめに写っているほど切り抜きが安定します。</div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">① 今日の女の子を入れる</div>
+    <label class="filebtn" for="file">📸 配信スクショを選ぶ</label>
+    <input id="file" type="file" accept="image/*">
+    <div class="grid2" style="margin-top:8px">
+      <button id="removeBg" class="pink">✂️ 女の子だけ自動切り抜き</button>
+      <button id="useOriginal" class="soft">そのまま使う</button>
+    </div>
+    <div class="tip" style="margin-top:8px">
+      自動切り抜きはブラウザ上でAI処理します。初回だけモデル読込に少し時間がかかる場合があります。
+      <span class="pill">画像は外部へ送信しない方式</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">② ワンタップで作る</div>
+    <button id="randomAll" class="primary">✨ 全部ランダム作成</button>
+    <div class="grid3" style="margin-top:8px">
+      <button id="randomMsg" class="soft">💬 文字だけ</button>
+      <button id="randomBg" class="soft">🎨 背景だけ</button>
+      <button id="randomDeco" class="soft">⭐ 飾りだけ</button>
+    </div>
+    <div class="row" style="margin-top:8px">
+      <select id="tone">
+        <option value="auto">文章：おまかせ</option>
+        <option value="gentle">文章：やさしい</option>
+        <option value="genki">文章：元気</option>
+        <option value="yurui">文章：ゆるい</option>
+        <option value="ouen">文章：応援</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">③ 女の子の位置だけ微調整</div>
+    <div class="small">キャンバス上でドラッグしても動かせます。</div>
+    <label class="slider"><span>左右</span><input id="x" type="range" min="-500" max="500" value="-260"><output id="xo">-260</output></label>
+    <label class="slider"><span>上下</span><input id="y" type="range" min="-350" max="350" value="30"><output id="yo">30</output></label>
+    <label class="slider"><span>大きさ</span><input id="scale" type="range" min="20" max="220" value="105"><output id="so">105%</output></label>
+    <div class="grid2">
+      <button id="flip" class="soft">↔️ 左右反転</button>
+      <button id="randomPos" class="soft">🎲 配置だけランダム</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">④ 保存</div>
+    <div class="grid2">
+      <button id="save" class="primary">⬇️ PNGで保存</button>
+      <button id="reset" class="danger">リセット</button>
+    </div>
+    <div class="small" style="margin-top:8px">出力サイズ：1200 × 675 px（16:9）</div>
+  </div>
+
+  <div class="footer">おはよう画像メーカー v1 ｜ 画像処理は端末内で行う設計</div>
+</div>
+
+<script>
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+const W=cv.width, H=cv.height;
+
+const state = {
+  sourceImg:null,
+  charImg:null,
+  charURL:null,
+  x:-260, y:30, scale:1.05, flip:false,
+  bgIndex:0, decoIndex:0, msg:"",
+  tone:"auto",
+  drag:false, lastX:0,lastY:0
+};
+
+const palettes = [
+  ['#fff2f7','#f8bed0','#a993ef','#fff7da'],
+  ['#edf8ff','#9fd8ff','#7e8ee8','#fff1b7'],
+  ['#f3efff','#c8b5ff','#f0a5c2','#fff8e9'],
+  ['#f1fff8','#a8e3c3','#f7c77c','#fff9e7'],
+  ['#fff8ea','#f5be7a','#ef8fa8','#ffe9f2'],
+  ['#effcff','#8ed7d9','#ab9ded','#f9d4e2'],
+  ['#fff1ef','#ffb0a6','#ffd48d','#95d8cc'],
+  ['#f7f2ff','#b6a8ff','#8dd0eb','#ffc1d9']
+];
+
+const messages = {
+ gentle:[
+  "今日もいい日になりますように♡",
+  "無理せず自分のペースでいこ〜！",
+  "今日もやさしい時間がありますように",
+  "ひとつずつ、ゆっくりいこ〜！",
+  "肩の力をぬいていってらっしゃい！",
+  "今日も穏やかに過ごせますように",
+  "自分らしくいけたらそれで十分◎",
+  "今日も小さないいこと見つけよ〜"
+ ],
+ genki:[
+  "今日も元気にいってらっしゃい！",
+  "いっぱい笑える日になりますように！",
+  "今日もたのしくいこ〜！！",
+  "いいこと見つけにいこっ！",
+  "今日もハッピー見つけよ〜！",
+  "笑顔でスタートしてこ〜！",
+  "今日もキラキラないちにちに！",
+  "元気チャージしていこ〜！"
+ ],
+ yurui:[
+  "ゆるっと今日もいこ〜！",
+  "ぼちぼちがんばろ〜！",
+  "のんびりでも大丈夫◎",
+  "今日もマイペースでいこっ！",
+  "なんとかなる〜の気持ちでいこ！",
+  "気楽にいこ〜！",
+  "ちょっとずつでえらい！",
+  "今日もほどほどにがんばろ〜！"
+ ],
+ ouen:[
+  "今日もあなたらしくいけますように！",
+  "小さな一歩でもすごいよ〜！",
+  "今日も応援してるよっ！",
+  "きっといい流れになりますように！",
+  "大丈夫、ひとつずついこ〜！",
+  "今日も前向きにいけますように！",
+  "できるところからで大丈夫！",
+  "いい一日になる予感〜！"
+ ]
+};
+let recent=[];
+
+function pick(a){return a[Math.floor(Math.random()*a.length)]}
+function setStatus(t){document.getElementById('status').textContent=t}
+function rand(n){return Math.floor(Math.random()*n)}
+
+function chooseMessage(){
+  let tone=document.getElementById('tone').value;
+  if(tone==='auto') tone=pick(['gentle','gentle','yurui','yurui','genki','ouen']);
+  let pool=messages[tone].filter(x=>!recent.includes(x));
+  if(!pool.length) pool=messages[tone];
+  const m=pick(pool);
+  recent.push(m); if(recent.length>8) recent.shift();
+  state.msg=m;
+}
+
+function roundRect(x,y,w,h,r,fill){
+  ctx.beginPath();
+  ctx.roundRect(x,y,w,h,r);
+  ctx.fillStyle=fill; ctx.fill();
+}
+function star(x,y,r,fill){
+  ctx.save();ctx.translate(x,y);ctx.beginPath();
+  for(let i=0;i<10;i++){
+    const a=-Math.PI/2+i*Math.PI/5;
+    const rr=i%2===0?r:r*.45;
+    const px=Math.cos(a)*rr, py=Math.sin(a)*rr;
+    i?ctx.lineTo(px,py):ctx.moveTo(px,py);
+  }
+  ctx.closePath();ctx.fillStyle=fill;ctx.fill();ctx.restore();
+}
+function heart(x,y,s,fill){
+  ctx.save();ctx.translate(x,y);ctx.scale(s,s);
+  ctx.beginPath();ctx.moveTo(0,8);
+  ctx.bezierCurveTo(-18,-5,-14,-22,0,-14);
+  ctx.bezierCurveTo(14,-22,18,-5,0,8);
+  ctx.fillStyle=fill;ctx.fill();ctx.restore();
+}
+function circle(x,y,r,fill){ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fillStyle=fill;ctx.fill()}
+function blob(x,y,w,h,fill){
+  ctx.save();ctx.translate(x,y);ctx.scale(w,h);
+  ctx.beginPath();
+  ctx.moveTo(-.45,-.05);
+  ctx.bezierCurveTo(-.5,-.5,.05,-.58,.36,-.31);
+  ctx.bezierCurveTo(.62,-.08,.4,.43,.02,.48);
+  ctx.bezierCurveTo(-.36,.54,-.64,.29,-.45,-.05);
+  ctx.closePath();ctx.fillStyle=fill;ctx.fill();ctx.restore();
+}
+function drawBg(){
+  const p=palettes[state.bgIndex%palettes.length];
+  ctx.fillStyle=p[0];ctx.fillRect(0,0,W,H);
+  // soft background blocks
+  ctx.globalAlpha=.5;
+  blob(165,112,230,120,p[1]);
+  blob(1030,570,250,135,p[2]);
+  ctx.globalAlpha=1;
+  // tape-like bits
+  ctx.save();ctx.translate(930,78);ctx.rotate(-.08);
+  roundRect(-105,-20,210,40,10,p[3]);ctx.restore();
+}
+function drawDeco(){
+  const p=palettes[state.bgIndex%palettes.length];
+  const d=state.decoIndex%6;
+  ctx.globalAlpha=.92;
+  if(d===0){
+    star(88,86,28,p[2]); star(1110,155,22,p[1]); heart(1060,565,1.7,p[1]); circle(1140,520,9,p[2]);
+  } else if(d===1){
+    for(let i=0;i<7;i++) circle(65+i*28,595+(i%2)*12,7,p[(i%3)+1]);
+    star(1090,85,34,p[3]); heart(1000,120,1.4,p[1]);
+  } else if(d===2){
+    heart(90,102,1.6,p[1]); heart(1120,555,1.8,p[2]); star(1038,88,19,p[2]);star(1080,120,10,p[1]);
+  } else if(d===3){
+    for(let i=0;i<5;i++){star(935+i*45,110+(i%2)*24,15+(i%3)*4,p[(i%3)+1])}
+    circle(92,560,16,p[1]);circle(125,585,8,p[2]);
+  } else if(d===4){
+    ctx.lineWidth=12;ctx.strokeStyle=p[1];ctx.globalAlpha=.45;
+    ctx.beginPath();ctx.arc(1060,525,70,.1,5.7);ctx.stroke();
+    star(90,90,24,p[2]);heart(1120,100,1.2,p[1]);
+  } else {
+    for(let i=0;i<12;i++) circle(70+rand(1080),60+rand(555),4+rand(7),p[1+rand(3)]);
+  }
+  ctx.globalAlpha=1;
+}
+function drawCharacter(){
+  if(!state.charImg) return;
+  const img=state.charImg;
+  // Aim height based on image aspect.
+  const baseH=760*state.scale;
+  const baseW=baseH*(img.naturalWidth/img.naturalHeight);
+  const cx=W/2+state.x, cy=H/2+state.y;
+  ctx.save();
+  ctx.translate(cx,cy);
+  ctx.scale(state.flip?-1:1,1);
+  ctx.drawImage(img,-baseW/2,-baseH/2,baseW,baseH);
+  ctx.restore();
+}
+function wrapText(text,maxWidth,font){
+  ctx.font=font;
+  const lines=[]; let line="";
+  for(const ch of text){
+    const test=line+ch;
+    if(ctx.measureText(test).width>maxWidth && line){
+      lines.push(line); line=ch;
+    } else line=test;
+  }
+  if(line) lines.push(line);
+  return lines.slice(0,3);
+}
+function drawText(){
+  const p=palettes[state.bgIndex%palettes.length];
+  const characterOnLeft=state.x<0;
+  const boxX=characterOnLeft?600:70;
+  const boxW=530;
+  const titleY=245;
+  ctx.save();
+  ctx.textAlign='center';
+  ctx.textBaseline='middle';
+  ctx.lineJoin='round';
+  ctx.font='900 92px -apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif';
+  ctx.lineWidth=18;ctx.strokeStyle='rgba(255,255,255,.96)';
+  ctx.strokeText('おはよう！',boxX+boxW/2,titleY);
+  ctx.fillStyle=p[2];ctx.fillText('おはよう！',boxX+boxW/2,titleY);
+
+  const lines=wrapText(state.msg,470,'800 39px -apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif');
+  ctx.font='800 39px -apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif';
+  lines.forEach((line,i)=>{
+    const yy=345+i*54;
+    ctx.lineWidth=10;ctx.strokeStyle='rgba(255,255,255,.92)';ctx.strokeText(line,boxX+boxW/2,yy);
+    ctx.fillStyle='#4d4258';ctx.fillText(line,boxX+boxW/2,yy);
+  });
+  ctx.restore();
+}
+function draw(){
+  drawBg();drawDeco();drawCharacter();drawText();
+}
+
+function loadFile(file){
+  const url=URL.createObjectURL(file);
+  const img=new Image();
+  img.onload=()=>{
+    if(state.charURL) URL.revokeObjectURL(state.charURL);
+    state.charURL=url;state.sourceImg=img;state.charImg=img;
+    state.scale=1.05;state.x=-260;state.y=30;state.flip=false;
+    syncControls(); draw();
+    setStatus('画像を読み込みました。次に「女の子だけ自動切り抜き」を押してください。');
+  };
+  img.src=url;
+}
+
+document.getElementById('file').addEventListener('change',e=>{
+  const f=e.target.files?.[0]; if(f) loadFile(f);
+});
+
+document.getElementById('removeBg').addEventListener('click',async()=>{
+  const file=document.getElementById('file').files?.[0];
+  if(!file){setStatus('先に配信スクショを選んでください。');return;}
+  const btn=document.getElementById('removeBg');
+  btn.disabled=true; btn.textContent='AIを準備中…';
+  try{
+    setStatus('背景透過AIを読み込み中です。初回は少し待つことがあります…');
+    const mod=await import('https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.7.0/+esm');
+    btn.textContent='背景を切り抜き中…';
+    const blob=await mod.removeBackground(file,{
+      model:'small',
+      output:{format:'image/png',quality:1},
+      progress:(key,current,total)=>{
+        if(total) setStatus(`自動切り抜き中… ${Math.round(current/total*100)}%  (${key})`);
+      }
+    });
+    const url=URL.createObjectURL(blob);
+    const img=new Image();
+    img.onload=()=>{
+      if(state.charURL) URL.revokeObjectURL(state.charURL);
+      state.charURL=url;state.charImg=img;
+      state.scale=1.05; state.x=-260;state.y=25;
+      syncControls();draw();
+      setStatus('✨ 背景透過できました！「全部ランダム作成」で画像ガチャできます。');
+      btn.disabled=false;btn.textContent='✂️ 女の子だけ自動切り抜き';
+    };
+    img.src=url;
+  }catch(err){
+    console.error(err);
+    setStatus('自動切り抜きの読込に失敗しました。通信環境によっては使えない場合があります。「そのまま使う」でも画像作成はできます。');
+    btn.disabled=false;btn.textContent='✂️ 女の子だけ自動切り抜き';
+  }
+});
+
+document.getElementById('useOriginal').addEventListener('click',()=>{
+  if(!state.sourceImg){setStatus('先に画像を選んでください。');return;}
+  state.charImg=state.sourceImg;draw();setStatus('元画像をそのまま使用しています。');
+});
+
+document.getElementById('randomAll').addEventListener('click',()=>{
+  state.bgIndex=rand(palettes.length);state.decoIndex=rand(6);chooseMessage();
+  randomizePosition();draw();setStatus('🎲 全部ランダムにしました。気に入らなければ何回でも押してOK！');
+});
+document.getElementById('randomMsg').addEventListener('click',()=>{chooseMessage();draw();});
+document.getElementById('randomBg').addEventListener('click',()=>{state.bgIndex=rand(palettes.length);draw();});
+document.getElementById('randomDeco').addEventListener('click',()=>{state.decoIndex=rand(6);draw();});
+document.getElementById('tone').addEventListener('change',()=>{chooseMessage();draw();});
+
+function randomizePosition(){
+  const left=Math.random()<.5;
+  state.x=left?(-250-rand(90)):(250+rand(90));
+  state.y=-10+rand(90);
+  state.scale=.85+Math.random()*.38;
+  state.flip=Math.random()<.25;
+  syncControls();
+}
+document.getElementById('randomPos').addEventListener('click',()=>{randomizePosition();draw();});
+document.getElementById('flip').addEventListener('click',()=>{state.flip=!state.flip;draw();});
+
+function syncControls(){
+  document.getElementById('x').value=Math.round(state.x);
+  document.getElementById('y').value=Math.round(state.y);
+  document.getElementById('scale').value=Math.round(state.scale*100);
+  document.getElementById('xo').value=Math.round(state.x);
+  document.getElementById('yo').value=Math.round(state.y);
+  document.getElementById('so').value=Math.round(state.scale*100)+'%';
+}
+['x','y','scale'].forEach(id=>{
+  document.getElementById(id).addEventListener('input',e=>{
+    if(id==='scale') state.scale=+e.target.value/100;
+    else state[id]=+e.target.value;
+    syncControls();draw();
+  });
+});
+
+// drag character on canvas
+function canvasPoint(ev){
+  const r=cv.getBoundingClientRect();
+  const touch=ev.touches?.[0]||ev.changedTouches?.[0];
+  const clientX=touch?touch.clientX:ev.clientX, clientY=touch?touch.clientY:ev.clientY;
+  return {x:(clientX-r.left)*W/r.width,y:(clientY-r.top)*H/r.height};
+}
+function startDrag(ev){
+  if(!state.charImg)return;
+  state.drag=true; const p=canvasPoint(ev);state.lastX=p.x;state.lastY=p.y;ev.preventDefault();
+}
+function moveDrag(ev){
+  if(!state.drag)return;
+  const p=canvasPoint(ev); state.x+=p.x-state.lastX;state.y+=p.y-state.lastY;
+  state.lastX=p.x;state.lastY=p.y;syncControls();draw();ev.preventDefault();
+}
+function endDrag(){state.drag=false}
+cv.addEventListener('mousedown',startDrag);window.addEventListener('mousemove',moveDrag);window.addEventListener('mouseup',endDrag);
+cv.addEventListener('touchstart',startDrag,{passive:false});cv.addEventListener('touchmove',moveDrag,{passive:false});cv.addEventListener('touchend',endDrag);
+
+document.getElementById('save').addEventListener('click',()=>{
+  draw();
+  const a=document.createElement('a');
+  const d=new Date(), pad=n=>String(n).padStart(2,'0');
+  a.download=`ohayou_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}.png`;
+  a.href=cv.toDataURL('image/png');a.click();
+  setStatus('PNGを書き出しました 🌞');
+});
+
+document.getElementById('reset').addEventListener('click',()=>{
+  state.bgIndex=0;state.decoIndex=0;state.msg="今日もいい日になりますように♡";
+  state.x=-260;state.y=30;state.scale=1.05;state.flip=false;syncControls();draw();
+  setStatus('デザインを初期状態に戻しました。');
+});
+
+state.msg="今日もいい日になりますように♡";
+draw();
+</script>
+</body>
+</html>
