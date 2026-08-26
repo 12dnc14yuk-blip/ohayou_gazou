@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おはよう画像メーカー v5.8</title>
+<title>おはよう画像メーカー v5.9</title>
 <style>
 :root{
   --ink:#352f44; --muted:#81798e; --line:#ece7f4; --panel:#fff;
@@ -48,11 +48,11 @@ input[type=range]{width:100%}
 </head>
 <body>
 <div class="wrap">
-<h1>🌞 おはよう画像メーカー v5.8</h1>
+<h1>🌞 おはよう画像メーカー v5.9</h1>
 <div class="lead">
   透過の手直し機能はそのまま。今回はデザインをさらに盛りました。
   <b>大きい絵文字＋小さい絵文字＋太めのかわいいフレーム</b>をランダム配置。
-  「全部ランダム」で毎朝ガチャできます。今回は<strong>輪郭アシスト付きの透過手直し</strong>はそのままに、<strong>四隅の大きい飾り</strong>を維持しつつ、<strong>対角を同系統</strong>に寄せ、<strong>上下左右と文字下の空白を中〜小の飾りで必ず埋めやすい</strong>ように再調整しました。
+  「全部ランダム」で毎朝ガチャできます。今回は<strong>輪郭アシスト付きの透過手直し</strong>はそのままに、<strong>四隅の大きい飾り</strong>を維持しつつ、<strong>メイン / サブを対角に固定</strong>し、<strong>上下左右と文字下の空白を中〜小の飾りで必ず散らして埋めやすい</strong>ように再調整しました。
 </div>
 
 <div class="card">
@@ -113,7 +113,7 @@ input[type=range]{width:100%}
 
 <div class="card">
   <div class="section-title">④ デザインを作る</div>
-  <div class="tip"><strong>センス重視モード</strong>：<strong>四隅すべてに大きい飾り</strong>を必ず置きます。<strong>対角は同系統</strong>にそろえ、<strong>アバター側上＋文字側下</strong>をメイン、<strong>文字側上＋アバター側下</strong>をサブとして見せます。残りは<strong>上下左右と文字の下</strong>を中心に、中〜小の飾りで空白埋めします。下の文章は自然な2行を優先して自動調整します。</div>
+  <div class="tip"><strong>センス重視モード</strong>：<strong>四隅すべてに大きい飾り</strong>を必ず置き、<strong>アバター側上＋文字側下</strong>をメイン、<strong>文字側上＋アバター側下</strong>をサブとして<strong>対角に固定</strong>します。残りは<strong>上下左右と文字の下</strong>に中〜小の飾りを散らして、空白を減らします。下の文章は自然な2行を優先して自動調整します。</div>
   <div class="tip">飾りは<strong>空白を埋めるようにバラけて配置</strong>。四隅の大きい飾りはアバターより前に出し、中〜小飾りは顔・文字ブロックを避けながら、<strong>上下左右と文字下の余白</strong>を優先的に埋めます。文字が中央寄せの時は特に左右へ散らしてバランスを取ります。</div>
   <div class="tip">重なり順：<strong>背景 → フレーム → おはようメッセージ → 女の子 → 絵文字（飾り）</strong></div>
   <label class="field" style="margin-bottom:10px">
@@ -169,7 +169,7 @@ input[type=range]{width:100%}
   </div>
 </div>
 
-<div class="footer">おはよう画像メーカー v5.8</div>
+<div class="footer">おはよう画像メーカー v5.9</div>
 </div>
 
 <script>
@@ -751,46 +751,47 @@ function drawEmojiLayer(front=false){
  }
 
  function buildPrioritySlots(kind){
-   const leftBandX  =[122, 176, 232, 286];
-   const rightBandX =[W-122, W-176, W-232, W-286];
-   const topBandY   =[118, 152, 188];
-   const bottomBandY=[H-118, H-152, H-188];
-   const centerLeftX=[W*.22, W*.28, W*.34];
-   const centerRightX=[W*.66, W*.72, W*.78];
-   const midYs=[H*.34, H*.48, H*.62];
    const slots=[];
+   const leftXs=[108,146,186,228,270];
+   const rightXs=[W-108,W-146,W-186,W-228,W-270];
+   const sideYs=[150,220,290,360,430,500,570];
+   const topYs=[108,146,184];
+   const botYs=[H-108,H-146,H-184];
+   const topXs=[170,250,330,410,490,570,650,730,810,890];
+   const botXs=[170,250,330,410,490,570,650,730,810,890];
 
-   // 左右の空白を優先して埋める
-   leftBandX.forEach((x,ix)=>midYs.forEach((y,iy)=>slots.push({x,y,score:1.55-ix*0.05-iy*0.03})));
-   rightBandX.forEach((x,ix)=>midYs.forEach((y,iy)=>slots.push({x,y,score:1.55-ix*0.05-iy*0.03})));
+   // 左右を最優先で埋める
+   leftXs.forEach((x,ix)=>sideYs.forEach((y,iy)=>slots.push({x,y,score:1.90-ix*0.04-iy*0.02})));
+   rightXs.forEach((x,ix)=>sideYs.forEach((y,iy)=>slots.push({x,y,score:1.90-ix*0.04-iy*0.02})));
 
-   // 上下ラインも埋める
-   const topXs=[W*.28,W*.40,W*.52,W*.64,W*.76];
-   const bottomXs=[W*.24,W*.36,W*.50,W*.64,W*.78];
-   topXs.forEach((x,ix)=>topBandY.forEach((y,iy)=>slots.push({x,y,score:1.24-ix*0.02-iy*0.03})));
-   bottomXs.forEach((x,ix)=>bottomBandY.forEach((y,iy)=>slots.push({x,y,score:1.28-ix*0.02-iy*0.03})));
+   // 上下も埋める
+   topXs.forEach((x,ix)=>topYs.forEach((y,iy)=>slots.push({x,y,score:1.55-ix*0.01-iy*0.03})));
+   botXs.forEach((x,ix)=>botYs.forEach((y,iy)=>slots.push({x,y,score:1.58-ix*0.01-iy*0.03})));
 
-   // 文字の下は必須で埋める
-   const underTextY = Math.min(H-110, textInfo.subBox.y2 + (kind==='medium'?72:54));
-   const underTextXs = kind==='medium'
-     ? [textInfo.subBox.x1-86, (textInfo.subBox.x1+textInfo.subBox.x2)/2, textInfo.subBox.x2+86]
-     : [textInfo.subBox.x1-58, textInfo.subBox.x1+22, (textInfo.subBox.x1+textInfo.subBox.x2)/2, textInfo.subBox.x2-22, textInfo.subBox.x2+58];
-   underTextXs.forEach((x,ix)=>slots.push({x:Math.max(96,Math.min(W-96,x)), y:underTextY + ((ix%2)*18-9), score:1.62-ix*0.02}));
+   // 文字下は必須
+   const subCx=(textInfo.subBox.x1+textInfo.subBox.x2)/2;
+   const underY=Math.min(H-98, textInfo.subBox.y2 + (kind==='medium'?64:50));
+   const underXs=kind==='medium'
+      ? [textInfo.subBox.x1-110, textInfo.subBox.x1-40, subCx, textInfo.subBox.x2+40, textInfo.subBox.x2+110]
+      : [textInfo.subBox.x1-120, textInfo.subBox.x1-64, textInfo.subBox.x1-8, subCx, textInfo.subBox.x2+8, textInfo.subBox.x2+64, textInfo.subBox.x2+120];
+   underXs.forEach((x,ix)=>slots.push({x:Math.max(92,Math.min(W-92,x)), y:underY + ((ix%2)*16-8), score:2.05-ix*0.01}));
 
-   // 文字が中央寄せなら左右にさらに散らす
+   // 中央寄せ文字なら左右をさらに厚く
    if(centeredText){
-     centerLeftX.forEach((x,ix)=>slots.push({x,y:H*.40+ix*68,score:1.48-ix*0.03}));
-     centerRightX.forEach((x,ix)=>slots.push({x,y:H*.40+ix*68,score:1.48-ix*0.03}));
+     const biasY=[230,310,390,470];
+     [W*.18,W*.24,W*.30].forEach((x,ix)=>biasY.forEach((y,iy)=>slots.push({x,y,score:1.78-ix*0.03-iy*0.02})));
+     [W*.70,W*.76,W*.82].forEach((x,ix)=>biasY.forEach((y,iy)=>slots.push({x,y,score:1.78-ix*0.03-iy*0.02})));
    }
 
-   // 小さい飾りは追加で上下左右のすき間を細かく埋める
+   // 小サイズは空白を細かく埋める
    if(kind==='small'){
      const extra=[
-       [W*.18,H*.24],[W*.18,H*.76],[W*.82,H*.24],[W*.82,H*.76],
-       [W*.12,H*.50],[W*.88,H*.50],[W*.50,H*.16],[W*.50,H*.84],
-       [W*.32,H*.22],[W*.68,H*.22],[W*.32,H*.76],[W*.68,H*.76]
+       [W*.15,H*.26],[W*.22,H*.20],[W*.28,H*.30],[W*.15,H*.72],[W*.24,H*.80],[W*.30,H*.68],
+       [W*.85,H*.26],[W*.78,H*.20],[W*.72,H*.30],[W*.85,H*.72],[W*.76,H*.80],[W*.70,H*.68],
+       [W*.42,H*.14],[W*.58,H*.14],[W*.42,H*.84],[W*.58,H*.84],
+       [W*.12,H*.50],[W*.88,H*.50]
      ];
-     extra.forEach((p,i)=>slots.push({x:p[0],y:p[1],score:1.18-i*0.01}));
+     extra.forEach((p,i)=>slots.push({x:p[0],y:p[1],score:1.34-i*0.01}));
    }
 
    return slots.sort((a,b)=>b.score-a.score);
@@ -845,20 +846,20 @@ function drawEmojiLayer(front=false){
  }
 
  if(!front){
-   cornerOrder.forEach((corner,i)=>{
+   cornerOrder.forEach((corner)=>{
      const role=cornerRoles[corner];
-     const sym=cornerSymbol(role,i);
-     const baseSize=role==='main' ? 218 : 188;
-     const varSize=role==='main' ? 22 : 18;
+     const sym=cornerSymbol(corner);
+     const baseSize=role==='main' ? 232 : 208;
+     const varSize=role==='main' ? 26 : 20;
      placeCorner(sym,corner,baseSize+seeded()*varSize);
    });
 
    const mediumPool=[...recipe.fill,...set,...recipe.fill];
-   const mediumCount=(centeredText?12:10)+state.density*4;
+   const mediumCount=(centeredText?14:12)+state.density*5;
    placeFill('medium',mediumCount,88,118,mediumPool);
  }else{
    const smallPool=[...recipe.fill,...set,...recipe.fill];
-   const smallCount=(centeredText?18:15)+state.density*5;
+   const smallCount=(centeredText?24:20)+state.density*6;
    placeFill('small',smallCount,68,96,smallPool);
  }
 }
@@ -1172,7 +1173,7 @@ removeBg.onclick=async()=>{
      state.mask=id;
      clearMaskHistory();
      state.charImg=img;draw();
-     status('✨ AI切り抜き完了。白い服が欠けたら「戻す」＋細かく10＋硬さ96で輪郭をなぞると、線画寄りに精密に戻しやすくなっています。飾りは四隅に大きく置き、対角は同系統。アバター側上 / 文字側下をメイン、文字側上 / アバター側下をサブにして、上下左右と文字下の空白を中〜小飾りで埋めます。');
+     status('✨ AI切り抜き完了。白い服が欠けたら「戻す」＋細かく10＋硬さ96で輪郭をなぞると、線画寄りに精密に戻しやすくなっています。飾りは四隅に大きく置き、アバター側上 / 文字側下をメイン、文字側上 / アバター側下をサブとして対角に固定。さらに上下左右と文字下の空白を中〜小飾りで埋めます。');
      removeBg.disabled=false;removeBg.textContent='✂️ AIで女の子を切り抜く';
    };
    img.src=url;
