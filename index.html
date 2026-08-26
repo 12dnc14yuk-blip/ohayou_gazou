@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おはよう画像メーカー v3.4</title>
+<title>おはよう画像メーカー v3.5</title>
 <style>
 :root{
   --ink:#352f44; --muted:#81798e; --line:#ece7f4; --panel:#fff;
@@ -48,7 +48,7 @@ input[type=range]{width:100%}
 </head>
 <body>
 <div class="wrap">
-<h1>🌞 おはよう画像メーカー v3.4</h1>
+<h1>🌞 おはよう画像メーカー v3.5</h1>
 <div class="lead">
   透過の手直し機能はそのまま。今回はデザインをさらに盛りました。
   <b>大きい絵文字＋小さい絵文字＋太めのかわいいフレーム</b>をランダム配置。
@@ -153,13 +153,14 @@ input[type=range]{width:100%}
 
 <div class="card">
   <div class="section-title">⑥ 保存</div>
+  <div class="tip">iPhoneでは<strong>共有メニュー</strong>を開きます。「画像を保存」または「ファイルに保存」を選んでください。</div>
   <div class="grid2">
-    <button id="save" class="primary">⬇️ PNGで保存</button>
+    <button id="save" class="primary">📲 画像を保存</button>
     <button id="reset" class="danger">リセット</button>
   </div>
 </div>
 
-<div class="footer">おはよう画像メーカー v3.4</div>
+<div class="footer">おはよう画像メーカー v3.5</div>
 </div>
 
 <script>
@@ -787,7 +788,55 @@ density.oninput=e=>{state.density=+e.target.value;densityo.value=e.target.value;
 flip.onclick=()=>{state.flip=!state.flip;draw()};
 function sync(){x.value=Math.round(state.x);y.value=Math.round(state.y);scale.value=Math.round(state.scale*100);xo.value=Math.round(state.x);yo.value=Math.round(state.y);so.value=Math.round(state.scale*100)+'%'}
 ['x','y','scale'].forEach(id=>document.getElementById(id).addEventListener('input',e=>{if(id==='scale')state.scale=+e.target.value/100;else state[id]=+e.target.value;sync();draw()}));
-save.onclick=()=>{draw();const a=document.createElement('a');a.download='ohayou.png';a.href=cv.toDataURL('image/png');a.click()};
+save.onclick=async()=>{
+  try{
+    draw();
+    const blob=await new Promise((resolve,reject)=>{
+      cv.toBlob(b=>b?resolve(b):reject(new Error('PNG変換に失敗しました')),'image/png',1);
+    });
+    const file=new File([blob],'ohayou.png',{type:'image/png'});
+
+    // iPhone/Safari: share sheet is the most reliable way to save to Photos/Files.
+    if(navigator.canShare && navigator.canShare({files:[file]}) && navigator.share){
+      try{
+        await navigator.share({files:[file],title:'おはよう画像'});
+        status('✨ 保存メニューを開きました。「画像を保存」または「ファイルに保存」を選んでください。');
+        return;
+      }catch(e){
+        if(e && e.name==='AbortError') return;
+      }
+    }
+
+    // Normal browser fallback.
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download='ohayou.png';
+    a.style.display='none';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(()=>{
+      URL.revokeObjectURL(url);
+      a.remove();
+    },1500);
+    status('PNGを書き出しました。ダウンロード一覧を確認してください。');
+  }catch(err){
+    console.error(err);
+    // Last-resort: open image in a new tab so iPhone users can long-press/save.
+    try{
+      const data=cv.toDataURL('image/png');
+      const w=window.open();
+      if(w){
+        w.document.write('<title>おはよう画像</title><meta name="viewport" content="width=device-width,initial-scale=1"><body style="margin:0;background:#111;display:grid;place-items:center;min-height:100vh"><img src="'+data+'" style="max-width:100%;height:auto"></body>');
+        status('画像を別タブで開きました。長押しして「写真に保存」を選んでください。');
+      }else{
+        status('保存に失敗しました。Safariのポップアップ設定を確認してください。');
+      }
+    }catch(e){
+      status('保存に失敗しました。');
+    }
+  }
+};
 reset.onclick=()=>{clearMaskHistory();brush.value=22;brusho.value=22;hardnessEl.value=96;hardnesso.value=96;document.getElementById('decoTheme').value='mixed';state.bg=0;state.deco=0;state.frame=0;state.frameWidth=4;state.layout=0;state.density=5;state.x=-250;state.y=18;state.scale=1.72;state.flip=false;titleText.value='おはよう！';subText.value='素敵を集めに\\n行ってみよー！';density.value=5;densityo.value=5;frameWidth.value=4;frameWidtho.value=4;sync();draw()};
 sync();draw();updateHistoryButtons();
 </script>
