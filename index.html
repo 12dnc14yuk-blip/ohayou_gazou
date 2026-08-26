@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おはよう画像メーカー v2.8</title>
+<title>おはよう画像メーカー v2.9</title>
 <style>
 :root{
   --ink:#352f44; --muted:#81798e; --line:#ece7f4; --panel:#fff;
@@ -48,7 +48,7 @@ input[type=range]{width:100%}
 </head>
 <body>
 <div class="wrap">
-<h1>🌞 おはよう画像メーカー v2.8</h1>
+<h1>🌞 おはよう画像メーカー v2.9</h1>
 <div class="lead">
   透過の手直し機能はそのまま。今回はデザインをさらに盛りました。
   <b>大きい絵文字＋小さい絵文字＋太めのかわいいフレーム</b>をランダム配置。
@@ -141,7 +141,7 @@ input[type=range]{width:100%}
   </div>
 </div>
 
-<div class="footer">おはよう画像メーカー v2.8</div>
+<div class="footer">おはよう画像メーカー v2.9</div>
 </div>
 
 <script>
@@ -186,6 +186,10 @@ const moods=[
  {bg:'#fff0b8',a:'#ff7a59',b:'#ff5aa5',stroke:'#ef7d2c',sub:'#7bcbd2'},
  {bg:'#c9f1e7',a:'#ff77b7',b:'#9b86ef',stroke:'#48aeb5',sub:'#ff5c9f'},
  {bg:'#c7d7ff',a:'#ff5f98',b:'#ffd95c',stroke:'#6f73e8',sub:'#ffffff'}
+];
+const textColors=[
+ '#ff4f86','#8a6be8','#4fa8d8','#ff7a45',
+ '#52b79a','#d65db1','#6f86e8','#e59a2f'
 ];
 const rand=n=>Math.floor(Math.random()*n),pick=a=>a[rand(a.length)],status=t=>document.getElementById('status').textContent=t;
 
@@ -430,8 +434,8 @@ function drawText(){
  const leftChar=state.x<0;
  const zone=leftChar?{cx:875,w:520}:{cx:325,w:520};
 
- const titleColor=textColors[(state.bg*2+state.layout)%textColors.length];
- const subColor=textColors[(state.bg*2+state.layout+2)%textColors.length];
+ const titleColor=(typeof textColors!=='undefined'&&textColors.length)?textColors[(state.bg*2+state.layout)%textColors.length]:'#ff4f86';
+ const subColor=(typeof textColors!=='undefined'&&textColors.length)?textColors[(state.bg*2+state.layout+2)%textColors.length]:'#6f86e8';
 
  if(L===0){
    const ts=fitText(title,zone.w,134,84);
