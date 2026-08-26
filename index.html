@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おはよう画像メーカー v6.7</title>
+<title>おはよう画像メーカー v6.8</title>
 <style>
 :root{
   --ink:#352f44; --muted:#81798e; --line:#ece7f4; --panel:#fff;
@@ -48,11 +48,11 @@ input[type=range]{width:100%}
 </head>
 <body>
 <div class="wrap">
-<h1>🌞 おはよう画像メーカー v6.7</h1>
+<h1>🌞 おはよう画像メーカー v6.8</h1>
 <div class="lead">
   透過の手直し機能はそのまま。今回はデザインをさらに盛りました。
   <b>大きい絵文字＋小さい絵文字＋太めのかわいいフレーム</b>をランダム配置。
-  「全部ランダム」で毎朝ガチャできます。今回は<strong>輪郭アシスト付きの透過手直し</strong>はそのままに、<strong>文字を最前面</strong>に固定。iPhone SafariのCanvasでカラー絵文字が薄く崩れる問題を避けるため、<strong>Apple絵文字風のカラーステッカー描画</strong>へ戻しました。四隅は大きく、空白には中・小を散らし、顔と文字を避けます。
+  「全部ランダム」で毎朝ガチャできます。今回は<strong>輪郭アシスト付きの透過手直し</strong>はそのままに、<strong>最小絵文字を少し大きめ</strong>へ調整し、<strong>女の子はランダムで勝手に左右反転しない</strong>ように修正しました。四隅は大きく、空白には中・小を散らし、顔と文字を避けます。
 </div>
 
 <div class="card">
@@ -169,7 +169,7 @@ input[type=range]{width:100%}
   </div>
 </div>
 
-<div class="footer">おはよう画像メーカー v6.7</div>
+<div class="footer">おはよう画像メーカー v6.8</div>
 </div>
 
 <script>
@@ -483,7 +483,6 @@ function applyComposition(p){
   state.x=p.x+Math.round((Math.random()-.5)*24);
   state.y=p.y+Math.round((Math.random()-.5)*16);
   state.scale=p.scale+(Math.random()-.5)*0.06;
-  state.flip=!!p.flip;
   state.layout=p.layout;
 }
 function randomComposition(){
@@ -817,12 +816,12 @@ function drawEmojiLayer(front=false){
   const mediumPlan = [
     [topPts,4+densityBoost],[bottomPts,4+densityBoost],[leftPts,3+densityBoost],[rightPts,3+densityBoost],[underTextPts,3],[centerPts,4+densityBoost]
   ];
-  mediumPlan.forEach(([pts,count])=>tryPlaceFromPoints(pts,'medium',count,82,104,mediumPool));
+  mediumPlan.forEach(([pts,count])=>tryPlaceFromPoints(pts,'medium',count,92,114,mediumPool));
 
   const smallPlan = [
     [topPts,6+densityBoost],[bottomPts,6+densityBoost],[leftPts,5+densityBoost],[rightPts,5+densityBoost],[underTextPts,5+densityBoost],[centerPts,8+densityBoost]
   ];
-  smallPlan.forEach(([pts,count])=>tryPlaceFromPoints(pts,'small',count,46,68,smallPool));
+  smallPlan.forEach(([pts,count])=>tryPlaceFromPoints(pts,'small',count,60,82,smallPool));
 }
 
 function drawBackDeco(){}
