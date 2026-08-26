@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おはよう画像メーカー v3.6</title>
+<title>おはよう画像メーカー v3.7</title>
 <style>
 :root{
   --ink:#352f44; --muted:#81798e; --line:#ece7f4; --panel:#fff;
@@ -48,7 +48,7 @@ input[type=range]{width:100%}
 </head>
 <body>
 <div class="wrap">
-<h1>🌞 おはよう画像メーカー v3.6</h1>
+<h1>🌞 おはよう画像メーカー v3.7</h1>
 <div class="lead">
   透過の手直し機能はそのまま。今回はデザインをさらに盛りました。
   <b>大きい絵文字＋小さい絵文字＋太めのかわいいフレーム</b>をランダム配置。
@@ -160,7 +160,7 @@ input[type=range]{width:100%}
   </div>
 </div>
 
-<div class="footer">おはよう画像メーカー v3.6</div>
+<div class="footer">おはよう画像メーカー v3.7</div>
 </div>
 
 <script>
@@ -469,65 +469,87 @@ function drawFrame(){
 function drawEmojiLayer(front=false){
  decoSeed=1000+state.deco*7919+state.bg*313+(front?71:0);
  const set=emojiSets[state.deco%emojiSets.length];
- const count=(front?5:12)+state.density*(front?1:5);
+ const count=(front?7:16)+state.density*(front?2:7);
 
  // Estimate where the avatar is so the face/middle area stays readable.
  let cx=W*.5+state.x, h=790*state.scale, top=H*.5+195+state.y-h;
- let rxFace=115*state.scale, ryFace=120*state.scale;
- let rxMid=145*state.scale, ryMid=175*state.scale;
+ let rxFace=120*state.scale, ryFace=126*state.scale;
+ let rxMid=155*state.scale, ryMid=190*state.scale;
  const faceCy=top+h*.24;
- const midCy=top+h*.36;
+ const midCy=top+h*.38;
 
  const placed=[];
- function blocked(x,y,size){
-   // Keep the very center of the avatar/face open.
+ function blocked(x,y,size,tier){
+   // Keep the face / center of the avatar open.
    const dxFace=(x-cx)/Math.max(1,rxFace+size*.18);
    const dyFace=(y-faceCy)/Math.max(1,ryFace+size*.15);
    if(dxFace*dxFace+dyFace*dyFace < 1) return true;
 
    const dxMid=(x-cx)/Math.max(1,rxMid+size*.10);
-   const dyMid=(y-midCy)/Math.max(1,ryMid+size*.06);
-   if(dxMid*dxMid+dyMid*dyMid < 1 && Math.abs(x-cx) < rxMid*.9) return true;
+   const dyMid=(y-midCy)/Math.max(1,ryMid+size*.07);
+   if(dxMid*dxMid+dyMid*dyMid < 1 && Math.abs(x-cx) < rxMid*.92) return true;
 
-   // Keep a little breathing room near the middle of the main message.
-   const textBandY1=160, textBandY2=H-150;
-   if(x>270 && x<930 && y>textBandY1 && y<textBandY2 && size>120) return true;
+   // Keep extra-open center zone where the avatar usually lands.
+   if(x>W*.28 && x<W*.72 && y>H*.20 && y<H*.78 && size>120) return true;
 
-   // Scatter decorations rather than clump.
+   // Don't let large stickers stack too much over one another.
    for(const p of placed){
-     const minDist=(p.size+size)*(front?0.34:0.44);
+     let ratio = 0.44;
+     if(tier==='large') ratio = 0.52;
+     else if(tier==='medium') ratio = 0.34;
+     else ratio = 0.22;
+     const minDist=(p.size+size)*ratio;
      if(Math.hypot(x-p.x,y-p.y) < minDist) return true;
    }
    return false;
  }
 
- for(let i=0;i<count;i++){
-   const e=set[Math.floor(seeded()*set.length)];
-   let size;
-   if(i<4&&!front) size=110+seeded()*100;
-   else if(i<10&&!front) size=64+seeded()*68;
-   else size=28+seeded()*42;
-
+ function tryPlace(size,tier){
    let x=0,y=0,ok=false;
-   for(let attempt=0;attempt<80 && !ok;attempt++){
-     // Mostly fill perimeter / empty areas, but allow a few in the interior.
-     if(seeded()<0.72){
-       const side=Math.floor(seeded()*4), pad=28;
-       if(side===0){x=pad+seeded()*(W-pad*2); y=pad+seeded()*120;}
-       if(side===1){x=pad+seeded()*(W-pad*2); y=H-pad-seeded()*120;}
-       if(side===2){x=pad+seeded()*130; y=pad+seeded()*(H-pad*2);}
-       if(side===3){x=W-pad-seeded()*130; y=pad+seeded()*(H-pad*2);}
+   for(let attempt=0;attempt<120 && !ok;attempt++){
+     const pad=24;
+     if(tier==='large'){
+       // Large stickers: strong perimeter placement.
+       const side=Math.floor(seeded()*4);
+       if(side===0){x=pad+seeded()*(W-pad*2); y=pad+seeded()*110;}
+       if(side===1){x=pad+seeded()*(W-pad*2); y=H-pad-seeded()*110;}
+       if(side===2){x=pad+seeded()*120; y=pad+seeded()*(H-pad*2);}
+       if(side===3){x=W-pad-seeded()*120; y=pad+seeded()*(H-pad*2);}
+     }else if(tier==='medium'){
+       // Medium stickers: edges plus the empty side zones.
+       if(seeded()<0.58){
+         const side=Math.floor(seeded()*4);
+         if(side===0){x=pad+seeded()*(W-pad*2); y=pad+seeded()*160;}
+         if(side===1){x=pad+seeded()*(W-pad*2); y=H-pad-seeded()*160;}
+         if(side===2){x=pad+seeded()*180; y=pad+seeded()*(H-pad*2);}
+         if(side===3){x=W-pad-seeded()*180; y=pad+seeded()*(H-pad*2);}
+       }else{
+         const zone = Math.floor(seeded()*4);
+         if(zone===0){x=36+seeded()*(W*.24); y=60+seeded()*(H-120);}      // left gap
+         if(zone===1){x=W*.76+seeded()*(W*.20); y=60+seeded()*(H-120);}   // right gap
+         if(zone===2){x=120+seeded()*(W-240); y=42+seeded()*150;}         // top gap
+         if(zone===3){x=120+seeded()*(W-240); y=H-190+seeded()*120;}      // bottom gap
+       }
      }else{
-       x=40+seeded()*(W-80);
-       y=40+seeded()*(H-80);
+       // Small stickers: fill blank spaces between the big ones.
+       x=28+seeded()*(W-56);
+       y=28+seeded()*(H-56);
      }
-     if(!blocked(x,y,size)){
+     if(!blocked(x,y,size,tier)){
        ok=true;
        placed.push({x,y,size});
-       emoji(e,x,y,size,(seeded()-.5)*.55,front?.92:.88);
+       emoji(set[Math.floor(seeded()*set.length)],x,y,size,(seeded()-.5)*.55,front?.92:.88);
      }
    }
  }
+
+ const largeCount = front ? 1+Math.floor(state.density/3) : 5+Math.floor(state.density/2);
+ const mediumCount = front ? 4+state.density : 8+state.density*2;
+ const smallCount = Math.max(0, count-largeCount-mediumCount);
+
+ for(let i=0;i<largeCount;i++) tryPlace((front?160:175)+seeded()*(front?55:85),'large');
+ for(let i=0;i<mediumCount;i++) tryPlace((front?74:82)+seeded()*(front?46:62),'medium');
+ for(let i=0;i<smallCount;i++) tryPlace(20+seeded()*34,'small');
 }
 function drawBackDeco(){drawEmojiLayer(false)}
 function drawFrontDeco(){drawEmojiLayer(true)}
