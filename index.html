@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おはよう画像メーカー v2.6</title>
+<title>おはよう画像メーカー v2.7</title>
 <style>
 :root{
   --ink:#352f44; --muted:#81798e; --line:#ece7f4; --panel:#fff;
@@ -45,7 +45,7 @@ input[type=range]{width:100%}
 </head>
 <body>
 <div class="wrap">
-<h1>🌞 おはよう画像メーカー v2.6</h1>
+<h1>🌞 おはよう画像メーカー v2.7</h1>
 <div class="lead">
   透過の手直し機能はそのまま。今回はデザインをさらに盛りました。
   <b>大きい絵文字＋小さい絵文字＋太めのかわいいフレーム</b>をランダム配置。
@@ -88,6 +88,7 @@ input[type=range]{width:100%}
 
 <div class="card">
   <div class="section-title">③ 文字</div>
+  <div class="tip">文字色は<strong>濃いめパステル＋白ふち</strong>で自動統一。暗い色にはならず、背景が明るくても読みやすい設定です。</div>
   <input id="titleText" type="text" value="おはよう！">
   <textarea id="subText">素敵を集めに
 行ってみよー！</textarea>
@@ -133,7 +134,7 @@ input[type=range]{width:100%}
   </div>
 </div>
 
-<div class="footer">おはよう画像メーカー v2.6</div>
+<div class="footer">おはよう画像メーカー v2.7</div>
 </div>
 
 <script>
@@ -397,37 +398,60 @@ function balancedLines(text,maxWidth,size,maxLines=3){
   return result.slice(0,maxLines);
 }
 function outlined(text,x,y,size,fill,stroke,glow=null){
- ctx.save();ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';ctx.font=font(size);
- if(glow){ctx.shadowColor=glow;ctx.shadowBlur=22}
- ctx.lineWidth=Math.max(7,size*.13);ctx.strokeStyle=stroke;ctx.strokeText(text,x,y);
- ctx.shadowColor='transparent';ctx.fillStyle=fill;ctx.fillText(text,x,y);ctx.restore();
+ ctx.save();
+ ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';ctx.font=font(size);
+ const main=fill || '#ff4f86';
+ // Soft white halo for readability.
+ ctx.shadowColor='rgba(255,255,255,.95)';
+ ctx.shadowBlur=Math.max(8,size*.10);
+ ctx.lineWidth=Math.max(10,size*.18);
+ ctx.strokeStyle='#ffffff';
+ ctx.strokeText(text,x,y);
+ ctx.shadowColor='transparent';
+ // Thin colored edge inside the white border.
+ ctx.lineWidth=Math.max(3,size*.045);
+ ctx.strokeStyle=main;
+ ctx.strokeText(text,x,y);
+ ctx.fillStyle=main;
+ ctx.fillText(text,x,y);
+ ctx.restore();
 }
 function drawText(){
  const title=document.getElementById('titleText').value||'おはよう！';
  const sub=document.getElementById('subText').value||'';
- const L=state.layout%5,mood=moods[state.bg%moods.length],leftChar=state.x<0;
+ const L=state.layout%5;
+ const leftChar=state.x<0;
  const zone=leftChar?{cx:875,w:520}:{cx:325,w:520};
+
+ const titleColor=textColors[(state.bg*2+state.layout)%textColors.length];
+ const subColor=textColors[(state.bg*2+state.layout+2)%textColors.length];
+
  if(L===0){
-   const ts=fitText(title,zone.w,134,84);outlined(title,zone.cx,242,ts,'#fff',mood.stroke,mood.b);
+   const ts=fitText(title,zone.w,134,84);
+   outlined(title,zone.cx,242,ts,titleColor);
    let ss=64,lines=balancedLines(sub,zone.w,ss,3),gap=ss*1.08,start=420-(lines.length-1)*gap/2;
-   lines.forEach((v,i)=>outlined(v,zone.cx,start+i*gap,ss,'#fff',mood.sub));
+   lines.forEach((v,i)=>outlined(v,zone.cx,start+i*gap,ss,subColor));
  }else if(L===1){
-   const ts=fitText(title,zone.w,126,82);outlined(title,zone.cx,205,ts,'#fff',mood.a,mood.b);
+   const ts=fitText(title,zone.w,126,82);
+   outlined(title,zone.cx,205,ts,titleColor);
    let ss=60,lines=balancedLines(sub,zone.w,ss,3),gap=ss*1.06,start=400-(lines.length-1)*gap/2;
-   lines.forEach((v,i)=>outlined(v,zone.cx,start+i*gap,ss,'#fff',mood.stroke));
+   lines.forEach((v,i)=>outlined(v,zone.cx,start+i*gap,ss,subColor));
  }else if(L===2){
-   const ts=fitText(title,940,140,92);outlined(title,W/2,118,ts,'#fff',mood.stroke,mood.b);
+   const ts=fitText(title,940,140,92);
+   outlined(title,W/2,118,ts,titleColor);
    let ss=64,lines=balancedLines(sub,920,ss,2),gap=ss*1.02,start=548-(lines.length-1)*gap/2;
-   lines.forEach((v,i)=>outlined(v,W/2,start+i*gap,ss,'#fff',mood.a));
+   lines.forEach((v,i)=>outlined(v,W/2,start+i*gap,ss,subColor));
  }else if(L===3){
-   const ts=fitText(title,zone.w,118,80);outlined(title,zone.cx,175,ts,mood.b,'#fff',mood.stroke);
+   const ts=fitText(title,zone.w,118,80);
+   outlined(title,zone.cx,175,ts,titleColor);
    let ss=58,lines=balancedLines(sub,zone.w,ss,3);
-   lines.forEach((v,i)=>outlined(v,zone.cx,345+i*65,ss,'#fff',mood.a));
+   lines.forEach((v,i)=>outlined(v,zone.cx,345+i*65,ss,subColor));
  }else{
-   rr(zone.cx-zone.w/2,135,zone.w,370,38,'rgba(255,255,255,.24)');
-   const ts=fitText(title,zone.w-30,116,78);outlined(title,zone.cx,230,ts,'#fff',mood.a,mood.b);
+   rr(zone.cx-zone.w/2,135,zone.w,370,38,'rgba(255,255,255,.18)');
+   const ts=fitText(title,zone.w-30,116,78);
+   outlined(title,zone.cx,230,ts,titleColor);
    let ss=54,lines=balancedLines(sub,zone.w-40,ss,3);
-   lines.forEach((v,i)=>outlined(v,zone.cx,370+i*62,ss,'#fff',mood.stroke));
+   lines.forEach((v,i)=>outlined(v,zone.cx,370+i*62,ss,subColor));
  }
 }
 function draw(){
@@ -578,4 +602,15 @@ save.onclick=()=>{draw();const a=document.createElement('a');a.download='ohayou.
 reset.onclick=()=>{brush.value=22;brusho.value=22;hardnessEl.value=96;hardnesso.value=96;state.bg=0;state.deco=0;state.frame=0;state.frameWidth=4;state.layout=0;state.density=5;state.x=-250;state.y=18;state.scale=1.72;state.flip=false;titleText.value='おはよう！';subText.value='素敵を集めに\\n行ってみよー！';density.value=5;densityo.value=5;frameWidth.value=4;frameWidtho.value=4;sync();draw()};
 sync();draw();
 </script>
-</body></html>
+</body></html
+const textColors=[
+ '#ff4f86', // raspberry pink
+ '#8a6be8', // bright violet
+ '#4fa8d8', // sky blue
+ '#ff7a45', // coral orange
+ '#52b79a', // mint green
+ '#d65db1', // magenta
+ '#6f86e8', // periwinkle blue
+ '#e59a2f'  // honey orange
+];
+>
