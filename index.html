@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おはよう画像メーカー v2.1</title>
+<title>おはよう画像メーカー v2.2</title>
 <style>
 :root{
   --ink:#352f44; --muted:#81798e; --line:#ece7f4; --panel:#fff;
@@ -45,7 +45,7 @@ input[type=range]{width:100%}
 </head>
 <body>
 <div class="wrap">
-<h1>🌞 おはよう画像メーカー v2.1</h1>
+<h1>🌞 おはよう画像メーカー v2.2</h1>
 <div class="lead">
   透過の手直し機能はそのまま。今回はデザインをさらに盛りました。
   <b>大きい絵文字＋小さい絵文字＋太めのかわいいフレーム</b>をランダム配置。
@@ -126,7 +126,7 @@ input[type=range]{width:100%}
   </div>
 </div>
 
-<div class="footer">おはよう画像メーカー v2.1</div>
+<div class="footer">おはよう画像メーカー v2.2</div>
 </div>
 
 <script>
@@ -202,7 +202,7 @@ function drawBg(){
  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
 }
 function drawFrame(){
- const f=state.frame%5, k=state.frameWidth, inset=18+5*k, thick=8+5*k;
+ const f=state.frame%5, k=state.frameWidth, inset=42+7*k, thick=8+5*k;
  const schemes=[
    ['#ff69ad','#fff','#c792ff'],['#b18cff','#fff','#79d8e4'],
    ['#ff9fc7','#fff4b8','#ff6ba8'],['#73d7dd','#fff','#ff9ec7'],['#ffd45e','#fff','#ff83b7']
@@ -214,10 +214,10 @@ function drawFrame(){
  ctx.strokeStyle=c;ctx.lineWidth=Math.max(4,thick*.35);ctx.strokeRect(inset+13,inset+13,W-(inset+13)*2,H-(inset+13)*2);
  ctx.restore();
  // chunky corner decorations
- if(f===0||f===2){emoji('🎀',70,65,72, -.18);emoji('🎀',W-70,H-62,70,.15);}
- if(f===1){emoji('⭐',70,62,64,-.1);emoji('🌟',W-70,H-62,64,.1);}
- if(f===3){emoji('☁️',80,62,70);emoji('🌈',W-82,H-62,68);}
- if(f===4){emoji('🌸',75,65,68);emoji('🌼',W-75,H-65,68);}
+ if(f===0||f===2){emoji('🎀',105,98,72,-.18);emoji('🎀',W-105,H-95,70,.15);}
+ if(f===1){emoji('⭐',105,95,64,-.1);emoji('🌟',W-105,H-95,64,.1);}
+ if(f===3){emoji('☁️',112,95,70);emoji('🌈',W-112,H-95,68);}
+ if(f===4){emoji('🌸',108,98,68);emoji('🌼',W-108,H-98,68);}
 }
 function drawEmojiLayer(front=false){
  decoSeed=1000+state.deco*7919+state.bg*313+(front?71:0);
