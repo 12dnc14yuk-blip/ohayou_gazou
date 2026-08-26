@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おはよう画像メーカー v2.4</title>
+<title>おはよう画像メーカー v2.3</title>
 <style>
 :root{
   --ink:#352f44; --muted:#81798e; --line:#ece7f4; --panel:#fff;
@@ -45,7 +45,7 @@ input[type=range]{width:100%}
 </head>
 <body>
 <div class="wrap">
-<h1>🌞 おはよう画像メーカー v2.4</h1>
+<h1>🌞 おはよう画像メーカー v2.3</h1>
 <div class="lead">
   透過の手直し機能はそのまま。今回はデザインをさらに盛りました。
   <b>大きい絵文字＋小さい絵文字＋太めのかわいいフレーム</b>をランダム配置。
@@ -114,7 +114,7 @@ input[type=range]{width:100%}
   <div class="section-title">⑤ 女の子を微調整</div>
   <label class="slider"><span>左右</span><input id="x" type="range" min="-500" max="500" value="-250"><output id="xo">-250</output></label>
   <label class="slider"><span>上下</span><input id="y" type="range" min="-300" max="300" value="25"><output id="yo">25</output></label>
-  <label class="slider"><span>大きさ</span><input id="scale" type="range" min="50" max="260" value="162"><output id="so">162%</output></label>
+  <label class="slider"><span>大きさ</span><input id="scale" type="range" min="40" max="220" value="150"><output id="so">150%</output></label>
   <button id="flip" class="soft">↔️ 左右反転</button>
 </div>
 
@@ -126,7 +126,7 @@ input[type=range]{width:100%}
   </div>
 </div>
 
-<div class="footer">おはよう画像メーカー v2.4</div>
+<div class="footer">おはよう画像メーカー v2.3</div>
 </div>
 
 <script>
@@ -134,7 +134,7 @@ const cv=document.getElementById('cv'),ctx=cv.getContext('2d'),W=cv.width,H=cv.h
 
 const state={
   sourceImg:null, cutoutImg:null, mask:null,
-  charImg:null, x:-245,y:20,scale:1.62,flip:false,
+  charImg:null, x:-250,y:25,scale:1.5,flip:false,
   bg:0,deco:0,frame:0,frameWidth:4,layout:0,density:5,
   mode:'move',drag:false,lastX:0,lastY:0
 };
@@ -271,24 +271,23 @@ function drawFrame(){
 function drawEmojiLayer(front=false){
  decoSeed=1000+state.deco*7919+state.bg*313+(front?71:0);
  const set=emojiSets[state.deco%emojiSets.length];
- const count=(front?5:11)+state.density*(front?2:6);
+ const count=(front?3:7)+state.density*(front?1:4);
  for(let i=0;i<count;i++){
-   const e=set[Math.floor(seeded()*set.length)];
+   const r=seeded(), e=set[Math.floor(seeded()*set.length)];
    let size;
-   if(i<5&&!front) size=125+seeded()*120;       // very large
-   else if(i<13&&!front) size=72+seeded()*85;   // medium-large
-   else if(front && i<4) size=72+seeded()*60;   // foreground accents
-   else size=34+seeded()*58;                    // small-medium
-   let x=35+seeded()*(W-70), y=35+seeded()*(H-70);
-   // Pack most stickers around edges, but leave some in open central space.
-   if(i%4!==0){
+   if(i<3&&!front) size=92+seeded()*85;        // deliberately huge
+   else if(i<8&&!front) size=55+seeded()*55;   // medium
+   else size=22+seeded()*45;                    // small
+   let x=45+seeded()*(W-90), y=45+seeded()*(H-90);
+   // Most decorations prefer the perimeter so text/avatar stay readable.
+   if(i%3!==0){
      const side=Math.floor(seeded()*4);
-     if(side===0)y=38+seeded()*150;
-     if(side===1)y=H-38-seeded()*140;
-     if(side===2)x=38+seeded()*145;
-     if(side===3)x=W-38-seeded()*145;
+     if(side===0)y=45+seeded()*115;
+     if(side===1)y=H-45-seeded()*105;
+     if(side===2)x=45+seeded()*105;
+     if(side===3)x=W-45-seeded()*105;
    }
-   emoji(e,x,y,size,(seeded()-.5)*.75,front?.95:.9);
+   emoji(e,x,y,size,(seeded()-.5)*.65,front?.92:.88);
  }
 }
 function drawBackDeco(){drawEmojiLayer(false)}
@@ -304,82 +303,40 @@ function rebuildChar(){
 }
 function drawCharacter(){
  if(!state.charImg)return;
- const img=state.charImg,h=790*state.scale,w=h*(img.naturalWidth/img.naturalHeight),cx=W/2+state.x,bottom=H/2+195+state.y;
+ const img=state.charImg,h=720*state.scale,w=h*(img.naturalWidth/img.naturalHeight),cx=W/2+state.x,bottom=H/2+185+state.y;
  ctx.save();ctx.translate(cx,bottom);ctx.scale(state.flip?-1:1,1);ctx.drawImage(img,-w/2,-h,w,h);ctx.restore();
 }
 
 function font(size){return `900 ${size}px -apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif`;}
-function measure(text,size){ctx.font=font(size);return ctx.measureText(text).width;}
-function fitText(text,maxWidth,start,min=28){
-  let size=start;
-  while(size>min && measure(text,size)>maxWidth) size-=2;
-  return size;
-}
-function balancedLines(text,maxWidth,size,maxLines=3){
-  const explicit=text.split(/\n/).map(v=>v.trim()).filter(Boolean);
-  let result=[];
-  const punct='！!？?♡♥〜～。、,.';
-  for(const part of explicit){
-    if(measure(part,size)<=maxWidth){result.push(part);continue;}
-    let current='';
-    for(const ch of part){
-      const test=current+ch;
-      if(measure(test,size)>maxWidth && current){
-        // Never leave punctuation alone at the beginning of a new line.
-        if(punct.includes(ch) && result.length){
-          result[result.length-1]+=ch;
-          current='';
-        }else{
-          result.push(current);
-          current=ch;
-        }
-      }else current=test;
-    }
-    if(current)result.push(current);
-  }
-  // If the final line is just punctuation or one character, pull it up.
-  if(result.length>1 && result[result.length-1].length<=1){
-    result[result.length-2]+=result.pop();
-  }
-  return result.slice(0,maxLines);
-}
 function outlined(text,x,y,size,fill,stroke,glow=null){
  ctx.save();ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';ctx.font=font(size);
- if(glow){ctx.shadowColor=glow;ctx.shadowBlur=22}
- ctx.lineWidth=Math.max(7,size*.13);ctx.strokeStyle=stroke;ctx.strokeText(text,x,y);
- ctx.shadowColor='transparent';ctx.fillStyle=fill;ctx.fillText(text,x,y);ctx.restore();
+ if(glow){ctx.shadowColor=glow;ctx.shadowBlur=25}
+ ctx.lineWidth=size*.13;ctx.strokeStyle=stroke;ctx.strokeText(text,x,y);ctx.shadowColor='transparent';ctx.fillStyle=fill;ctx.fillText(text,x,y);ctx.restore();
+}
+function wrap(text,maxWidth,size,maxLines=3){
+ ctx.font=font(size);let lines=[],line='';
+ for(const ch of text){let t=line+ch;if(ctx.measureText(t).width>maxWidth&&line){lines.push(line);line=ch}else line=t}
+ if(line)lines.push(line);return lines.slice(0,maxLines);
 }
 function drawText(){
  const title=document.getElementById('titleText').value||'おはよう！';
  const sub=document.getElementById('subText').value||'';
- const L=state.layout%3;
- const leftChar=state.x<0;
- const zone=leftChar?{cx:875,w:520}:{cx:325,w:520};
+ let L=state.layout%3;
+ let leftChar=state.x<0;
+ let zone=leftChar?{cx:860,w:500}:{cx:340,w:500};
 
  if(L===0){
-   const ts=fitText(title,zone.w,132,82);
-   outlined(title,zone.cx,245,ts,'#fff','#ef3145','rgba(255,70,40,.75)');
-   let ss=66;
-   let lines=balancedLines(sub,zone.w,ss,3);
-   while(ss>40 && lines.some(t=>measure(t,ss)>zone.w)){ss-=2;lines=balancedLines(sub,zone.w,ss,3);}
-   const gap=ss*1.08,start=420-(lines.length-1)*gap/2;
-   lines.forEach((t,i)=>outlined(t,zone.cx,start+i*gap,ss,'#fff','#8bc7c7'));
+   outlined(title,zone.cx,265,118,'#fff','#ef3145','rgba(255,70,40,.8)');
+   const lines=sub.split(/\n/).flatMap(t=>wrap(t,zone.w,52,2)).slice(0,3);
+   lines.forEach((t,i)=>outlined(t,zone.cx,410+i*62,52,'#fff','#8bc7c7'));
  }else if(L===1){
-   const ts=fitText(title,zone.w,128,82);
-   outlined(title,zone.cx,205,ts,'#fff','#ff4f9f','#ffbd35');
-   let ss=62;
-   let lines=balancedLines(sub,zone.w,ss,3);
-   while(ss>40 && lines.some(t=>measure(t,ss)>zone.w)){ss-=2;lines=balancedLines(sub,zone.w,ss,3);}
-   const gap=ss*1.05,start=390-(lines.length-1)*gap/2;
-   lines.forEach((t,i)=>outlined(t,zone.cx,start+i*gap,ss,'#fff','#7dcbd1'));
+   outlined(title,zone.cx,215,110,'#fff','#ff4f9f','#ffbd35');
+   const lines=sub.split(/\n/).flatMap(t=>wrap(t,zone.w,48,2)).slice(0,3);
+   lines.forEach((t,i)=>outlined(t,zone.cx,385+i*58,48,'#fff','#7dcbd1'));
  }else{
-   const ts=fitText(title,940,136,90);
-   outlined(title,W/2,118,ts,'#fff','#8b74eb');
-   let ss=64;
-   let lines=balancedLines(sub,940,ss,2);
-   while(ss>42 && lines.some(t=>measure(t,ss)>940)){ss-=2;lines=balancedLines(sub,940,ss,2);}
-   const gap=ss*1.02,start=545-(lines.length-1)*gap/2;
-   lines.forEach((t,i)=>outlined(t,W/2,start+i*gap,ss,'#fff','#ef5c9e'));
+   outlined(title,W/2,120,122,'#fff','#8b74eb');
+   const lines=sub.split(/\n/).flatMap(t=>wrap(t,900,54,2)).slice(0,2);
+   lines.forEach((t,i)=>outlined(t,W/2,555+i*58,54,'#fff','#ef5c9e'));
  }
 }
 function draw(){
@@ -393,7 +350,7 @@ function canvasPoint(ev){
 }
 function charImagePoint(p){
  if(!state.sourceImg)return null;
- const img=state.charImg||state.sourceImg,h=790*state.scale,w=h*(img.naturalWidth/img.naturalHeight),cx=W/2+state.x,bottom=H/2+195+state.y;
+ const img=state.charImg||state.sourceImg,h=720*state.scale,w=h*(img.naturalWidth/img.naturalHeight),cx=W/2+state.x,bottom=H/2+185+state.y;
  let dx=p.x-cx,dy=p.y-(bottom-h);
  if(state.flip)dx=-dx;
  let ix=(dx+w/2)/w*state.sourceImg.naturalWidth;
@@ -480,14 +437,14 @@ function randomMsg(){
 }
 randomMsg.onclick=randomMsg;
 titleText.oninput=draw;subText.oninput=draw;
-randomAll.onclick=()=>{state.bg=rand(5);state.deco=rand(emojiSets.length);state.frame=rand(5);state.frameWidth=3+rand(3);state.layout=rand(3);state.density=4+rand(2);density.value=state.density;densityo.value=state.density;frameWidth.value=state.frameWidth;frameWidtho.value=state.frameWidth;randomMsg();state.x=Math.random()<.75?-250:230;state.y=10+rand(35);state.scale=1.52+Math.random()*.28;sync();draw()};
+randomAll.onclick=()=>{state.bg=rand(5);state.deco=rand(emojiSets.length);state.frame=rand(5);state.frameWidth=3+rand(3);state.layout=rand(3);state.density=4+rand(2);density.value=state.density;densityo.value=state.density;frameWidth.value=state.frameWidth;frameWidtho.value=state.frameWidth;randomMsg();state.x=Math.random()<.75?-250:230;state.y=10+rand(35);state.scale=1.35+Math.random()*.3;sync();draw()};
 randomBg.onclick=()=>{state.bg=rand(5);draw()};randomDeco.onclick=()=>{state.deco=rand(emojiSets.length);state.density=3+rand(3);density.value=state.density;densityo.value=state.density;draw()};randomFrame.onclick=()=>{state.frame=rand(5);state.frameWidth=3+rand(3);frameWidth.value=state.frameWidth;frameWidtho.value=state.frameWidth;draw()};randomLayout.onclick=()=>{state.layout=rand(3);draw()};
 density.oninput=e=>{state.density=+e.target.value;densityo.value=e.target.value;draw()};frameWidth.oninput=e=>{state.frameWidth=+e.target.value;frameWidtho.value=e.target.value;draw()};
 flip.onclick=()=>{state.flip=!state.flip;draw()};
 function sync(){x.value=Math.round(state.x);y.value=Math.round(state.y);scale.value=Math.round(state.scale*100);xo.value=Math.round(state.x);yo.value=Math.round(state.y);so.value=Math.round(state.scale*100)+'%'}
 ['x','y','scale'].forEach(id=>document.getElementById(id).addEventListener('input',e=>{if(id==='scale')state.scale=+e.target.value/100;else state[id]=+e.target.value;sync();draw()}));
 save.onclick=()=>{draw();const a=document.createElement('a');a.download='ohayou.png';a.href=cv.toDataURL('image/png');a.click()};
-reset.onclick=()=>{state.bg=0;state.deco=0;state.frame=0;state.frameWidth=4;state.layout=0;state.density=5;state.x=-245;state.y=20;state.scale=1.62;state.flip=false;titleText.value='おはよう！';subText.value='素敵を集めに\\n行ってみよー！';density.value=5;densityo.value=5;frameWidth.value=4;frameWidtho.value=4;sync();draw()};
+reset.onclick=()=>{state.bg=0;state.deco=0;state.frame=0;state.frameWidth=4;state.layout=0;state.density=5;state.x=-250;state.y=25;state.scale=1.5;state.flip=false;titleText.value='おはよう！';subText.value='素敵を集めに\\n行ってみよー！';density.value=5;densityo.value=5;frameWidth.value=4;frameWidtho.value=4;sync();draw()};
 sync();draw();
 </script>
 </body></html>
