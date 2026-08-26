@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おはよう画像メーカー v4.5</title>
+<title>おはよう画像メーカー v4.6</title>
 <style>
 :root{
   --ink:#352f44; --muted:#81798e; --line:#ece7f4; --panel:#fff;
@@ -48,11 +48,11 @@ input[type=range]{width:100%}
 </head>
 <body>
 <div class="wrap">
-<h1>🌞 おはよう画像メーカー v4.5</h1>
+<h1>🌞 おはよう画像メーカー v4.6</h1>
 <div class="lead">
   透過の手直し機能はそのまま。今回はデザインをさらに盛りました。
   <b>大きい絵文字＋小さい絵文字＋太めのかわいいフレーム</b>をランダム配置。
-  「全部ランダム」で毎朝ガチャできます。今回は小さい絵文字の最小サイズをさらに上げて、見やすさを強化しました。
+  「全部ランダム」で毎朝ガチャできます。今回は飾り同士の重なりを減らし、アバター・おはよう文字・下の文章に飾りが乗りにくいよう調整しました。
 </div>
 
 <div class="card">
@@ -114,8 +114,8 @@ input[type=range]{width:100%}
 
 <div class="card">
   <div class="section-title">④ デザインを作る</div>
-  <div class="tip"><strong>センス重視モード</strong>：大きい飾りは2〜3個だけを端から大胆に見せ、中サイズでつなぎ、小さい飾りで余白を埋めます。今回は左右の散らばり差を減らし、顔だけでなく「おはよう」文字の上にも飾りが乗りにくいようにしました。下の文章は自然な2行を優先して自動調整します。</div>
-  <div class="tip">飾りは<strong>空白を埋めるようにバラけて配置</strong>。顔が来る真ん中付近には置かず、まわりは重なってもOK。今回は<strong>左右差が出にくい配置</strong>＋<strong>おはよう文字の上保護</strong>も追加しています。</div>
+  <div class="tip"><strong>センス重視モード</strong>：大きい飾りは2〜3個だけを端から大胆に見せ、中サイズでつなぎ、小さい飾りで余白を埋めます。今回は左右の散らばり差を減らし、アバター・「おはよう」文字・下の文章に飾りが乗りにくいようにしました。下の文章は自然な2行を優先して自動調整します。</div>
+  <div class="tip">飾りは<strong>空白を埋めるようにバラけて配置</strong>。顔が来る真ん中付近には置かず、アバター全体と文字ブロックは避けます。今回は<strong>左右差が出にくい配置</strong>＋<strong>文字・アバター保護</strong>も追加しています。</div>
   <div class="tip">重なり順：<strong>背景 → フレーム → おはようメッセージ → 女の子 → 絵文字（飾り）</strong></div>
   <label class="field" style="margin-bottom:10px">
     <span>デザインの雰囲気</span>
@@ -170,7 +170,7 @@ input[type=range]{width:100%}
   </div>
 </div>
 
-<div class="footer">おはよう画像メーカー v4.5</div>
+<div class="footer">おはよう画像メーカー v4.6</div>
 </div>
 
 <script>
@@ -561,6 +561,12 @@ function drawBg(){
    y1:top+18,
    y2:top+h*.48
  };
+ const avatarSafe={
+   x1:cx-240*state.scale,
+   x2:cx+240*state.scale,
+   y1:top-8,
+   y2:Math.min(H-28, top+h-6)
+ };
  const placed=[];
  const textInfo=getTextLayoutInfo();
 
@@ -599,19 +605,24 @@ function drawBg(){
  ]);
  let heroIdx=0, mediumIdx=0, smallIdx=0;
 
- function insideFaceSafe(x,y,size){
-   const pad = size*.30;
+ function insideFaceSafe(x,y,size,kind){
+   const pad = size*.32;
    const dx=(x-cx)/(faceRx+pad);
    const dy=(y-faceCy)/(faceRy+pad);
    if(dx*dx+dy*dy<1) return true;
    // Extra protection around the top of the head / hair ornaments.
-   const dx2=(x-cx)/(faceRx*1.02+size*.22);
-   const dy2=(y-headCy)/(faceRy*.98+size*.18);
+   const dx2=(x-cx)/(faceRx*1.06+size*.24);
+   const dy2=(y-headCy)/(faceRy*1.00+size*.20);
    if(dx2*dx2+dy2*dy2<1) return true;
-   // Keep small/medium decorations away from the portrait core so the face stays clean.
-   const sx = portraitSafe.x1 - size*.34, ex = portraitSafe.x2 + size*.34;
-   const sy = portraitSafe.y1 - size*.18, ey = portraitSafe.y2 + size*.18;
-   return x>sx && x<ex && y>sy && y<ey;
+   // Keep decorations away from the portrait core.
+   const sx = portraitSafe.x1 - size*.38, ex = portraitSafe.x2 + size*.38;
+   const sy = portraitSafe.y1 - size*.20, ey = portraitSafe.y2 + size*.24;
+   if(x>sx && x<ex && y>sy && y<ey) return true;
+   // Also keep them away from the overall avatar silhouette so text / decor does not sit on the body.
+   const apad = kind==='small' ? size*.18 : size*.28;
+   const ax1 = avatarSafe.x1 - apad, ax2 = avatarSafe.x2 + apad;
+   const ay1 = avatarSafe.y1 - apad, ay2 = avatarSafe.y2 + apad;
+   return x>ax1 && x<ax2 && y>ay1 && y<ay2;
  }
  function circleHitsRect(x,y,r,rect,pad=0){
    if(!rect) return false;
@@ -621,16 +632,17 @@ function drawBg(){
    return Math.hypot(x-nx,y-ny)<r;
  }
  function insideTextSafe(x,y,size,kind){
-   const r=size*.48;
-   if(circleHitsRect(x,y,r,textInfo.titleBox, kind==='small'?18:34)) return true;
-   if(circleHitsRect(x,y,r,textInfo.subBox, kind==='small'?14:28)) return true;
-   if(kind!=='small' && x>textZone.cx-textZone.w/2-18 && x<textZone.cx+textZone.w/2+18 && y>120 && y<548) return true;
+   const r=size*.50;
+   if(circleHitsRect(x,y,r,textInfo.titleBox, kind==='small'?32:48)) return true;
+   if(circleHitsRect(x,y,r,textInfo.subBox, kind==='small'?26:42)) return true;
+   if(kind!=='small' && x>textZone.cx-textZone.w/2-28 && x<textZone.cx+textZone.w/2+28 && y>100 && y<568) return true;
    return false;
  }
  function clashes(x,y,size,kind){
    for(const p of placed){
-     let f=kind==='hero'?.50:kind==='medium'?.34:.22;
-     if(p.kind==='hero' || kind==='hero') f+=.06;
+     let f=kind==='hero'?.62:kind==='medium'?.48:.38;
+     if(p.kind==='hero' || kind==='hero') f+=.08;
+     else if(p.kind==='medium' || kind==='medium') f+=.04;
      if(Math.hypot(x-p.x,y-p.y)<(p.size+size)*f) return true;
    }
    return false;
@@ -661,7 +673,7 @@ function drawBg(){
        const p=fallbackPoint(kind); x=p.x; y=p.y;
      }
 
-     if(insideFaceSafe(x,y,size)) continue;
+     if(insideFaceSafe(x,y,size,kind)) continue;
      if(insideTextSafe(x,y,size,kind)) continue;
      if(clashes(x,y,size,kind)) continue;
 
@@ -686,7 +698,7 @@ function drawBg(){
  }
  for(let i=0;i<smallCount;i++){
    const symbol=set[Math.floor(seeded()*set.length)];
-   put(symbol,'small',68+seeded()*26);
+   put(symbol,'small',72+seeded()*28);
  }
 }function drawBackDeco(){drawEmojiLayer(false)}
 function drawFrontDeco(){drawEmojiLayer(true)}
@@ -988,7 +1000,7 @@ removeBg.onclick=async()=>{
      state.mask=id;
      clearMaskHistory();
      state.charImg=img;draw();
-     status('✨ AI切り抜き完了。白い服が欠けたら「戻す」＋細かく10＋硬さ96で輪郭をなぞると精密に戻せます。大きい飾りは内側寄り、小さい飾りはさらに大きめ＆顔まわりを避けて散らします。');
+     status('✨ AI切り抜き完了。白い服が欠けたら「戻す」＋細かく10＋硬さ96で輪郭をなぞると精密に戻せます。大きい飾りは内側寄り、小さい飾りも含めてアバター・文字ブロックを避けて散らします。');
      removeBg.disabled=false;removeBg.textContent='✂️ AIで女の子を切り抜く';
    };
    img.src=url;
