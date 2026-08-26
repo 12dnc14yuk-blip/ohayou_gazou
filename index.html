@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おはよう画像メーカー v5.5</title>
+<title>おはよう画像メーカー v5.6</title>
 <style>
 :root{
   --ink:#352f44; --muted:#81798e; --line:#ece7f4; --panel:#fff;
@@ -48,7 +48,7 @@ input[type=range]{width:100%}
 </head>
 <body>
 <div class="wrap">
-<h1>🌞 おはよう画像メーカー v5.5</h1>
+<h1>🌞 おはよう画像メーカー v5.6</h1>
 <div class="lead">
   透過の手直し機能はそのまま。今回はデザインをさらに盛りました。
   <b>大きい絵文字＋小さい絵文字＋太めのかわいいフレーム</b>をランダム配置。
@@ -169,7 +169,7 @@ input[type=range]{width:100%}
   </div>
 </div>
 
-<div class="footer">おはよう画像メーカー v5.5</div>
+<div class="footer">おはよう画像メーカー v5.6</div>
 </div>
 
 <script>
@@ -713,10 +713,10 @@ function drawEmojiLayer(front=false){
  }
 
  const anchorMap={
-   tl:{x:112,y:110},
-   tr:{x:W-112,y:110},
-   bl:{x:112,y:H-110},
-   br:{x:W-112,y:H-110}
+   tl:{x:138,y:132},
+   tr:{x:W-138,y:132},
+   bl:{x:138,y:H-132},
+   br:{x:W-138,y:H-132}
  };
  const mainCorners = avatarSide==='left' ? ['tl','br'] : ['tr','bl'];
  const subCorners  = avatarSide==='left' ? ['tr','bl'] : ['tl','br'];
@@ -724,7 +724,7 @@ function drawEmojiLayer(front=false){
  function placeCorner(sym,corner,size){
    const a=anchorMap[corner];
    let x=a.x, y=a.y;
-   const nudges={tl:[16,14],tr:[-16,14],bl:[16,-14],br:[-16,-14]};
+   const nudges={tl:[8,8],tr:[-8,8],bl:[8,-8],br:[-8,-8]};
    x += nudges[corner][0];
    y += nudges[corner][1];
    // Keep four corner decorations always visible and clearly corner-anchored.
@@ -761,10 +761,10 @@ function drawEmojiLayer(front=false){
  if(!front){
    const [mainA,mainB]=recipe.mainPair;
    const [subA,subB]=recipe.subPair;
-   placeCorner(mainA,mainCorners[0],160+seeded()*14);
-   placeCorner(mainB,mainCorners[1],154+seeded()*12);
-   placeCorner(subA,subCorners[0],132+seeded()*12);
-   placeCorner(subB,subCorners[1],126+seeded()*10);
+   placeCorner(mainA,mainCorners[0],222+seeded()*22);
+   placeCorner(mainB,mainCorners[1],214+seeded()*20);
+   placeCorner(subA,subCorners[0],182+seeded()*18);
+   placeCorner(subB,subCorners[1],174+seeded()*16);
 
    const mediumPool=[...recipe.fill,...set];
    const mediumCount=8+state.density*3;
