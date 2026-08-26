@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おはよう画像メーカー v6.3</title>
+<title>おはよう画像メーカー v6.4</title>
 <style>
 :root{
   --ink:#352f44; --muted:#81798e; --line:#ece7f4; --panel:#fff;
@@ -48,11 +48,11 @@ input[type=range]{width:100%}
 </head>
 <body>
 <div class="wrap">
-<h1>🌞 おはよう画像メーカー v6.3</h1>
+<h1>🌞 おはよう画像メーカー v6.4</h1>
 <div class="lead">
   透過の手直し機能はそのまま。今回はデザインをさらに盛りました。
   <b>大きい絵文字＋小さい絵文字＋太めのかわいいフレーム</b>をランダム配置。
-  「全部ランダム」で毎朝ガチャできます。今回は<strong>輪郭アシスト付きの透過手直し</strong>はそのままに、<strong>文字を最前面</strong>に固定しつつ、<strong>顔周辺以外</strong>へ<strong>四隅より少し小さめ＋小さめ</strong>の2段階絵文字を散らばせやすく再調整しました。
+  「全部ランダム」で毎朝ガチャできます。今回は<strong>輪郭アシスト付きの透過手直し</strong>はそのままに、<strong>文字を最前面</strong>に固定しつつ、<strong>顔周辺以外</strong>へ<strong>四隅より少し小さめ＋小さめ</strong>の2段階絵文字をさらに増やし、<strong>上下左右・文字下・空白部分</strong>をしっかり埋めやすいよう再調整しました。
 </div>
 
 <div class="card">
@@ -113,9 +113,9 @@ input[type=range]{width:100%}
 
 <div class="card">
   <div class="section-title">④ デザインを作る</div>
-  <div class="tip"><strong>センス重視モード</strong>：<strong>四隅すべてに大きい飾り</strong>を必ず置き、<strong>アバター側上＋文字側下</strong>をメイン、<strong>文字側上＋アバター側下</strong>をサブとして<strong>対角に固定</strong>します。さらに<strong>上下左右と文字の下</strong>へ、<strong>四隅より少し小さめ</strong>と<strong>小さめ</strong>の2段階絵文字を多めに散らし、<strong>顔周辺だけ避けて空白をしっかり埋めます</strong>。文字は常に最前面に表示します。</div>
+  <div class="tip"><strong>センス重視モード</strong>：<strong>四隅すべてに大きい飾り</strong>を必ず置き、<strong>アバター側上＋文字側下</strong>をメイン、<strong>文字側上＋アバター側下</strong>をサブとして<strong>対角に固定</strong>します。さらに<strong>上下左右と文字の下</strong>へ、<strong>四隅より少し小さめ</strong>と<strong>小さめ</strong>の2段階絵文字をもっと多く散らし、<strong>顔周辺だけ避けて、上下左右と文字下の空白をしっかり埋めます</strong>。文字は常に最前面に表示します。</div>
   <div class="tip">飾りは<strong>空白を埋めるようにバラけて配置</strong>。四隅の大きい飾りはアバターより前に出し、中〜小飾りは顔・文字ブロックを避けながら、<strong>上下左右と文字下の余白</strong>を優先的に埋めます。文字が中央寄せの時は特に左右へ散らしてバランスを取ります。</div>
-  <div class="tip">重なり順：<strong>背景 → フレーム → おはようメッセージ → 女の子 → 絵文字（飾り）</strong></div>
+  <div class="tip">重なり順：<strong>背景 → フレーム → 女の子 → 絵文字（飾り） → おはようメッセージ</strong></div>
   <label class="field" style="margin-bottom:10px">
     <span>デザインの雰囲気</span>
     <select id="designMood">
@@ -169,7 +169,7 @@ input[type=range]{width:100%}
   </div>
 </div>
 
-<div class="footer">おはよう画像メーカー v6.3</div>
+<div class="footer">おはよう画像メーカー v6.4</div>
 </div>
 
 <script>
@@ -667,7 +667,7 @@ function drawEmojiLayer(front=false){
 
  const cx=W*.5+state.x, h=790*state.scale, top=H*.5+195+state.y-h;
  const faceCy=top+h*.25;
- const faceRx=176*state.scale, faceRy=192*state.scale;
+ const faceRx=190*state.scale, faceRy=210*state.scale;
  const bodyCy=top+h*.59;
  const bodyRx=208*state.scale, bodyRy=286*state.scale;
 
@@ -686,16 +686,16 @@ function drawEmojiLayer(front=false){
  }
  function insideText(x,y,size,kind){
    const r=size*.50;
-   const pad = kind==='small' ? 26 : kind==='medium' ? 36 : 18;
+   const pad = kind==='small' ? 20 : kind==='medium' ? 30 : 18;
    if(circleHitsRect(x,y,r,textInfo.titleBox,pad)) return true;
    if(circleHitsRect(x,y,r,textInfo.subBox,pad)) return true;
    return false;
  }
  function clashes(x,y,size,kind){
    for(const p of placed){
-     const largeGap = (kind==='corner'||p.kind==='corner') ? 32 : 10;
-     const smallAdjust = (kind==='small'||p.kind==='small') ? 12 : 4;
-     const factor = (kind==='corner'||p.kind==='corner') ? 0.66 : (kind==='medium'||p.kind==='medium' ? 0.50 : 0.40);
+     const largeGap = (kind==='corner'||p.kind==='corner') ? 18 : 4;
+     const smallAdjust = (kind==='small'||p.kind==='small') ? 10 : 2;
+     const factor = (kind==='corner'||p.kind==='corner') ? 0.52 : (kind==='medium'||p.kind==='medium' ? 0.34 : 0.24);
      if(Math.hypot(x-p.x,y-p.y) < (p.size+size)*factor + largeGap - smallAdjust) return true;
    }
    return false;
@@ -793,22 +793,24 @@ function drawEmojiLayer(front=false){
 
    // 左右・上下の空白をさらに埋める補助スロット
    const helper=[
-     [W*.10,H*.16],[W*.10,H*.28],[W*.10,H*.40],[W*.10,H*.52],[W*.10,H*.64],[W*.10,H*.76],[W*.10,H*.88],
-     [W*.90,H*.16],[W*.90,H*.28],[W*.90,H*.40],[W*.90,H*.52],[W*.90,H*.64],[W*.90,H*.76],[W*.90,H*.88],
-     [W*.18,H*.12],[W*.30,H*.12],[W*.42,H*.12],[W*.58,H*.12],[W*.70,H*.12],[W*.82,H*.12],
-     [W*.18,H*.88],[W*.30,H*.88],[W*.42,H*.88],[W*.58,H*.88],[W*.70,H*.88],[W*.82,H*.88],
-     [W*.24,H*.24],[W*.76,H*.24],[W*.24,H*.76],[W*.76,H*.76]
+     [W*.08,H*.14],[W*.08,H*.24],[W*.08,H*.34],[W*.08,H*.44],[W*.08,H*.54],[W*.08,H*.64],[W*.08,H*.74],[W*.08,H*.84],
+     [W*.92,H*.14],[W*.92,H*.24],[W*.92,H*.34],[W*.92,H*.44],[W*.92,H*.54],[W*.92,H*.64],[W*.92,H*.74],[W*.92,H*.84],
+     [W*.16,H*.10],[W*.26,H*.10],[W*.36,H*.10],[W*.46,H*.10],[W*.56,H*.10],[W*.66,H*.10],[W*.76,H*.10],[W*.86,H*.10],
+     [W*.16,H*.90],[W*.26,H*.90],[W*.36,H*.90],[W*.46,H*.90],[W*.56,H*.90],[W*.66,H*.90],[W*.76,H*.90],[W*.86,H*.90],
+     [W*.18,H*.22],[W*.30,H*.22],[W*.42,H*.22],[W*.58,H*.22],[W*.70,H*.22],[W*.82,H*.22],
+     [W*.18,H*.78],[W*.30,H*.78],[W*.42,H*.78],[W*.58,H*.78],[W*.70,H*.78],[W*.82,H*.78],
+     [W*.24,H*.24],[W*.76,H*.24],[W*.24,H*.76],[W*.76,H*.76],[W*.20,H*.50],[W*.80,H*.50]
    ];
    helper.forEach((p,i)=>slots.push({x:p[0],y:p[1],score:1.46-i*0.01}));
 
    // 小サイズは空白を細かく埋める
    if(kind==='small'){
      const extra=[
-       [W*.14,H*.22],[W*.20,H*.18],[W*.26,H*.24],[W*.32,H*.30],[W*.14,H*.68],[W*.20,H*.74],[W*.28,H*.80],[W*.34,H*.70],
-       [W*.86,H*.22],[W*.80,H*.18],[W*.74,H*.24],[W*.68,H*.30],[W*.86,H*.68],[W*.80,H*.74],[W*.72,H*.80],[W*.66,H*.70],
-       [W*.36,H*.14],[W*.50,H*.14],[W*.64,H*.14],[W*.36,H*.86],[W*.50,H*.86],[W*.64,H*.86],
-       [W*.12,H*.50],[W*.88,H*.50],[W*.18,H*.38],[W*.18,H*.62],[W*.82,H*.38],[W*.82,H*.62],
-       [W*.40,H*.30],[W*.60,H*.30],[W*.40,H*.70],[W*.60,H*.70]
+       [W*.12,H*.18],[W*.18,H*.18],[W*.24,H*.20],[W*.30,H*.24],[W*.36,H*.28],[W*.12,H*.32],[W*.18,H*.38],[W*.24,H*.44],[W*.30,H*.50],[W*.36,H*.56],[W*.12,H*.68],[W*.18,H*.74],[W*.24,H*.80],[W*.30,H*.74],[W*.36,H*.68],
+       [W*.88,H*.18],[W*.82,H*.18],[W*.76,H*.20],[W*.70,H*.24],[W*.64,H*.28],[W*.88,H*.32],[W*.82,H*.38],[W*.76,H*.44],[W*.70,H*.50],[W*.64,H*.56],[W*.88,H*.68],[W*.82,H*.74],[W*.76,H*.80],[W*.70,H*.74],[W*.64,H*.68],
+       [W*.42,H*.14],[W*.50,H*.14],[W*.58,H*.14],[W*.42,H*.86],[W*.50,H*.86],[W*.58,H*.86],
+       [W*.14,H*.50],[W*.86,H*.50],[W*.22,H*.60],[W*.78,H*.60],[W*.22,H*.28],[W*.78,H*.28],
+       [W*.44,H*.30],[W*.56,H*.30],[W*.44,H*.70],[W*.56,H*.70],[W*.48,H*.24],[W*.52,H*.24],[W*.48,H*.76],[W*.52,H*.76]
      ];
      extra.forEach((p,i)=>slots.push({x:p[0],y:p[1],score:1.34-i*0.01}));
    }
@@ -831,14 +833,14 @@ function drawEmojiLayer(front=false){
    const bottomStrip={x1:168,x2:W-168,y1:H-208,y2:H-96};
    const middleBand={x1:W*.20,x2:W*.80,y1:188,y2:H-196};
 
-   pts.push(...zonePoints(leftStrip, 58, 64, 14, sideBoost));
-   pts.push(...zonePoints(rightStrip,58, 64, 14, sideBoost));
-   pts.push(...zonePoints(topStrip, 64, 52, 12, 0.46));
-   pts.push(...zonePoints(bottomStrip,64, 52, 12, 0.5));
-   pts.push(...zonePoints(underText,68, 44, 10, centeredText?0.76:0.62));
-   if(kind==='small') pts.push(...zonePoints(middleBand, 74, 68, 10, 0.18));
-   const ringZone={x1:116,x2:W-116,y1:116,y2:H-116};
-   pts.push(...zonePoints(ringZone, 82, 72, 12, 0.26));
+   pts.push(...zonePoints(leftStrip, 44, 52, 12, sideBoost));
+   pts.push(...zonePoints(rightStrip,44, 52, 12, sideBoost));
+   pts.push(...zonePoints(topStrip, 52, 42, 10, 0.56));
+   pts.push(...zonePoints(bottomStrip,52, 42, 10, 0.6));
+   pts.push(...zonePoints(underText,56, 38, 8, centeredText?0.86:0.72));
+   if(kind==='small') pts.push(...zonePoints(middleBand, 58, 54, 8, 0.24));
+   const ringZone={x1:110,x2:W-110,y1:110,y2:H-110};
+   pts.push(...zonePoints(ringZone, 62, 56, 10, 0.34));
 
    pts.sort((a,b)=>b.score-a.score);
    return pts;
@@ -878,20 +880,20 @@ function drawEmojiLayer(front=false){
    const underY1=Math.min(H-122, textInfo.subBox.y2 + (kind==='medium'?54:44));
    const underY2=Math.min(H-96, textInfo.subBox.y2 + (kind==='medium'?110:92));
    const pts=[];
-   const leftCol = kind==='medium' ? [108,148,188,228,268,308,348] : [100,132,164,196,228,260,292,324,356];
+   const leftCol = kind==='medium' ? [102,136,170,204,238,272,306,340,374] : [96,122,148,174,200,226,252,278,304,330,356,382];
    const rightCol = leftCol.map(v=>W-v);
-   const sideYs = kind==='medium' ? [140,195,250,305,360,415,470,525,580,635] : [128,172,216,260,304,348,392,436,480,524,568,612,656];
+   const sideYs = kind==='medium' ? [128,172,216,260,304,348,392,436,480,524,568,612] : [116,152,188,224,260,296,332,368,404,440,476,512,548,584,620,656];
    leftCol.forEach((x,ix)=>sideYs.forEach((y,iy)=>pts.push({x,y,score:2.5-ix*0.03-iy*0.015})));
    rightCol.forEach((x,ix)=>sideYs.forEach((y,iy)=>pts.push({x,y,score:2.5-ix*0.03-iy*0.015})));
-   const topXs = kind==='medium' ? [140,212,284,356,428,500,572,644,716,788,860,932] : [128,184,240,296,352,408,464,520,576,632,688,744,800,856,912];
+   const topXs = kind==='medium' ? [128,184,240,296,352,408,464,520,576,632,688,744,800,856,912] : [118,164,210,256,302,348,394,440,486,532,578,624,670,716,762,808,854,900,946];
    const botXs = topXs;
-   const topYs = kind==='medium' ? [108,146,184] : [102,134,166,198];
-   const botYs = kind==='medium' ? [H-108,H-146,H-184] : [H-102,H-134,H-166,H-198];
+   const topYs = kind==='medium' ? [102,136,170,204] : [96,122,148,174,200];
+   const botYs = kind==='medium' ? [H-102,H-136,H-170,H-204] : [H-96,H-122,H-148,H-174,H-200];
    topXs.forEach((x,ix)=>topYs.forEach((y,iy)=>pts.push({x,y,score:2.18-ix*0.01-iy*0.02})));
    botXs.forEach((x,ix)=>botYs.forEach((y,iy)=>pts.push({x,y,score:2.2-ix*0.01-iy*0.02})));
    const underXs = kind==='medium'
-      ? [textInfo.subBox.x1-170,textInfo.subBox.x1-120,textInfo.subBox.x1-70,textInfo.subBox.x1-20,subCx,textInfo.subBox.x2+20,textInfo.subBox.x2+70,textInfo.subBox.x2+120,textInfo.subBox.x2+170]
-      : [textInfo.subBox.x1-190,textInfo.subBox.x1-142,textInfo.subBox.x1-94,textInfo.subBox.x1-46,textInfo.subBox.x1+2,subCx,textInfo.subBox.x2-2,textInfo.subBox.x2+46,textInfo.subBox.x2+94,textInfo.subBox.x2+142,textInfo.subBox.x2+190];
+      ? [textInfo.subBox.x1-210,textInfo.subBox.x1-160,textInfo.subBox.x1-110,textInfo.subBox.x1-60,textInfo.subBox.x1-10,subCx,textInfo.subBox.x2+10,textInfo.subBox.x2+60,textInfo.subBox.x2+110,textInfo.subBox.x2+160,textInfo.subBox.x2+210]
+      : [textInfo.subBox.x1-230,textInfo.subBox.x1-184,textInfo.subBox.x1-138,textInfo.subBox.x1-92,textInfo.subBox.x1-46,textInfo.subBox.x1,subCx,textInfo.subBox.x2,textInfo.subBox.x2+46,textInfo.subBox.x2+92,textInfo.subBox.x2+138,textInfo.subBox.x2+184,textInfo.subBox.x2+230];
    underXs.forEach((x,ix)=>{
       pts.push({x:Math.max(90,Math.min(W-90,x)),y:underY1+((ix%2)*10-5),score:2.9-ix*0.01});
       pts.push({x:Math.max(90,Math.min(W-90,x)),y:underY2+((ix%2)*10-5),score:2.72-ix*0.01});
@@ -928,13 +930,13 @@ function drawEmojiLayer(front=false){
      placeCorner(sym,corner,baseSize+seeded()*varSize);
    });
 
-   const mediumPool=[...recipe.fill,...set,...recipe.fill];
-   const mediumCount=(centeredText?34:30)+state.density*12;
-   placeFill('medium',mediumCount,102,132,mediumPool);
+   const mediumPool=[...recipe.fill,...set,...recipe.fill,...recipe.fill];
+   const mediumCount=(centeredText?42:38)+state.density*12;
+   placeFill('medium',mediumCount,88,118,mediumPool);
  }else{
-   const smallPool=[...recipe.fill,...set,...recipe.fill];
-   const smallCount=(centeredText?68:60)+state.density*14;
-   placeFill('small',smallCount,78,104,smallPool);
+   const smallPool=[...recipe.fill,...set,...recipe.fill,...recipe.fill];
+   const smallCount=(centeredText?120:108)+state.density*24;
+   placeFill('small',smallCount,46,74,smallPool);
  }
 }
 
