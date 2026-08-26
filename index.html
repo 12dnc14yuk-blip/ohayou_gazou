@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おはよう画像メーカー v2</title>
+<title>おはよう画像メーカー v2.1</title>
 <style>
 :root{
   --ink:#352f44; --muted:#81798e; --line:#ece7f4; --panel:#fff;
@@ -45,11 +45,11 @@ input[type=range]{width:100%}
 </head>
 <body>
 <div class="wrap">
-<h1>🌞 おはよう画像メーカー v2</h1>
+<h1>🌞 おはよう画像メーカー v2.1</h1>
 <div class="lead">
-  今回は「AI切り抜きだけで完成」をやめました。AIで大まかに抜いたあと、
-  <b>消えたアバターを戻すブラシ / 残った背景を消すブラシ</b>で直せます。
-  デザインは、水色・ピンク・ハート・王冠・キラキラを大きく使う“ポップ盛り”基準。
+  透過の手直し機能はそのまま。今回はデザインをさらに盛りました。
+  <b>大きい絵文字＋小さい絵文字＋太めのかわいいフレーム</b>をランダム配置。
+  「全部ランダム」で毎朝ガチャできます。
 </div>
 
 <div class="card">
@@ -101,11 +101,13 @@ input[type=range]{width:100%}
   <button id="randomAll" class="primary">✨ 全部ランダム作成</button>
   <div class="grid3" style="margin-top:8px">
     <button id="randomBg" class="soft">🎨 背景</button>
-    <button id="randomDeco" class="soft">💖 飾り</button>
+    <button id="randomDeco" class="soft">💖 絵文字</button>
+    <button id="randomFrame" class="soft">🎀 フレーム</button>
     <button id="randomLayout" class="soft">🔤 文字配置</button>
   </div>
   <label class="slider"><span>飾り量</span><input id="density" type="range" min="1" max="5" value="5"><output id="densityo">5</output></label>
-  <div class="tip">参考画像に合わせて、初期値は<strong>飾り量MAX</strong>。大きいハート・王冠・キラキラ・流れ星・プラス記号を前景まで重ねます。</div>
+  <label class="slider"><span>フレーム太さ</span><input id="frameWidth" type="range" min="1" max="5" value="4"><output id="frameWidtho">4</output></label>
+  <div class="tip">💗🎀🌸⭐✨🌈☁️🍬🫧🐰💎👑などを<strong>大小・角度・位置ランダム</strong>で散らします。フレームも毎回ガチャできます。</div>
 </div>
 
 <div class="card">
@@ -124,7 +126,7 @@ input[type=range]{width:100%}
   </div>
 </div>
 
-<div class="footer">おはよう画像メーカー v2</div>
+<div class="footer">おはよう画像メーカー v2.1</div>
 </div>
 
 <script>
@@ -133,7 +135,7 @@ const cv=document.getElementById('cv'),ctx=cv.getContext('2d'),W=cv.width,H=cv.h
 const state={
   sourceImg:null, cutoutImg:null, mask:null,
   charImg:null, x:-250,y:25,scale:1.5,flip:false,
-  bg:0,deco:0,layout:0,density:5,
+  bg:0,deco:0,frame:0,frameWidth:4,layout:0,density:5,
   mode:'move',drag:false,lastX:0,lastY:0
 };
 
@@ -177,27 +179,70 @@ function confetti(){
  }
 }
 
-function drawBg(){
- const b=state.bg%4;
- const colors=['#bfe8fb','#f7c3db','#d5b4eb','#fff0b8'];
- ctx.fillStyle=colors[b];ctx.fillRect(0,0,W,H);
- // soft center glow
- let g=ctx.createRadialGradient(770,330,20,770,330,260);
- g.addColorStop(0,'rgba(255,255,255,.85)');g.addColorStop(1,'rgba(255,255,255,0)');
- ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
- confetti();
-}
-function drawBackDeco(){
- let d=state.density;
- if(d>=2){heart(85,145,1.7,'#f34ca3');heart(1120,500,1.35,'#f34ca3');}
- if(d>=3){sparkle(855,95,1.0);sparkle(930,145,.55);plus(1020,110,.8);}
- if(d>=4){crown(1075,100,1.3);heart(1050,565,1.4,'#ef4fa0');}
- if(d>=5){swoosh(180,530,1.0);heart(160,80,1.2,'#f34ca3');plus(805,565,.75);}
-}
-function drawFrontDeco(){
- if(state.density>=4){sparkle(90,545,.9);plus(720,580,.65);plus(985,560,.7);}
-}
 
+const emojiSets=[
+ ['💗','🎀','✨','⭐','🌸','🫧','💎','☁️','🌈','🍬','🐰','👑','💕','🌟'],
+ ['💖','🩷','🎀','🌷','🍓','🧁','🍬','✨','☁️','🌈','🫧','🐰','💐','💎'],
+ ['⭐','🌟','✨','🌙','☁️','🫧','💜','🩵','🎀','💎','🦄','🌈','🍭','💫'],
+ ['🌼','🌸','🌷','💛','🩷','🫧','✨','🍓','🐰','🎀','☁️','🍬','🌈','💖']
+];
+let decoSeed=12345;
+function seeded(){decoSeed=(decoSeed*1664525+1013904223)>>>0;return decoSeed/4294967296}
+function emoji(e,x,y,size,rot=0,a=1){
+ ctx.save();ctx.globalAlpha=a;ctx.translate(x,y);ctx.rotate(rot);ctx.font=`${size}px "Apple Color Emoji","Segoe UI Emoji",sans-serif`;
+ ctx.textAlign='center';ctx.textBaseline='middle';
+ ctx.shadowColor='rgba(255,255,255,.9)';ctx.shadowBlur=size*.12;ctx.fillText(e,0,0);ctx.restore();
+}
+function drawBg(){
+ const b=state.bg%5;
+ const colors=['#bfe8fb','#f7c3db','#d5b4eb','#fff0b8','#c9f1e7'];
+ ctx.fillStyle=colors[b];ctx.fillRect(0,0,W,H);
+ let g=ctx.createRadialGradient(770,330,20,770,330,300);
+ g.addColorStop(0,'rgba(255,255,255,.78)');g.addColorStop(1,'rgba(255,255,255,0)');
+ ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+}
+function drawFrame(){
+ const f=state.frame%5, k=state.frameWidth, inset=18+5*k, thick=8+5*k;
+ const schemes=[
+   ['#ff69ad','#fff','#c792ff'],['#b18cff','#fff','#79d8e4'],
+   ['#ff9fc7','#fff4b8','#ff6ba8'],['#73d7dd','#fff','#ff9ec7'],['#ffd45e','#fff','#ff83b7']
+ ];
+ const [a,b,c]=schemes[f];
+ ctx.save();ctx.lineJoin='round';
+ ctx.strokeStyle=b;ctx.lineWidth=thick+18;ctx.strokeRect(inset,inset,W-inset*2,H-inset*2);
+ ctx.strokeStyle=a;ctx.lineWidth=thick+8;ctx.strokeRect(inset,inset,W-inset*2,H-inset*2);
+ ctx.strokeStyle=c;ctx.lineWidth=Math.max(4,thick*.35);ctx.strokeRect(inset+13,inset+13,W-(inset+13)*2,H-(inset+13)*2);
+ ctx.restore();
+ // chunky corner decorations
+ if(f===0||f===2){emoji('🎀',70,65,72, -.18);emoji('🎀',W-70,H-62,70,.15);}
+ if(f===1){emoji('⭐',70,62,64,-.1);emoji('🌟',W-70,H-62,64,.1);}
+ if(f===3){emoji('☁️',80,62,70);emoji('🌈',W-82,H-62,68);}
+ if(f===4){emoji('🌸',75,65,68);emoji('🌼',W-75,H-65,68);}
+}
+function drawEmojiLayer(front=false){
+ decoSeed=1000+state.deco*7919+state.bg*313+(front?71:0);
+ const set=emojiSets[state.deco%emojiSets.length];
+ const count=(front?3:7)+state.density*(front?1:4);
+ for(let i=0;i<count;i++){
+   const r=seeded(), e=set[Math.floor(seeded()*set.length)];
+   let size;
+   if(i<3&&!front) size=92+seeded()*85;        // deliberately huge
+   else if(i<8&&!front) size=55+seeded()*55;   // medium
+   else size=22+seeded()*45;                    // small
+   let x=45+seeded()*(W-90), y=45+seeded()*(H-90);
+   // Most decorations prefer the perimeter so text/avatar stay readable.
+   if(i%3!==0){
+     const side=Math.floor(seeded()*4);
+     if(side===0)y=45+seeded()*115;
+     if(side===1)y=H-45-seeded()*105;
+     if(side===2)x=45+seeded()*105;
+     if(side===3)x=W-45-seeded()*105;
+   }
+   emoji(e,x,y,size,(seeded()-.5)*.65,front?.92:.88);
+ }
+}
+function drawBackDeco(){drawEmojiLayer(false)}
+function drawFrontDeco(){drawEmojiLayer(true)}
 function rebuildChar(){
  if(!state.sourceImg||!state.mask){state.charImg=state.cutoutImg||state.sourceImg;return}
  const off=document.createElement('canvas');off.width=state.sourceImg.naturalWidth;off.height=state.sourceImg.naturalHeight;
@@ -246,7 +291,7 @@ function drawText(){
  }
 }
 function draw(){
- drawBg();drawBackDeco();drawCharacter();drawText();drawFrontDeco();
+ drawBg();drawFrame();drawBackDeco();drawCharacter();drawText();drawFrontDeco();
 }
 
 function canvasPoint(ev){
@@ -343,14 +388,14 @@ function randomMsg(){
 }
 randomMsg.onclick=randomMsg;
 titleText.oninput=draw;subText.oninput=draw;
-randomAll.onclick=()=>{state.bg=rand(4);state.deco=rand(4);state.layout=rand(3);state.density=4+rand(2);density.value=state.density;densityo.value=state.density;randomMsg();state.x=Math.random()<.75?-250:230;state.y=10+rand(35);state.scale=1.35+Math.random()*.3;sync();draw()};
-randomBg.onclick=()=>{state.bg=rand(4);draw()};randomDeco.onclick=()=>{state.density=3+rand(3);density.value=state.density;densityo.value=state.density;draw()};randomLayout.onclick=()=>{state.layout=rand(3);draw()};
-density.oninput=e=>{state.density=+e.target.value;densityo.value=e.target.value;draw()};
+randomAll.onclick=()=>{state.bg=rand(5);state.deco=rand(emojiSets.length);state.frame=rand(5);state.frameWidth=3+rand(3);state.layout=rand(3);state.density=4+rand(2);density.value=state.density;densityo.value=state.density;frameWidth.value=state.frameWidth;frameWidtho.value=state.frameWidth;randomMsg();state.x=Math.random()<.75?-250:230;state.y=10+rand(35);state.scale=1.35+Math.random()*.3;sync();draw()};
+randomBg.onclick=()=>{state.bg=rand(5);draw()};randomDeco.onclick=()=>{state.deco=rand(emojiSets.length);state.density=3+rand(3);density.value=state.density;densityo.value=state.density;draw()};randomFrame.onclick=()=>{state.frame=rand(5);state.frameWidth=3+rand(3);frameWidth.value=state.frameWidth;frameWidtho.value=state.frameWidth;draw()};randomLayout.onclick=()=>{state.layout=rand(3);draw()};
+density.oninput=e=>{state.density=+e.target.value;densityo.value=e.target.value;draw()};frameWidth.oninput=e=>{state.frameWidth=+e.target.value;frameWidtho.value=e.target.value;draw()};
 flip.onclick=()=>{state.flip=!state.flip;draw()};
 function sync(){x.value=Math.round(state.x);y.value=Math.round(state.y);scale.value=Math.round(state.scale*100);xo.value=Math.round(state.x);yo.value=Math.round(state.y);so.value=Math.round(state.scale*100)+'%'}
 ['x','y','scale'].forEach(id=>document.getElementById(id).addEventListener('input',e=>{if(id==='scale')state.scale=+e.target.value/100;else state[id]=+e.target.value;sync();draw()}));
 save.onclick=()=>{draw();const a=document.createElement('a');a.download='ohayou.png';a.href=cv.toDataURL('image/png');a.click()};
-reset.onclick=()=>{state.bg=0;state.layout=0;state.density=5;state.x=-250;state.y=25;state.scale=1.5;state.flip=false;titleText.value='おはよう！';subText.value='素敵を集めに\\n行ってみよー！';density.value=5;densityo.value=5;sync();draw()};
+reset.onclick=()=>{state.bg=0;state.deco=0;state.frame=0;state.frameWidth=4;state.layout=0;state.density=5;state.x=-250;state.y=25;state.scale=1.5;state.flip=false;titleText.value='おはよう！';subText.value='素敵を集めに\\n行ってみよー！';density.value=5;densityo.value=5;frameWidth.value=4;frameWidtho.value=4;sync();draw()};
 sync();draw();
 </script>
 </body></html>
