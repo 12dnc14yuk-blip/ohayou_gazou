@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おはよう画像メーカー v2.4</title>
+<title>おはよう画像メーカー v2.5</title>
 <style>
 :root{
   --ink:#352f44; --muted:#81798e; --line:#ece7f4; --panel:#fff;
@@ -45,7 +45,7 @@ input[type=range]{width:100%}
 </head>
 <body>
 <div class="wrap">
-<h1>🌞 おはよう画像メーカー v2.4</h1>
+<h1>🌞 おはよう画像メーカー v2.5</h1>
 <div class="lead">
   透過の手直し機能はそのまま。今回はデザインをさらに盛りました。
   <b>大きい絵文字＋小さい絵文字＋太めのかわいいフレーム</b>をランダム配置。
@@ -114,7 +114,7 @@ input[type=range]{width:100%}
   <div class="section-title">⑤ 女の子を微調整</div>
   <label class="slider"><span>左右</span><input id="x" type="range" min="-500" max="500" value="-250"><output id="xo">-250</output></label>
   <label class="slider"><span>上下</span><input id="y" type="range" min="-300" max="300" value="25"><output id="yo">25</output></label>
-  <label class="slider"><span>大きさ</span><input id="scale" type="range" min="50" max="260" value="162"><output id="so">162%</output></label>
+  <label class="slider"><span>大きさ</span><input id="scale" type="range" min="60" max="280" value="172"><output id="so">172%</output></label>
   <button id="flip" class="soft">↔️ 左右反転</button>
 </div>
 
@@ -126,7 +126,7 @@ input[type=range]{width:100%}
   </div>
 </div>
 
-<div class="footer">おはよう画像メーカー v2.4</div>
+<div class="footer">おはよう画像メーカー v2.5</div>
 </div>
 
 <script>
@@ -134,17 +134,44 @@ const cv=document.getElementById('cv'),ctx=cv.getContext('2d'),W=cv.width,H=cv.h
 
 const state={
   sourceImg:null, cutoutImg:null, mask:null,
-  charImg:null, x:-245,y:20,scale:1.62,flip:false,
+  charImg:null, x:-250,y:18,scale:1.72,flip:false,
   bg:0,deco:0,frame:0,frameWidth:4,layout:0,density:5,
   mode:'move',drag:false,lastX:0,lastY:0
 };
 
 const messages={
-genki:['素敵を集めに\\n行ってみよー！','今日も元気に\\nいってらっしゃい！','今日もハッピー\\n見つけよ〜！','いっぱい笑える日に\\nなりますように！'],
-gentle:['今日もいい日になりますように♡','無理せず自分のペースでいこ〜！','今日もやさしい時間がありますように'],
-yurui:['ゆるっと今日もいこ〜！','ぼちぼちがんばろ〜！','気楽にいこ〜！'],
-ouen:['大丈夫、ひとつずついこ〜！','今日もあなたらしくいけますように！','できるところからで大丈夫！']
+genki:[
+'素敵を集めに\n行ってみよー！','今日も元気に\nいってらっしゃい！','今日もハッピー\n見つけよ〜！','いっぱい笑える日に\nなりますように！',
+'今日もたのしく\nいこ〜！','いいこと見つけに\nいこっ！','今日もごきげんで\nいってらっしゃい！','今日も笑顔で\nスタートしよ〜！',
+'わくわく見つけに\nいこ〜！','今日もいい日に\nしちゃお〜！','ハッピー拾い集めに\nいこっ！','今日もるんるんで\nいこ〜！',
+'朝からちょっと\nいい予感〜！','今日もいっぱい\n笑おうね！','今日も自分らしく\n元気にいこっ！'
+],
+gentle:[
+'今日もいい日になりますように♡','無理せず自分のペースでいこ〜！','今日もやさしい時間がありますように',
+'ひとつずつ、ゆっくりいこ〜！','肩の力をぬいていってらっしゃい！','今日も穏やかに過ごせますように',
+'自分らしくいけたらそれで十分◎','今日も小さないいこと見つけよ〜','今日はちょっとゆっくりでも大丈夫',
+'やさしい気持ちでいってらっしゃい','今日もほっとできる時間がありますように','今日もあなたのペースでいこ〜',
+'焦らずのんびり進んでこ〜','今日もふわっといい日にしよ〜','今日は少しだけ自分にやさしくね'
+],
+yurui:[
+'ゆるっと今日もいこ〜！','ぼちぼちがんばろ〜！','気楽にいこ〜！','今日もマイペースでいこっ！',
+'なんとかなる〜の気持ちでいこ！','ちょっとずつでえらい！','今日もほどほどにがんばろ〜！','今日は省エネでもよし！',
+'ゆっくりエンジンかけてこ〜','今日もぼちぼちやってこ〜','眠くても朝はきた！えらい！','今日もゆるく元気にいこ〜'
+],
+ouen:[
+'大丈夫、ひとつずついこ〜！','今日もあなたらしくいけますように！','できるところからで大丈夫！','今日も応援してるよっ！',
+'小さな一歩でもすごいよ〜！','きっといい流れになりますように！','今日も前向きにいけますように！','いい一日になる予感〜！',
+'今日も一歩ずつ進んでこ〜！','少しでも前に進めたら花丸！','今日も自分を信じていこ〜！','焦らず進めば大丈夫！'
+]
 };
+const moods=[
+ {bg:'#bfe8fb',a:'#ff4f9f',b:'#ffd45c',stroke:'#ef3145',sub:'#7bcbd2'},
+ {bg:'#f7c3db',a:'#a98bf2',b:'#ffffff',stroke:'#ff4f9f',sub:'#8a75e8'},
+ {bg:'#d9b8ef',a:'#ffd84f',b:'#74d7df',stroke:'#8b74eb',sub:'#ffffff'},
+ {bg:'#fff0b8',a:'#ff7a59',b:'#ff5aa5',stroke:'#ef7d2c',sub:'#7bcbd2'},
+ {bg:'#c9f1e7',a:'#ff77b7',b:'#9b86ef',stroke:'#48aeb5',sub:'#ff5c9f'},
+ {bg:'#c7d7ff',a:'#ff5f98',b:'#ffd95c',stroke:'#6f73e8',sub:'#ffffff'}
+];
 const rand=n=>Math.floor(Math.random()*n),pick=a=>a[rand(a.length)],status=t=>document.getElementById('status').textContent=t;
 
 function rr(x,y,w,h,r,fill){ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fillStyle=fill;ctx.fill();}
@@ -243,52 +270,71 @@ function stickerSymbol(e,x,y,size,rot=0,alpha=1){
 }
 function emoji(e,x,y,size,rot=0,a=1){ stickerSymbol(e,x,y,size,rot,a); }
 function drawBg(){
- const b=state.bg%5;
- const colors=['#bfe8fb','#f7c3db','#d5b4eb','#fff0b8','#c9f1e7'];
- ctx.fillStyle=colors[b];ctx.fillRect(0,0,W,H);
- let g=ctx.createRadialGradient(770,330,20,770,330,300);
- g.addColorStop(0,'rgba(255,255,255,.78)');g.addColorStop(1,'rgba(255,255,255,0)');
- ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+ const mood=moods[state.bg%moods.length];
+ ctx.fillStyle=mood.bg;ctx.fillRect(0,0,W,H);
+ const v=state.bg%6;
+ if(v===0){
+   let g=ctx.createRadialGradient(W*.68,H*.48,20,W*.68,H*.48,330);
+   g.addColorStop(0,'rgba(255,255,255,.92)');g.addColorStop(1,'rgba(255,255,255,0)');
+   ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+ }else if(v===1){
+   for(let x=0;x<W;x+=56){ctx.fillStyle=x%112===0?'rgba(255,255,255,.27)':'rgba(255,255,255,.11)';ctx.fillRect(x,0,28,H);}
+ }else if(v===2){
+   for(let y=0;y<H;y+=52){ctx.fillStyle=y%104===0?'rgba(255,255,255,.25)':'rgba(255,255,255,.10)';ctx.fillRect(0,y,W,26);}
+ }else if(v===3){
+   for(let y=38;y<H;y+=72)for(let x=38;x<W;x+=72)circle(x,y,10,'rgba(255,255,255,.32)');
+ }else if(v===4){
+   let g=ctx.createLinearGradient(0,0,W,H);g.addColorStop(0,'rgba(255,255,255,.55)');g.addColorStop(.5,'rgba(255,255,255,.03)');g.addColorStop(1,'rgba(255,255,255,.46)');
+   ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+ }else{
+   for(let i=0;i<10;i++){ctx.save();ctx.globalAlpha=.14;ctx.translate(rand(W),rand(H));ctx.rotate(rand(314)/100);rr(-120,-18,240,36,18,'#fff');ctx.restore();}
+ }
 }
 function drawFrame(){
- const f=state.frame%5, k=state.frameWidth, inset=42+7*k, thick=8+5*k;
- const schemes=[
-   ['#ff69ad','#fff','#c792ff'],['#b18cff','#fff','#79d8e4'],
-   ['#ff9fc7','#fff4b8','#ff6ba8'],['#73d7dd','#fff','#ff9ec7'],['#ffd45e','#fff','#ff83b7']
- ];
- const [a,b,c]=schemes[f];
+ const mood=moods[state.bg%moods.length];
+ const f=state.frame%6,k=state.frameWidth,inset=48+7*k,thick=10+5*k;
  ctx.save();ctx.lineJoin='round';
- ctx.strokeStyle=b;ctx.lineWidth=thick+18;ctx.strokeRect(inset,inset,W-inset*2,H-inset*2);
- ctx.strokeStyle=a;ctx.lineWidth=thick+8;ctx.strokeRect(inset,inset,W-inset*2,H-inset*2);
- ctx.strokeStyle=c;ctx.lineWidth=Math.max(4,thick*.35);ctx.strokeRect(inset+13,inset+13,W-(inset+13)*2,H-(inset+13)*2);
+ if(f===0){
+   ctx.strokeStyle='#fff';ctx.lineWidth=thick+18;ctx.strokeRect(inset,inset,W-inset*2,H-inset*2);
+   ctx.strokeStyle=mood.a;ctx.lineWidth=thick+8;ctx.strokeRect(inset,inset,W-inset*2,H-inset*2);
+   ctx.strokeStyle=mood.b;ctx.lineWidth=5;ctx.strokeRect(inset+15,inset+15,W-(inset+15)*2,H-(inset+15)*2);
+ }else if(f===1){
+   rr(inset,inset,W-inset*2,H-inset*2,34,'rgba(255,255,255,.04)',mood.a,thick+10);
+   rr(inset+16,inset+16,W-(inset+16)*2,H-(inset+16)*2,28,'rgba(255,255,255,.02)','#fff',8);
+ }else if(f===2){
+   ctx.setLineDash([28,16]);ctx.strokeStyle=mood.a;ctx.lineWidth=thick+6;ctx.strokeRect(inset,inset,W-inset*2,H-inset*2);
+   ctx.setLineDash([]);ctx.strokeStyle='#fff';ctx.lineWidth=6;ctx.strokeRect(inset+14,inset+14,W-(inset+14)*2,H-(inset+14)*2);
+ }else if(f===3){
+   ctx.strokeStyle='#fff';ctx.lineWidth=thick+16;ctx.strokeRect(inset,inset,W-inset*2,H-inset*2);
+   ctx.strokeStyle=mood.b;ctx.lineWidth=thick+4;ctx.strokeRect(inset+8,inset+8,W-(inset+8)*2,H-(inset+8)*2);
+ }else if(f===4){
+   rr(inset,inset,W-inset*2,H-inset*2,42,'rgba(255,255,255,.02)','#fff',thick+14);
+   rr(inset+12,inset+12,W-(inset+12)*2,H-(inset+12)*2,34,'rgba(255,255,255,.02)',mood.a,thick+2);
+ }else{
+   ctx.strokeStyle=mood.a;ctx.lineWidth=thick+10;ctx.strokeRect(inset,inset,W-inset*2,H-inset*2);
+   for(let x=inset+45;x<W-inset-20;x+=95)emoji(x%190===0?'🎀':'⭐',x,inset+3,46,0,.95);
+ }
  ctx.restore();
- // chunky corner decorations
- if(f===0||f===2){emoji('🎀',105,98,72,-.18);emoji('🎀',W-105,H-95,70,.15);}
- if(f===1){emoji('⭐',105,95,64,-.1);emoji('🌟',W-105,H-95,64,.1);}
- if(f===3){emoji('☁️',112,95,70);emoji('🌈',W-112,H-95,68);}
- if(f===4){emoji('🌸',108,98,68);emoji('🌼',W-108,H-98,68);}
 }
 function drawEmojiLayer(front=false){
  decoSeed=1000+state.deco*7919+state.bg*313+(front?71:0);
  const set=emojiSets[state.deco%emojiSets.length];
- const count=(front?5:11)+state.density*(front?2:6);
+ const count=(front?4:10)+state.density*(front?1:6);
  for(let i=0;i<count;i++){
    const e=set[Math.floor(seeded()*set.length)];
    let size;
-   if(i<5&&!front) size=125+seeded()*120;       // very large
-   else if(i<13&&!front) size=72+seeded()*85;   // medium-large
-   else if(front && i<4) size=72+seeded()*60;   // foreground accents
-   else size=34+seeded()*58;                    // small-medium
-   let x=35+seeded()*(W-70), y=35+seeded()*(H-70);
-   // Pack most stickers around edges, but leave some in open central space.
+   if(i<5&&!front)size=120+seeded()*115;
+   else if(i<13&&!front)size=70+seeded()*80;
+   else size=32+seeded()*54;
+   let x=35+seeded()*(W-70),y=35+seeded()*(H-70);
    if(i%4!==0){
      const side=Math.floor(seeded()*4);
-     if(side===0)y=38+seeded()*150;
-     if(side===1)y=H-38-seeded()*140;
-     if(side===2)x=38+seeded()*145;
-     if(side===3)x=W-38-seeded()*145;
+     if(side===0)y=38+seeded()*145;
+     if(side===1)y=H-38-seeded()*135;
+     if(side===2)x=38+seeded()*140;
+     if(side===3)x=W-38-seeded()*140;
    }
-   emoji(e,x,y,size,(seeded()-.5)*.75,front?.95:.9);
+   emoji(e,x,y,size,(seeded()-.5)*.75,front?.9:.88);
  }
 }
 function drawBackDeco(){drawEmojiLayer(false)}
@@ -352,38 +398,33 @@ function outlined(text,x,y,size,fill,stroke,glow=null){
 function drawText(){
  const title=document.getElementById('titleText').value||'おはよう！';
  const sub=document.getElementById('subText').value||'';
- const L=state.layout%3;
- const leftChar=state.x<0;
+ const L=state.layout%5,mood=moods[state.bg%moods.length],leftChar=state.x<0;
  const zone=leftChar?{cx:875,w:520}:{cx:325,w:520};
-
  if(L===0){
-   const ts=fitText(title,zone.w,132,82);
-   outlined(title,zone.cx,245,ts,'#fff','#ef3145','rgba(255,70,40,.75)');
-   let ss=66;
-   let lines=balancedLines(sub,zone.w,ss,3);
-   while(ss>40 && lines.some(t=>measure(t,ss)>zone.w)){ss-=2;lines=balancedLines(sub,zone.w,ss,3);}
-   const gap=ss*1.08,start=420-(lines.length-1)*gap/2;
-   lines.forEach((t,i)=>outlined(t,zone.cx,start+i*gap,ss,'#fff','#8bc7c7'));
+   const ts=fitText(title,zone.w,134,84);outlined(title,zone.cx,242,ts,'#fff',mood.stroke,mood.b);
+   let ss=64,lines=balancedLines(sub,zone.w,ss,3),gap=ss*1.08,start=420-(lines.length-1)*gap/2;
+   lines.forEach((v,i)=>outlined(v,zone.cx,start+i*gap,ss,'#fff',mood.sub));
  }else if(L===1){
-   const ts=fitText(title,zone.w,128,82);
-   outlined(title,zone.cx,205,ts,'#fff','#ff4f9f','#ffbd35');
-   let ss=62;
-   let lines=balancedLines(sub,zone.w,ss,3);
-   while(ss>40 && lines.some(t=>measure(t,ss)>zone.w)){ss-=2;lines=balancedLines(sub,zone.w,ss,3);}
-   const gap=ss*1.05,start=390-(lines.length-1)*gap/2;
-   lines.forEach((t,i)=>outlined(t,zone.cx,start+i*gap,ss,'#fff','#7dcbd1'));
+   const ts=fitText(title,zone.w,126,82);outlined(title,zone.cx,205,ts,'#fff',mood.a,mood.b);
+   let ss=60,lines=balancedLines(sub,zone.w,ss,3),gap=ss*1.06,start=400-(lines.length-1)*gap/2;
+   lines.forEach((v,i)=>outlined(v,zone.cx,start+i*gap,ss,'#fff',mood.stroke));
+ }else if(L===2){
+   const ts=fitText(title,940,140,92);outlined(title,W/2,118,ts,'#fff',mood.stroke,mood.b);
+   let ss=64,lines=balancedLines(sub,920,ss,2),gap=ss*1.02,start=548-(lines.length-1)*gap/2;
+   lines.forEach((v,i)=>outlined(v,W/2,start+i*gap,ss,'#fff',mood.a));
+ }else if(L===3){
+   const ts=fitText(title,zone.w,118,80);outlined(title,zone.cx,175,ts,mood.b,'#fff',mood.stroke);
+   let ss=58,lines=balancedLines(sub,zone.w,ss,3);
+   lines.forEach((v,i)=>outlined(v,zone.cx,345+i*65,ss,'#fff',mood.a));
  }else{
-   const ts=fitText(title,940,136,90);
-   outlined(title,W/2,118,ts,'#fff','#8b74eb');
-   let ss=64;
-   let lines=balancedLines(sub,940,ss,2);
-   while(ss>42 && lines.some(t=>measure(t,ss)>940)){ss-=2;lines=balancedLines(sub,940,ss,2);}
-   const gap=ss*1.02,start=545-(lines.length-1)*gap/2;
-   lines.forEach((t,i)=>outlined(t,W/2,start+i*gap,ss,'#fff','#ef5c9e'));
+   rr(zone.cx-zone.w/2,135,zone.w,370,38,'rgba(255,255,255,.24)');
+   const ts=fitText(title,zone.w-30,116,78);outlined(title,zone.cx,230,ts,'#fff',mood.a,mood.b);
+   let ss=54,lines=balancedLines(sub,zone.w-40,ss,3);
+   lines.forEach((v,i)=>outlined(v,zone.cx,370+i*62,ss,'#fff',mood.stroke));
  }
 }
 function draw(){
- drawBg();drawFrame();drawBackDeco();drawCharacter();drawText();drawFrontDeco();
+ drawBg();drawFrame();drawBackDeco();drawFrontDeco();drawCharacter();drawText();
 }
 
 function canvasPoint(ev){
@@ -480,14 +521,14 @@ function randomMsg(){
 }
 randomMsg.onclick=randomMsg;
 titleText.oninput=draw;subText.oninput=draw;
-randomAll.onclick=()=>{state.bg=rand(5);state.deco=rand(emojiSets.length);state.frame=rand(5);state.frameWidth=3+rand(3);state.layout=rand(3);state.density=4+rand(2);density.value=state.density;densityo.value=state.density;frameWidth.value=state.frameWidth;frameWidtho.value=state.frameWidth;randomMsg();state.x=Math.random()<.75?-250:230;state.y=10+rand(35);state.scale=1.52+Math.random()*.28;sync();draw()};
-randomBg.onclick=()=>{state.bg=rand(5);draw()};randomDeco.onclick=()=>{state.deco=rand(emojiSets.length);state.density=3+rand(3);density.value=state.density;densityo.value=state.density;draw()};randomFrame.onclick=()=>{state.frame=rand(5);state.frameWidth=3+rand(3);frameWidth.value=state.frameWidth;frameWidtho.value=state.frameWidth;draw()};randomLayout.onclick=()=>{state.layout=rand(3);draw()};
+randomAll.onclick=()=>{state.bg=rand(moods.length);state.deco=rand(emojiSets.length);state.frame=rand(6);state.frameWidth=2+rand(4);state.layout=rand(5);state.density=3+rand(3);density.value=state.density;densityo.value=state.density;frameWidth.value=state.frameWidth;frameWidtho.value=state.frameWidth;randomMsg();state.x=Math.random()<.5?(-285+rand(90)):(215+rand(100));state.y=-10+rand(80);state.scale=1.48+Math.random()*.4;state.flip=Math.random()<.35;sync();draw()};
+randomBg.onclick=()=>{state.bg=rand(moods.length);draw()};randomDeco.onclick=()=>{state.deco=rand(emojiSets.length);state.density=3+rand(3);density.value=state.density;densityo.value=state.density;draw()};randomFrame.onclick=()=>{state.frame=rand(6);state.frameWidth=3+rand(3);frameWidth.value=state.frameWidth;frameWidtho.value=state.frameWidth;draw()};randomLayout.onclick=()=>{state.layout=rand(5);draw()};
 density.oninput=e=>{state.density=+e.target.value;densityo.value=e.target.value;draw()};frameWidth.oninput=e=>{state.frameWidth=+e.target.value;frameWidtho.value=e.target.value;draw()};
 flip.onclick=()=>{state.flip=!state.flip;draw()};
 function sync(){x.value=Math.round(state.x);y.value=Math.round(state.y);scale.value=Math.round(state.scale*100);xo.value=Math.round(state.x);yo.value=Math.round(state.y);so.value=Math.round(state.scale*100)+'%'}
 ['x','y','scale'].forEach(id=>document.getElementById(id).addEventListener('input',e=>{if(id==='scale')state.scale=+e.target.value/100;else state[id]=+e.target.value;sync();draw()}));
 save.onclick=()=>{draw();const a=document.createElement('a');a.download='ohayou.png';a.href=cv.toDataURL('image/png');a.click()};
-reset.onclick=()=>{state.bg=0;state.deco=0;state.frame=0;state.frameWidth=4;state.layout=0;state.density=5;state.x=-245;state.y=20;state.scale=1.62;state.flip=false;titleText.value='おはよう！';subText.value='素敵を集めに\\n行ってみよー！';density.value=5;densityo.value=5;frameWidth.value=4;frameWidtho.value=4;sync();draw()};
+reset.onclick=()=>{state.bg=0;state.deco=0;state.frame=0;state.frameWidth=4;state.layout=0;state.density=5;state.x=-250;state.y=18;state.scale=1.72;state.flip=false;titleText.value='おはよう！';subText.value='素敵を集めに\\n行ってみよー！';density.value=5;densityo.value=5;frameWidth.value=4;frameWidtho.value=4;sync();draw()};
 sync();draw();
 </script>
 </body></html>
