@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おはよう画像メーカー v2.5</title>
+<title>おはよう画像メーカー v2.6</title>
 <style>
 :root{
   --ink:#352f44; --muted:#81798e; --line:#ece7f4; --panel:#fff;
@@ -45,7 +45,7 @@ input[type=range]{width:100%}
 </head>
 <body>
 <div class="wrap">
-<h1>🌞 おはよう画像メーカー v2.5</h1>
+<h1>🌞 おはよう画像メーカー v2.6</h1>
 <div class="lead">
   透過の手直し機能はそのまま。今回はデザインをさらに盛りました。
   <b>大きい絵文字＋小さい絵文字＋太めのかわいいフレーム</b>をランダム配置。
@@ -72,10 +72,17 @@ input[type=range]{width:100%}
     <button id="eraseMode" class="mode soft">🧽 背景ゴミを消す</button>
     <button id="moveMode" class="mode soft active">✋ 女の子を動かす</button>
   </div>
-  <label class="slider"><span>ブラシ太さ</span><input id="brush" type="range" min="8" max="120" value="42"><output id="brusho">42</output></label>
+  <label class="slider"><span>ブラシ太さ</span><input id="brush" type="range" min="3" max="90" value="22"><output id="brusho">22</output></label>
+  <div class="grid3" style="margin-top:6px">
+    <button id="brushFine" class="soft">✏️ 細かく 10</button>
+    <button id="brushMid" class="soft">🖌 標準 24</button>
+    <button id="brushWide" class="soft">🧹 広め 52</button>
+  </div>
+  <label class="slider"><span>ブラシ硬さ</span><input id="hardness" type="range" min="0" max="100" value="96"><output id="hardnesso">96</output></label>
   <div class="tip">
-    AIで白い服・羽・髪が消えたら「消えた部分を戻す」でなぞる。背景が残ったら「背景ゴミを消す」でなぞる。
-    <span class="pill">これが今回の本命</span>
+    白い服・羽・髪が消えたら「消えた部分を戻す」でなぞってください。
+    今回は<strong>硬めブラシが初期設定</strong>なので、前みたいに輪郭がふわっと溶けにくくなっています。
+    細部は「✏️ 細かく 10」がおすすめ。<span class="pill">精密ブラシ v2</span>
   </div>
 </div>
 
@@ -126,7 +133,7 @@ input[type=range]{width:100%}
   </div>
 </div>
 
-<div class="footer">おはよう画像メーカー v2.5</div>
+<div class="footer">おはよう画像メーカー v2.6</div>
 </div>
 
 <script>
@@ -136,7 +143,7 @@ const state={
   sourceImg:null, cutoutImg:null, mask:null,
   charImg:null, x:-250,y:18,scale:1.72,flip:false,
   bg:0,deco:0,frame:0,frameWidth:4,layout:0,density:5,
-  mode:'move',drag:false,lastX:0,lastY:0
+  mode:'move',drag:false,lastX:0,lastY:0,lastPaint:null,rebuildTimer:null
 };
 
 const messages={
@@ -441,31 +448,66 @@ function charImagePoint(p){
  let iy=dy/h*state.sourceImg.naturalHeight;
  return {ix,iy,wCanvas:w,hCanvas:h};
 }
+function stampMaskAt(ix,iy,radiusPx){
+ if(!state.mask||!state.sourceImg)return;
+ const data=state.mask.data,iw=state.sourceImg.naturalWidth,ih=state.sourceImg.naturalHeight;
+ const hardness=(+hardnessEl.value)/100;
+ const r=Math.max(1.5,radiusPx);
+ const inner=r*Math.min(.98,Math.max(.05,hardness));
+ const minX=Math.max(0,Math.floor(ix-r)),maxX=Math.min(iw-1,Math.ceil(ix+r));
+ const minY=Math.max(0,Math.floor(iy-r)),maxY=Math.min(ih-1,Math.ceil(iy+r));
+ for(let yy=minY;yy<=maxY;yy++){
+   for(let xx=minX;xx<=maxX;xx++){
+     const dist=Math.hypot(xx-ix,yy-iy);
+     if(dist>r)continue;
+     let strength;
+     if(dist<=inner) strength=1;
+     else{
+       const denom=Math.max(.001,r-inner);
+       const t=(dist-inner)/denom;
+       // Smooth but very narrow feather when hardness is high.
+       strength=1-(t*t*(3-2*t));
+     }
+     const idx=(yy*iw+xx)*4+3;
+     if(state.mode==='restore'){
+       const target=Math.round(255*strength);
+       if(target>data[idx])data[idx]=target;
+     }else if(state.mode==='erase'){
+       const keep=Math.round(255*(1-strength));
+       if(keep<data[idx])data[idx]=keep;
+     }
+   }
+ }
+}
+function scheduleCharRebuild(){
+ clearTimeout(state.rebuildTimer);
+ state.rebuildTimer=setTimeout(rebuildChar,28);
+}
 function paintMask(ev){
  if(!state.mask||!state.sourceImg)return;
  const p=canvasPoint(ev),m=charImagePoint(p);if(!m)return;
  const radius=(+brush.value/Math.max(1,m.wCanvas))*state.sourceImg.naturalWidth;
- const cx=Math.round(m.ix),cy=Math.round(m.iy);
- const data=state.mask.data,iw=state.sourceImg.naturalWidth,ih=state.sourceImg.naturalHeight;
- const r=Math.max(2,Math.round(radius));
- for(let y=Math.max(0,cy-r);y<Math.min(ih,cy+r);y++){
-   for(let x=Math.max(0,cx-r);x<Math.min(iw,cx+r);x++){
-     const dist=Math.hypot(x-cx,y-cy);
-     if(dist<=r){
-       const idx=(y*iw+x)*4+3;
-       const softness=1-dist/r;
-       if(state.mode==='restore')data[idx]=Math.max(data[idx],Math.round(255*softness));
-       else if(state.mode==='erase')data[idx]=Math.min(data[idx],Math.round(255*(1-softness)));
-     }
+ const cur={x:m.ix,y:m.iy,r:Math.max(1.5,radius)};
+ if(state.lastPaint){
+   const dx=cur.x-state.lastPaint.x,dy=cur.y-state.lastPaint.y;
+   const dist=Math.hypot(dx,dy);
+   const step=Math.max(1,cur.r*.28);
+   const count=Math.max(1,Math.ceil(dist/step));
+   for(let i=1;i<=count;i++){
+     const t=i/count;
+     stampMaskAt(state.lastPaint.x+dx*t,state.lastPaint.y+dy*t,cur.r);
    }
+ }else{
+   stampMaskAt(cur.x,cur.y,cur.r);
  }
- rebuildChar();
+ state.lastPaint=cur;
+ scheduleCharRebuild();
 }
 function start(ev){
  if(state.mode==='move'){
    state.drag=true;let p=canvasPoint(ev);state.lastX=p.x;state.lastY=p.y;
  }else{
-   state.drag=true;paintMask(ev);
+   state.drag=true;state.lastPaint=null;paintMask(ev);
  }
  ev.preventDefault();
 }
@@ -476,7 +518,7 @@ function move(ev){
  }else paintMask(ev);
  ev.preventDefault();
 }
-function end(){state.drag=false}
+function end(){state.drag=false;state.lastPaint=null;if(state.mode!=='move')rebuildChar()}
 cv.addEventListener('mousedown',start);window.addEventListener('mousemove',move);window.addEventListener('mouseup',end);
 cv.addEventListener('touchstart',start,{passive:false});cv.addEventListener('touchmove',move,{passive:false});cv.addEventListener('touchend',end);
 
@@ -486,7 +528,12 @@ function setMode(m){
  document.getElementById(m==='restore'?'restoreMode':m==='erase'?'eraseMode':'moveMode').classList.add('active');
 }
 restoreMode.onclick=()=>setMode('restore');eraseMode.onclick=()=>setMode('erase');moveMode.onclick=()=>setMode('move');
+const hardnessEl=document.getElementById('hardness');
 brush.oninput=e=>brusho.value=e.target.value;
+hardnessEl.oninput=e=>hardnesso.value=e.target.value;
+brushFine.onclick=()=>{brush.value=10;brusho.value=10};
+brushMid.onclick=()=>{brush.value=24;brusho.value=24};
+brushWide.onclick=()=>{brush.value=52;brusho.value=52};
 
 file.onchange=e=>{const f=e.target.files?.[0];if(!f)return;const url=URL.createObjectURL(f),img=new Image();img.onload=()=>{state.sourceImg=img;state.cutoutImg=null;state.mask=null;state.charImg=img;draw();status('画像を読み込みました。次にAI切り抜きを押してください。')};img.src=url};
 
@@ -504,7 +551,7 @@ removeBg.onclick=async()=>{
      const id=o.getImageData(0,0,off.width,off.height);
      state.mask=id;
      state.charImg=img;draw();
-     status('✨ AI切り抜き完了。消えた部分は「戻す」、残った背景は「消す」でなぞって直せます。');
+     status('✨ AI切り抜き完了。白い服が欠けたら「戻す」＋細かく10＋硬さ96で輪郭をなぞると精密に戻せます。');
      removeBg.disabled=false;removeBg.textContent='✂️ AIで女の子を切り抜く';
    };
    img.src=url;
@@ -528,7 +575,7 @@ flip.onclick=()=>{state.flip=!state.flip;draw()};
 function sync(){x.value=Math.round(state.x);y.value=Math.round(state.y);scale.value=Math.round(state.scale*100);xo.value=Math.round(state.x);yo.value=Math.round(state.y);so.value=Math.round(state.scale*100)+'%'}
 ['x','y','scale'].forEach(id=>document.getElementById(id).addEventListener('input',e=>{if(id==='scale')state.scale=+e.target.value/100;else state[id]=+e.target.value;sync();draw()}));
 save.onclick=()=>{draw();const a=document.createElement('a');a.download='ohayou.png';a.href=cv.toDataURL('image/png');a.click()};
-reset.onclick=()=>{state.bg=0;state.deco=0;state.frame=0;state.frameWidth=4;state.layout=0;state.density=5;state.x=-250;state.y=18;state.scale=1.72;state.flip=false;titleText.value='おはよう！';subText.value='素敵を集めに\\n行ってみよー！';density.value=5;densityo.value=5;frameWidth.value=4;frameWidtho.value=4;sync();draw()};
+reset.onclick=()=>{brush.value=22;brusho.value=22;hardnessEl.value=96;hardnesso.value=96;state.bg=0;state.deco=0;state.frame=0;state.frameWidth=4;state.layout=0;state.density=5;state.x=-250;state.y=18;state.scale=1.72;state.flip=false;titleText.value='おはよう！';subText.value='素敵を集めに\\n行ってみよー！';density.value=5;densityo.value=5;frameWidth.value=4;frameWidtho.value=4;sync();draw()};
 sync();draw();
 </script>
 </body></html>
