@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おはよう画像メーカー v6.5</title>
+<title>おはよう画像メーカー v6.6</title>
 <style>
 :root{
   --ink:#352f44; --muted:#81798e; --line:#ece7f4; --panel:#fff;
@@ -48,11 +48,11 @@ input[type=range]{width:100%}
 </head>
 <body>
 <div class="wrap">
-<h1>🌞 おはよう画像メーカー v6.5</h1>
+<h1>🌞 おはよう画像メーカー v6.6</h1>
 <div class="lead">
   透過の手直し機能はそのまま。今回はデザインをさらに盛りました。
   <b>大きい絵文字＋小さい絵文字＋太めのかわいいフレーム</b>をランダム配置。
-  「全部ランダム」で毎朝ガチャできます。今回は<strong>輪郭アシスト付きの透過手直し</strong>はそのままに、<strong>文字を最前面</strong>に固定しつつ、<strong>顔周辺以外</strong>へ<strong>四隅より少し小さめ＋小さめ</strong>の2段階絵文字をさらに増やし、<strong>上下左右・文字下・空白部分</strong>をしっかり埋めやすいよう再調整しました。
+  「全部ランダム」で毎朝ガチャできます。今回は<strong>輪郭アシスト付きの透過手直し</strong>はそのままに、<strong>文字を最前面</strong>に固定しつつ、<strong>iPhoneの絵文字っぽい見た目</strong>に寄せた飾りへ変更。<strong>四隅の大きい絵文字</strong>を対角で同系統に置き、さらに<strong>上下左右・文字下・空白部分</strong>へ<strong>四隅より少し小さめ＋小さめ</strong>の2段階絵文字を散らして、<strong>顔周辺と文字には重ならないように</strong>再調整しました。
 </div>
 
 <div class="card">
@@ -114,7 +114,7 @@ input[type=range]{width:100%}
 <div class="card">
   <div class="section-title">④ デザインを作る</div>
   <div class="tip"><strong>センス重視モード</strong>：<strong>四隅すべてに大きい飾り</strong>を必ず置き、<strong>アバター側上＋文字側下</strong>をメイン、<strong>文字側上＋アバター側下</strong>をサブとして<strong>対角に固定</strong>します。さらに<strong>上下左右と文字の下</strong>へ、<strong>四隅より少し小さめ</strong>と<strong>小さめ</strong>の2段階絵文字をもっと多く散らし、<strong>顔周辺だけ避けて、上下左右と文字下の空白をしっかり埋めます</strong>。文字は常に最前面に表示します。</div>
-  <div class="tip">飾りは<strong>空白を埋めるようにバラけて配置</strong>。四隅の大きい飾りはアバターより前に出し、中〜小飾りは顔・文字ブロックを避けながら、<strong>上下左右と文字下の余白</strong>を優先的に埋めます。文字が中央寄せの時は特に左右へ散らしてバランスを取ります。</div>
+  <div class="tip">飾りは<strong>空白を埋めるようにバラけて配置</strong>。四隅の大きい飾りはアバターより前に出し、中〜小飾りは顔・文字ブロックを避けながら、<strong>上下左右と文字下の余白</strong>を優先的に埋めます。今回は<strong>iPhone絵文字っぽい表示</strong>に寄せ、外周だけでなく内側の空白にも散らします。</div>
   <div class="tip">重なり順：<strong>背景 → フレーム → 女の子 → 絵文字（飾り） → おはようメッセージ</strong></div>
   <label class="field" style="margin-bottom:10px">
     <span>デザインの雰囲気</span>
@@ -169,7 +169,7 @@ input[type=range]{width:100%}
   </div>
 </div>
 
-<div class="footer">おはよう画像メーカー v6.5</div>
+<div class="footer">おはよう画像メーカー v6.6</div>
 </div>
 
 <script>
@@ -508,101 +508,16 @@ let decoSeed=12345;
 function seeded(){decoSeed=(decoSeed*1664525+1013904223)>>>0;return decoSeed/4294967296}
 
 function stickerSymbol(e,x,y,size,rot=0,alpha=1){
-  ctx.save(); ctx.globalAlpha=alpha; ctx.translate(x,y); ctx.rotate(rot);
-  const u=size/100;
-  ctx.lineJoin='round'; ctx.lineCap='round';
-  const stroke='#ffffff';
-  function heart(fill='#ff5aa5'){
-    ctx.beginPath(); ctx.moveTo(0,32*u);
-    ctx.bezierCurveTo(-58*u,-5*u,-42*u,-48*u,-12*u,-36*u);
-    ctx.bezierCurveTo(0,-31*u,8*u,-17*u,12*u,-36*u);
-    ctx.bezierCurveTo(42*u,-48*u,58*u,-5*u,0,32*u);
-    ctx.fillStyle=fill;ctx.fill();ctx.strokeStyle=stroke;ctx.lineWidth=7*u;ctx.stroke();
-  }
-  function star(fill='#ffd84d'){
-    ctx.beginPath();
-    for(let i=0;i<10;i++){let rr=(i%2?18:43)*u,ang=-Math.PI/2+i*Math.PI/5;let px=Math.cos(ang)*rr,py=Math.sin(ang)*rr;i?ctx.lineTo(px,py):ctx.moveTo(px,py)}
-    ctx.closePath();ctx.fillStyle=fill;ctx.fill();ctx.strokeStyle=stroke;ctx.lineWidth=6*u;ctx.stroke();
-  }
-  function sparkle(){
-    ctx.fillStyle='#fff';ctx.strokeStyle='#ffcc45';ctx.lineWidth=5*u;
-    ctx.beginPath();ctx.moveTo(0,-45*u);ctx.quadraticCurveTo(7*u,-8*u,39*u,0);ctx.quadraticCurveTo(7*u,8*u,0,45*u);ctx.quadraticCurveTo(-7*u,8*u,-39*u,0);ctx.quadraticCurveTo(-7*u,-8*u,0,-45*u);ctx.closePath();ctx.fill();ctx.stroke();
-  }
-  function bow(){
-    ctx.fillStyle='#ff77b7';ctx.strokeStyle=stroke;ctx.lineWidth=6*u;
-    ctx.beginPath();ctx.moveTo(-8*u,0);ctx.bezierCurveTo(-30*u,-40*u,-58*u,-34*u,-50*u,5*u);ctx.bezierCurveTo(-45*u,32*u,-22*u,25*u,-7*u,8*u);ctx.fill();ctx.stroke();
-    ctx.beginPath();ctx.moveTo(8*u,0);ctx.bezierCurveTo(30*u,-40*u,58*u,-34*u,50*u,5*u);ctx.bezierCurveTo(45*u,32*u,22*u,25*u,7*u,8*u);ctx.fill();ctx.stroke();
-    ctx.beginPath();ctx.arc(0,3*u,13*u,0,Math.PI*2);ctx.fill();ctx.stroke();
-  }
-  function flower(){
-    for(let i=0;i<6;i++){ctx.save();ctx.rotate(i*Math.PI/3);ctx.beginPath();ctx.ellipse(0,-25*u,15*u,25*u,0,0,Math.PI*2);ctx.fillStyle=i%2?'#ff91c4':'#ffc0dc';ctx.fill();ctx.strokeStyle=stroke;ctx.lineWidth=4*u;ctx.stroke();ctx.restore()}
-    ctx.beginPath();ctx.arc(0,0,12*u,0,Math.PI*2);ctx.fillStyle='#ffe46b';ctx.fill();
-  }
-  function cloud(){
-    ctx.fillStyle='#fff';ctx.strokeStyle='#8edbed';ctx.lineWidth=5*u;
-    ctx.beginPath();ctx.arc(-22*u,4*u,22*u,Math.PI,0);ctx.arc(0,-8*u,27*u,Math.PI,0);ctx.arc(27*u,5*u,20*u,Math.PI,0);ctx.lineTo(45*u,23*u);ctx.lineTo(-43*u,23*u);ctx.closePath();ctx.fill();ctx.stroke();
-  }
-  function rainbow(){
-    const cols=['#ff72ad','#ffd45c','#83d9d0','#9f8cff'];
-    cols.forEach((c,i)=>{ctx.beginPath();ctx.arc(0,20*u,(42-i*8)*u,Math.PI,Math.PI*2);ctx.strokeStyle=c;ctx.lineWidth=8*u;ctx.stroke()});
-  }
-  function crown(){
-    ctx.fillStyle='#ffd54a';ctx.strokeStyle='#fff';ctx.lineWidth=6*u;
-    ctx.beginPath();ctx.moveTo(-43*u,28*u);ctx.lineTo(-38*u,-25*u);ctx.lineTo(-14*u,2*u);ctx.lineTo(0,-38*u);ctx.lineTo(17*u,2*u);ctx.lineTo(40*u,-25*u);ctx.lineTo(43*u,28*u);ctx.closePath();ctx.fill();ctx.stroke();
-  }
-
-  function leaf(fill='#f08a54'){
-    ctx.fillStyle=fill;ctx.strokeStyle=stroke;ctx.lineWidth=5*u;
-    ctx.beginPath();ctx.moveTo(0,-38*u);ctx.bezierCurveTo(34*u,-20*u,34*u,20*u,0,38*u);ctx.bezierCurveTo(-34*u,20*u,-34*u,-20*u,0,-38*u);ctx.fill();ctx.stroke();
-    ctx.beginPath();ctx.moveTo(0,-30*u);ctx.lineTo(0,32*u);ctx.strokeStyle='rgba(255,255,255,.85)';ctx.lineWidth=3*u;ctx.stroke();
-  }
-  function snow(){
-    ctx.strokeStyle='#7fcff0';ctx.lineWidth=6*u;ctx.lineCap='round';
-    for(let i=0;i<3;i++){ctx.save();ctx.rotate(i*Math.PI/3);ctx.beginPath();ctx.moveTo(-38*u,0);ctx.lineTo(38*u,0);ctx.moveTo(22*u,0);ctx.lineTo(30*u,-9*u);ctx.moveTo(22*u,0);ctx.lineTo(30*u,9*u);ctx.moveTo(-22*u,0);ctx.lineTo(-30*u,-9*u);ctx.moveTo(-22*u,0);ctx.lineTo(-30*u,9*u);ctx.stroke();ctx.restore();}
-  }
-  function sun(){
-    ctx.fillStyle='#ffd54d';ctx.strokeStyle=stroke;ctx.lineWidth=5*u;
-    ctx.beginPath();ctx.arc(0,0,25*u,0,Math.PI*2);ctx.fill();ctx.stroke();
-    for(let i=0;i<8;i++){ctx.save();ctx.rotate(i*Math.PI/4);ctx.beginPath();ctx.moveTo(0,-34*u);ctx.lineTo(0,-49*u);ctx.strokeStyle='#ffd54d';ctx.lineWidth=6*u;ctx.stroke();ctx.restore();}
-  }
-  function candy(){
-    ctx.fillStyle='#ff8ac1';ctx.strokeStyle=stroke;ctx.lineWidth=5*u;
-    ctx.beginPath();ctx.roundRect(-24*u,-18*u,48*u,36*u,12*u);ctx.fill();ctx.stroke();
-    ctx.beginPath();ctx.moveTo(-24*u,-12*u);ctx.lineTo(-46*u,-28*u);ctx.lineTo(-43*u,0);ctx.lineTo(-46*u,28*u);ctx.closePath();ctx.fill();ctx.stroke();
-    ctx.beginPath();ctx.moveTo(24*u,-12*u);ctx.lineTo(46*u,-28*u);ctx.lineTo(43*u,0);ctx.lineTo(46*u,28*u);ctx.closePath();ctx.fill();ctx.stroke();
-  }
-  function berry(){
-    ctx.fillStyle='#ff657b';ctx.strokeStyle=stroke;ctx.lineWidth=5*u;
-    ctx.beginPath();ctx.moveTo(0,34*u);ctx.bezierCurveTo(-35*u,8*u,-30*u,-27*u,0,-30*u);ctx.bezierCurveTo(30*u,-27*u,35*u,8*u,0,34*u);ctx.fill();ctx.stroke();
-    ctx.fillStyle='#65be72';ctx.beginPath();ctx.moveTo(-18*u,-26*u);ctx.lineTo(0,-42*u);ctx.lineTo(18*u,-26*u);ctx.closePath();ctx.fill();
-  }
-  function cupcake(){
-    ctx.fillStyle='#f5c07c';ctx.strokeStyle=stroke;ctx.lineWidth=5*u;
-    ctx.beginPath();ctx.moveTo(-28*u,4*u);ctx.lineTo(28*u,4*u);ctx.lineTo(20*u,38*u);ctx.lineTo(-20*u,38*u);ctx.closePath();ctx.fill();ctx.stroke();
-    ctx.fillStyle='#ff9fca';ctx.beginPath();ctx.arc(-17*u,0,18*u,Math.PI,0);ctx.arc(0,-10*u,22*u,Math.PI,0);ctx.arc(18*u,0,18*u,Math.PI,0);ctx.lineTo(30*u,6*u);ctx.lineTo(-30*u,6*u);ctx.closePath();ctx.fill();ctx.stroke();
-  }
-  function mushroom(){
-    ctx.fillStyle='#f08b72';ctx.strokeStyle=stroke;ctx.lineWidth=5*u;
-    ctx.beginPath();ctx.arc(0,-8*u,30*u,Math.PI,0);ctx.lineTo(30*u,0);ctx.lineTo(-30*u,0);ctx.closePath();ctx.fill();ctx.stroke();
-    ctx.fillStyle='#fff7de';ctx.beginPath();ctx.roundRect(-10*u,-2*u,20*u,38*u,8*u);ctx.fill();ctx.stroke();
-  }
-  const pick = {
-    '💗':()=>heart('#ff5aa5'),'💖':()=>heart('#ff5aa5'),'💕':()=>heart('#ff82ba'),'🩷':()=>heart('#ff9ac8'),
-    '💞':()=>heart('#ff8ab8'),'💓':()=>heart('#ff6fae'),'💘':()=>heart('#ff7cac'),'💝':()=>heart('#ff78ad'),
-    '⭐':()=>star(),'🌟':()=>star('#ffe76a'),'✨':sparkle,'💫':sparkle,'🌠':sparkle,
-    '🎀':bow,'🌸':flower,'🌷':flower,'🌼':flower,'💐':flower,'🌺':flower,'🌹':flower,'🪻':flower,'🌻':()=>flower(),
-    '☁️':cloud,'🌈':rainbow,'👑':crown,'💎':()=>star('#75d9ef'),
-    '🫧':()=>{ctx.beginPath();ctx.arc(0,0,32*u,0,Math.PI*2);ctx.fillStyle='rgba(255,255,255,.28)';ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=5*u;ctx.stroke()},
-    '🍬':candy,'🍭':candy,'🍪':candy,'🍩':candy,'🍫':candy,
-    '🍓':berry,'🍒':berry,'🍎':berry,'🍉':berry,'🍋':berry,'🍍':berry,
-    '🧁':cupcake,'🍰':cupcake,'🍦':cupcake,'🍧':cupcake,'🍡':candy,'🍹':cupcake,
-    '🍁':()=>leaf('#e87a45'),'🍂':()=>leaf('#d89a45'),'🌿':()=>leaf('#73bd78'),'🌱':()=>leaf('#86cf8c'),
-    '🍄':mushroom,'🌰':mushroom,'🍠':mushroom,'☕':cupcake,'🧶':bow,
-    '❄️':snow,'⛄':snow,'☃️':snow,'🎄':()=>star('#6fb878'),'🎁':bow,'🧣':bow,'🧤':bow,
-    '☀️':sun,'🌙':()=>star('#c5b7ff'),'🌊':rainbow,'🐚':()=>star('#f8c9d9'),'🌴':()=>leaf('#65b87b'),'🐬':()=>star('#7bd8ec'),
-    '🐝':()=>star('#ffd75d'),'🦋':bow,'🐣':()=>heart('#ffe982'),'🐰':()=>heart('#fff'),'🦄':()=>star('#dca8ff')
-  };
-  (pick[e]||(()=>heart('#ff7eb6')))();
+  ctx.save();
+  ctx.globalAlpha=alpha;
+  ctx.translate(x,y);
+  ctx.rotate(rot);
+  ctx.textAlign='center';
+  ctx.textBaseline='middle';
+  ctx.shadowColor='rgba(255,255,255,.42)';
+  ctx.shadowBlur=Math.max(3,size*.04);
+  ctx.font=`${Math.round(size)}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`;
+  ctx.fillText(e,0,0);
   ctx.restore();
 }
 function emoji(e,x,y,size,rot=0,a=1){ stickerSymbol(e,x,y,size,rot,a); }
@@ -654,19 +569,19 @@ function drawBg(){
 
 
 function drawEmojiLayer(front=false){
-  decoSeed=1000+state.deco*7919+state.bg*313+(front?71:0);
+  if(!front) return;
+
+  decoSeed=1000+state.deco*7919+state.bg*313+state.layout*97+state.density*53;
   const set=emojiSets[state.deco%emojiSets.length];
   const recipe=decorRecipe();
-
   const hasAvatar=!!state.charImg;
   const textInfo=getTextLayoutInfo();
-  const centeredText=(state.layout%5)===2;
   const avatarSide=(state.x<0)?'left':'right';
   const placed=state._decoPlaced || (state._decoPlaced=[]);
 
   const cx=W*.5+state.x, h=790*state.scale, top=H*.5+195+state.y-h;
-  const faceCy=top+h*.25;
-  const faceRx=190*state.scale, faceRy=210*state.scale;
+  const faceCy=top+h*.27;
+  const faceRx=200*state.scale, faceRy=220*state.scale;
 
   function circleHitsRect(x,y,r,rect,pad=0){
     if(!rect) return false;
@@ -677,131 +592,117 @@ function drawEmojiLayer(front=false){
   }
   function insideFace(x,y,size){
     if(!hasAvatar) return false;
-    const pad=size*.28;
+    const pad=size*.34;
     const dx=(x-cx)/(faceRx+pad), dy=(y-faceCy)/(faceRy+pad);
     return dx*dx+dy*dy<1;
   }
-  function insideText(x,y,size,kind){
-    const r=size*.48;
-    const pad = kind==='small' ? 18 : 26;
-    return circleHitsRect(x,y,r,textInfo.titleBox,pad) ||
-           circleHitsRect(x,y,r,textInfo.subBox,pad);
+  function insideText(x,y,size){
+    const r=size*.46;
+    return circleHitsRect(x,y,r,textInfo.titleBox,26) || circleHitsRect(x,y,r,textInfo.subBox,24);
   }
   function clashes(x,y,size,kind){
     for(const p of placed){
-      const cornerInvolved=(kind==='corner'||p.kind==='corner');
-      const factor=cornerInvolved?0.60:(kind==='medium'||p.kind==='medium'?0.46:0.36);
-      const gap=cornerInvolved?20:8;
+      const factor = kind==='corner' || p.kind==='corner' ? 0.58 : kind==='medium' || p.kind==='medium' ? 0.48 : 0.42;
+      const gap = kind==='corner' || p.kind==='corner' ? 14 : 8;
       if(Math.hypot(x-p.x,y-p.y) < (p.size+size)*factor + gap) return true;
     }
     return false;
   }
   function pointFits(x,y,size,kind){
-    const m=size*.53+6;
+    const m=size*.45+8;
     if(x<m||x>W-m||y<m||y>H-m) return false;
     if(kind!=='corner' && insideFace(x,y,size)) return false;
-    if(insideText(x,y,size,kind)) return false;
+    if(insideText(x,y,size)) return false;
     if(clashes(x,y,size,kind)) return false;
     return true;
   }
-  function stamp(sym,x,y,size,kind,alpha=.96){
+  function stamp(sym,x,y,size,kind,alpha=.98){
     placed.push({x,y,size,kind});
-    emoji(sym,x,y,size,(seeded()-.5)*(kind==='small'?0.16:0.08),alpha);
+    emoji(sym,x,y,size,(seeded()-.5)*(kind==='small'?0.15:0.08),alpha);
   }
 
   const corners={
-    tl:{x:150,y:145},
-    tr:{x:W-150,y:145},
-    bl:{x:150,y:H-145},
-    br:{x:W-150,y:H-145}
+    tl:{x:120,y:125},
+    tr:{x:W-120,y:125},
+    bl:{x:120,y:H-125},
+    br:{x:W-120,y:H-125}
   };
   const mainCorners = avatarSide==='left' ? ['tl','br'] : ['tr','bl'];
   const subCorners  = avatarSide==='left' ? ['tr','bl'] : ['tl','br'];
+  const cornerSizeMain = 154 + (state.density-1)*3;
+  const cornerSizeSub  = 144 + (state.density-1)*2;
 
   function cornerSymbol(corner){
-    if(mainCorners.includes(corner)){
-      return corner===mainCorners[0] ? recipe.mainPair[0] : (recipe.mainPair[1]||recipe.mainPair[0]);
-    }
+    if(mainCorners.includes(corner)) return corner===mainCorners[0] ? recipe.mainPair[0] : (recipe.mainPair[1]||recipe.mainPair[0]);
     return corner===subCorners[0] ? recipe.subPair[0] : (recipe.subPair[1]||recipe.subPair[0]);
   }
-
   function placeCorner(corner,role){
     const a=corners[corner];
-    const size=(role==='main'?222:194)+seeded()*(role==='main'?20:16);
-    stamp(cornerSymbol(corner),a.x,a.y,size,'corner',.98);
+    stamp(cornerSymbol(corner),a.x,a.y,role==='main'?cornerSizeMain:cornerSizeSub,'corner',.99);
   }
 
-  function zone(x1,x2,y1,y2){
-    return {x1,y1,x2,y2};
-  }
+  placeCorner(mainCorners[0],'main');
+  placeCorner(mainCorners[1],'main');
+  placeCorner(subCorners[0],'sub');
+  placeCorner(subCorners[1],'sub');
 
-  // Eight balanced zones around the composition.
-  const zones=[
-    zone(90, W*.30, 95, H*.34),       // upper-left
-    zone(W*.70, W-90, 95, H*.34),     // upper-right
-    zone(90, W*.30, H*.35, H*.70),    // middle-left
-    zone(W*.70, W-90, H*.35, H*.70),  // middle-right
-    zone(150, W*.48, 85, H*.24),      // top-left band
-    zone(W*.52, W-150, 85, H*.24),    // top-right band
-    zone(150, W*.48, H*.72, H-85),    // bottom-left band
-    zone(W*.52, W-150, H*.72, H-85)   // bottom-right band
-  ];
-
-  const underTextZone=zone(
-    Math.max(110,textInfo.subBox.x1-120),
-    Math.min(W-110,textInfo.subBox.x2+120),
-    Math.min(H*.74,textInfo.subBox.y2+44),
-    Math.min(H-92,textInfo.subBox.y2+150)
-  );
-
-  function samplePoint(z){
-    return {
-      x:z.x1+seeded()*(z.x2-z.x1),
-      y:z.y1+seeded()*(z.y2-z.y1)
-    };
-  }
-
-  function placeInZone(z,kind,count,minSize,maxSize,pool){
-    let done=0;
-    for(let n=0;n<count;n++){
-      let placedOne=false;
-      for(let t=0;t<120;t++){
-        const p=samplePoint(z);
-        const size=minSize+seeded()*(maxSize-minSize);
-        if(!pointFits(p.x,p.y,size,kind)) continue;
-        const sym=pool[Math.floor(seeded()*pool.length)];
-        stamp(sym,p.x,p.y,size,kind,kind==='small'?.90:.94);
-        placedOne=true;
-        done++;
-        break;
+  function makeGrid(x1,x2,y1,y2,cols,rows,jx=14,jy=14){
+    const pts=[];
+    if(cols<=1) cols=1; if(rows<=1) rows=1;
+    for(let iy=0; iy<rows; iy++){
+      const y = rows===1 ? (y1+y2)/2 : y1 + (y2-y1)*iy/(rows-1);
+      for(let ix=0; ix<cols; ix++){
+        const x = cols===1 ? (x1+x2)/2 : x1 + (x2-x1)*ix/(cols-1);
+        pts.push({x:x+(seeded()-.5)*jx,y:y+(seeded()-.5)*jy});
       }
-      if(!placedOne) break;
+    }
+    return pts;
+  }
+  function shuffle(arr){
+    const out=arr.slice();
+    for(let i=out.length-1;i>0;i--){
+      const j=Math.floor(seeded()*(i+1));
+      [out[i],out[j]]=[out[j],out[i]];
+    }
+    return out;
+  }
+  function tryPlaceFromPoints(points,kind,desired,sizeMin,sizeMax,pool){
+    let done=0;
+    const order=shuffle(points);
+    for(const p of order){
+      if(done>=desired) break;
+      const size=sizeMin+seeded()*(sizeMax-sizeMin);
+      if(!pointFits(p.x,p.y,size,kind)) continue;
+      const sym=pool[Math.floor(seeded()*pool.length)];
+      stamp(sym,p.x,p.y,size,kind,kind==='small'?.94:.97);
+      done++;
     }
     return done;
   }
 
-  if(!front){
-    placeCorner(mainCorners[0],'main');
-    placeCorner(mainCorners[1],'main');
-    placeCorner(subCorners[0],'sub');
-    placeCorner(subCorners[1],'sub');
+  const mediumPool=[...recipe.fill,...set,...recipe.fill];
+  const smallPool=[...recipe.fill,...set,...recipe.fill,...recipe.fill];
 
-    const pool=[...recipe.fill,...set,...recipe.fill];
-    // A few medium pieces in EVERY zone. This is the key fix.
-    const perZone = centeredText ? 3 : 2;
-    zones.forEach(z=>placeInZone(z,'medium',perZone,88,118,pool));
-    // Additional medium pieces below the smaller message.
-    placeInZone(underTextZone,'medium',3,88,112,pool);
-  }else{
-    const pool=[...recipe.fill,...set,...recipe.fill,...recipe.fill];
-    // Small pieces are also quota-based, preventing one-side clustering.
-    const perZone = centeredText ? 5 : 4;
-    zones.forEach(z=>placeInZone(z,'small',perZone,54,76,pool));
-    placeInZone(underTextZone,'small',6,52,72,pool);
-  }
+  const topPts = makeGrid(220,W-220,102,160,8,2,24,18);
+  const bottomPts = makeGrid(220,W-220,H-150,H-98,8,2,24,18);
+  const leftPts = makeGrid(98,318,196,H-178,3,5,18,18);
+  const rightPts = makeGrid(W-318,W-98,196,H-178,3,5,18,18);
+  const centerPts = makeGrid(235,W-235,208,H-190,5,4,18,18);
+  const underTextPts = makeGrid(Math.max(240,textInfo.subBox.x1-40), Math.min(W-180,textInfo.subBox.x2+40), Math.min(H-150,textInfo.subBox.y2+38), Math.min(H-96,textInfo.subBox.y2+105), 4, 2, 14, 12);
+
+  const densityBoost=Math.max(0,state.density-3);
+  const mediumPlan = [
+    [topPts,4+densityBoost],[bottomPts,4+densityBoost],[leftPts,3+densityBoost],[rightPts,3+densityBoost],[underTextPts,3],[centerPts,4+densityBoost]
+  ];
+  mediumPlan.forEach(([pts,count])=>tryPlaceFromPoints(pts,'medium',count,82,104,mediumPool));
+
+  const smallPlan = [
+    [topPts,6+densityBoost],[bottomPts,6+densityBoost],[leftPts,5+densityBoost],[rightPts,5+densityBoost],[underTextPts,5+densityBoost],[centerPts,8+densityBoost]
+  ];
+  smallPlan.forEach(([pts,count])=>tryPlaceFromPoints(pts,'small',count,46,68,smallPool));
 }
 
-function drawBackDeco(){drawEmojiLayer(false)}
+function drawBackDeco(){}
 function drawFrontDeco(){drawEmojiLayer(true)}
 
 function rebuildChar(){
