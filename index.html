@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おはよう画像メーカー v3.8</title>
+<title>おはよう画像メーカー v3.9</title>
 <style>
 :root{
   --ink:#352f44; --muted:#81798e; --line:#ece7f4; --panel:#fff;
@@ -48,7 +48,7 @@ input[type=range]{width:100%}
 </head>
 <body>
 <div class="wrap">
-<h1>🌞 おはよう画像メーカー v3.8</h1>
+<h1>🌞 おはよう画像メーカー v3.9</h1>
 <div class="lead">
   透過の手直し機能はそのまま。今回はデザインをさらに盛りました。
   <b>大きい絵文字＋小さい絵文字＋太めのかわいいフレーム</b>をランダム配置。
@@ -114,7 +114,7 @@ input[type=range]{width:100%}
 
 <div class="card">
   <div class="section-title">④ デザインを作る</div>
-  <div class="tip"><strong>センス重視モード</strong>：大きい飾りは主役として少数、小さい飾りは余白埋め。文字・顔まわりは抜いて、全体の色数も絞ってまとまりを出します。</div>
+  <div class="tip"><strong>センス重視モード</strong>：大きい飾りは主役として少数、小さい飾りは余白埋め。文字・顔まわりは抜いて、全体の色数も絞ってまとまりを出します。下の文章は、改行が不自然になりにくいよう自動でバランス調整します。</div>
   <div class="tip">飾りは<strong>空白を埋めるようにバラけて配置</strong>。顔が来る真ん中付近には置かず、まわりは重なってもOK。文字は飾りより前に表示されます。</div>
   <div class="tip">重なり順：<strong>背景 → フレーム → おはようメッセージ → 女の子 → 絵文字（飾り）</strong></div>
   <label class="field" style="margin-bottom:10px">
@@ -170,7 +170,7 @@ input[type=range]{width:100%}
   </div>
 </div>
 
-<div class="footer">おはよう画像メーカー v3.8</div>
+<div class="footer">おはよう画像メーカー v3.9</div>
 </div>
 
 <script>
@@ -583,33 +583,87 @@ function fitText(text,maxWidth,start,min=28){
   while(size>min && measure(text,size)>maxWidth) size-=2;
   return size;
 }
-function balancedLines(text,maxWidth,size,maxLines=3){
-  const explicit=text.split(/\n/).map(v=>v.trim()).filter(Boolean);
-  let result=[];
-  const punct='！!？?♡♥〜～。、,.';
-  for(const part of explicit){
-    if(measure(part,size)<=maxWidth){result.push(part);continue;}
-    let current='';
-    for(const ch of part){
-      const test=current+ch;
-      if(measure(test,size)>maxWidth && current){
-        // Never leave punctuation alone at the beginning of a new line.
-        if(punct.includes(ch) && result.length){
-          result[result.length-1]+=ch;
-          current='';
-        }else{
-          result.push(current);
-          current=ch;
-        }
-      }else current=test;
+function isBadLineStart(ch){return '！!？?♡♥〜～。、,.）」』】)]｝〕〉》'.includes(ch)}
+function isBadLineEnd(ch){return '（「『【([｛〔〈《'.includes(ch)}
+function scoreLines(lines,size,maxWidth){
+  const widths=lines.map(v=>measure(v,size));
+  const longest=Math.max(...widths), shortest=Math.min(...widths);
+  let score=(longest-shortest)*1.25;
+  const avg=widths.reduce((a,b)=>a+b,0)/widths.length;
+  score+=Math.abs(longest-avg)*.5;
+  if(lines.length>=2){
+    const last=widths[widths.length-1], prev=widths[widths.length-2];
+    if(last<prev*.55) score+=220;
+    if(last<maxWidth*.28) score+=260;
+  }
+  if(lines.some(v=>v.length<=1)) score+=260;
+  if(lines.some(v=>isBadLineEnd(v[v.length-1]||''))) score+=180;
+  if(lines.slice(1).some(v=>isBadLineStart(v[0]||''))) score+=220;
+  return score;
+}
+function splitBalancedOne(part,maxWidth,size,maxLines=3){
+  if(!part) return [''];
+  if(measure(part,size)<=maxWidth) return [part];
+  const chars=[...part];
+  let best=null;
+  function accept(lines){
+    if(lines.some(v=>!v)) return;
+    if(lines.some(v=>measure(v,size)>maxWidth)) return;
+    const sc=scoreLines(lines,size,maxWidth);
+    if(!best || sc<best.score) best={lines,score:sc};
+  }
+  // 2 lines
+  if(maxLines>=2){
+    for(let i=1;i<chars.length;i++){
+      accept([chars.slice(0,i).join(''), chars.slice(i).join('')]);
     }
-    if(current)result.push(current);
   }
-  // If the final line is just punctuation or one character, pull it up.
-  if(result.length>1 && result[result.length-1].length<=1){
-    result[result.length-2]+=result.pop();
+  // 3 lines
+  if(maxLines>=3){
+    for(let i=1;i<chars.length-1;i++){
+      for(let j=i+1;j<chars.length;j++){
+        accept([chars.slice(0,i).join(''), chars.slice(i,j).join(''), chars.slice(j).join('')]);
+      }
+    }
   }
+  if(best) return best.lines;
+  // fallback greedy
+  let result=[], current='';
+  const punct='！!？?♡♥〜～。、,.';
+  for(const ch of chars){
+    const test=current+ch;
+    if(measure(test,size)>maxWidth && current){
+      if(punct.includes(ch) && result.length){
+        result[result.length-1]+=ch;
+        current='';
+      }else{
+        result.push(current);
+        current=ch;
+      }
+    }else current=test;
+  }
+  if(current) result.push(current);
+  if(result.length>1 && result[result.length-1].length<=1) result[result.length-2]+=result.pop();
   return result.slice(0,maxLines);
+}
+function fitBalancedText(text,maxWidth,start,min=28,maxLines=3){
+  const parts=(text||'').split(/\n/).map(v=>v.trim()).filter(Boolean);
+  for(let size=start; size>=min; size-=2){
+    let lines=[];
+    let ok=true;
+    for(const part of parts.length?parts:['']){
+      const sub=splitBalancedOne(part,maxWidth,size,maxLines);
+      lines.push(...sub);
+      if(lines.length>maxLines){ ok=false; break; }
+    }
+    if(ok) return {size,lines};
+  }
+  const size=min;
+  let lines=[];
+  for(const part of parts.length?parts:['']){
+    lines.push(...splitBalancedOne(part,maxWidth,size,maxLines));
+  }
+  return {size,lines:lines.slice(0,maxLines)};
 }
 function outlined(text,x,y,size,fill,stroke,glow=null){
  ctx.save();
@@ -645,29 +699,29 @@ function drawText(){
  if(L===0){
    const ts=fitText(title,zone.w,134,84);
    outlined(title,zone.cx,242,ts,titleColor);
-   let ss=64,lines=balancedLines(sub,zone.w,ss,3),gap=ss*1.08,start=420-(lines.length-1)*gap/2;
-   lines.forEach((v,i)=>outlined(v,zone.cx,start+i*gap,ss,subColor));
+   const fit=fitBalancedText(sub,zone.w,64,48,3), gap=fit.size*1.06, startY=420-(fit.lines.length-1)*gap/2;
+   fit.lines.forEach((v,i)=>outlined(v,zone.cx,startY+i*gap,fit.size,subColor));
  }else if(L===1){
    const ts=fitText(title,zone.w,126,82);
    outlined(title,zone.cx,205,ts,titleColor);
-   let ss=60,lines=balancedLines(sub,zone.w,ss,3),gap=ss*1.06,start=400-(lines.length-1)*gap/2;
-   lines.forEach((v,i)=>outlined(v,zone.cx,start+i*gap,ss,subColor));
+   const fit=fitBalancedText(sub,zone.w,60,46,3), gap=fit.size*1.05, startY=398-(fit.lines.length-1)*gap/2;
+   fit.lines.forEach((v,i)=>outlined(v,zone.cx,startY+i*gap,fit.size,subColor));
  }else if(L===2){
    const ts=fitText(title,940,140,92);
    outlined(title,W/2,118,ts,titleColor);
-   let ss=64,lines=balancedLines(sub,920,ss,2),gap=ss*1.02,start=548-(lines.length-1)*gap/2;
-   lines.forEach((v,i)=>outlined(v,W/2,start+i*gap,ss,subColor));
+   const fit=fitBalancedText(sub,920,62,48,2), gap=fit.size*1.02, startY=548-(fit.lines.length-1)*gap/2;
+   fit.lines.forEach((v,i)=>outlined(v,W/2,startY+i*gap,fit.size,subColor));
  }else if(L===3){
    const ts=fitText(title,zone.w,118,80);
    outlined(title,zone.cx,175,ts,titleColor);
-   let ss=58,lines=balancedLines(sub,zone.w,ss,3);
-   lines.forEach((v,i)=>outlined(v,zone.cx,345+i*65,ss,subColor));
+   const fit=fitBalancedText(sub,zone.w,58,44,3), gap=fit.size*1.03, startY=342-(fit.lines.length-1)*gap/2;
+   fit.lines.forEach((v,i)=>outlined(v,zone.cx,startY+i*gap,fit.size,subColor));
  }else{
    rr(zone.cx-zone.w/2,135,zone.w,370,38,'rgba(255,255,255,.18)');
    const ts=fitText(title,zone.w-30,116,78);
    outlined(title,zone.cx,230,ts,titleColor);
-   let ss=54,lines=balancedLines(sub,zone.w-40,ss,3);
-   lines.forEach((v,i)=>outlined(v,zone.cx,370+i*62,ss,subColor));
+   const fit=fitBalancedText(sub,zone.w-40,54,42,3), gap=fit.size*1.04, startY=370-(fit.lines.length-1)*gap/2;
+   fit.lines.forEach((v,i)=>outlined(v,zone.cx,startY+i*gap,fit.size,subColor));
  }
 }
 function draw(){
