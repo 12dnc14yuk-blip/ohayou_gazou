@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おはよう画像メーカー v6.9</title>
+<title>おはよう画像メーカー v7.0</title>
 <style>
 :root{
   --ink:#352f44; --muted:#81798e; --line:#ece7f4; --panel:#fff;
@@ -48,11 +48,11 @@ input[type=range]{width:100%}
 </head>
 <body>
 <div class="wrap">
-<h1>🌞 おはよう画像メーカー v6.9</h1>
+<h1>🌞 おはよう画像メーカー v7.0</h1>
 <div class="lead">
   透過の手直し機能はそのまま。今回はデザインをさらに盛りました。
   <b>大きい絵文字＋小さい絵文字＋太めのかわいいフレーム</b>をランダム配置。
-  「全部ランダム」で毎朝ガチャできます。今回は<strong>輪郭アシスト付きの透過手直し</strong>はそのままに、<strong>四隅の絵文字をさらに大きめ</strong>にし、<strong>目・鼻・口だけを避けて</strong>顔まわりにも絵文字を置きやすく調整しました。女の子はランダムで勝手に左右反転しません。
+  「全部ランダム」で毎朝ガチャできます。今回は<strong>輪郭アシスト付きの透過手直し</strong>はそのままに、<strong>顔全体は完全保護</strong>へ戻しました。絵文字は顔の外側・髪・肩・服まわりには置けますが、<strong>顔の中には入らない</strong>ように調整しています。女の子はランダムで勝手に左右反転しません。
 </div>
 
 <div class="card">
@@ -169,7 +169,7 @@ input[type=range]{width:100%}
   </div>
 </div>
 
-<div class="footer">おはよう画像メーカー v6.9</div>
+<div class="footer">おはよう画像メーカー v7.0</div>
 </div>
 
 <script>
@@ -723,13 +723,10 @@ function drawEmojiLayer(front=false){
   function insideProtectedFace(x,y,size){
     if(!hasAvatar) return false;
     const r=size*.34;
-    const extra=Math.max(6,size*0.10);
-    return (
-      circleHitsCircle(x,y,r,leftEye.x,leftEye.y,leftEye.r,extra) ||
-      circleHitsCircle(x,y,r,rightEye.x,rightEye.y,rightEye.r,extra) ||
-      circleHitsCircle(x,y,r,nose.x,nose.y,nose.r,extra) ||
-      circleHitsCircle(x,y,r,mouth.x,mouth.y,mouth.r,extra)
-    );
+    const pad=Math.max(18,size*.12);
+    const dx=(x-cx)/(faceRx + r + pad);
+    const dy=(y-faceCy)/(faceRy + r + pad);
+    return dx*dx + dy*dy < 1;
   }
   function insideText(x,y,size){
     const r=size*.46;
@@ -824,26 +821,25 @@ function drawEmojiLayer(front=false){
   const rightPts = makeGrid(W-318,W-98,196,H-178,3,5,18,18);
   const centerPts = makeGrid(235,W-235,208,H-190,5,4,18,18);
   const faceAroundPts = [
-    {x:cx-faceRx*0.52,y:faceCy-faceRy*0.26},
-    {x:cx+faceRx*0.52,y:faceCy-faceRy*0.26},
-    {x:cx-faceRx*0.64,y:faceCy+faceRy*0.08},
-    {x:cx+faceRx*0.64,y:faceCy+faceRy*0.08},
-    {x:cx-faceRx*0.22,y:faceCy+faceRy*0.58},
-    {x:cx+faceRx*0.22,y:faceCy+faceRy*0.58},
-    {x:cx-faceRx*0.52,y:faceCy+faceRy*0.62},
-    {x:cx+faceRx*0.52,y:faceCy+faceRy*0.62},
-    {x:cx,y:faceCy-faceRy*0.52}
+    {x:cx-faceRx*1.34,y:faceCy-faceRy*0.42},
+    {x:cx+faceRx*1.34,y:faceCy-faceRy*0.42},
+    {x:cx-faceRx*1.42,y:faceCy+faceRy*0.08},
+    {x:cx+faceRx*1.42,y:faceCy+faceRy*0.08},
+    {x:cx-faceRx*1.18,y:faceCy+faceRy*0.72},
+    {x:cx+faceRx*1.18,y:faceCy+faceRy*0.72},
+    {x:cx-faceRx*0.72,y:faceCy+faceRy*1.08},
+    {x:cx+faceRx*0.72,y:faceCy+faceRy*1.08}
   ];
   const underTextPts = makeGrid(Math.max(240,textInfo.subBox.x1-40), Math.min(W-180,textInfo.subBox.x2+40), Math.min(H-150,textInfo.subBox.y2+38), Math.min(H-96,textInfo.subBox.y2+105), 4, 2, 14, 12);
 
   const densityBoost=Math.max(0,state.density-3);
   const mediumPlan = [
-    [topPts,4+densityBoost],[bottomPts,4+densityBoost],[leftPts,3+densityBoost],[rightPts,3+densityBoost],[underTextPts,3],[centerPts,4+densityBoost],[faceAroundPts,4+densityBoost]
+    [topPts,4+densityBoost],[bottomPts,4+densityBoost],[leftPts,3+densityBoost],[rightPts,3+densityBoost],[underTextPts,3],[centerPts,4+densityBoost],[faceAroundPts,3+densityBoost]
   ];
   mediumPlan.forEach(([pts,count])=>tryPlaceFromPoints(pts,'medium',count,92,114,mediumPool));
 
   const smallPlan = [
-    [topPts,6+densityBoost],[bottomPts,6+densityBoost],[leftPts,5+densityBoost],[rightPts,5+densityBoost],[underTextPts,5+densityBoost],[centerPts,8+densityBoost],[faceAroundPts,6+densityBoost]
+    [topPts,6+densityBoost],[bottomPts,6+densityBoost],[leftPts,5+densityBoost],[rightPts,5+densityBoost],[underTextPts,5+densityBoost],[centerPts,8+densityBoost],[faceAroundPts,4+densityBoost]
   ];
   smallPlan.forEach(([pts,count])=>tryPlaceFromPoints(pts,'small',count,60,82,smallPool));
 }
