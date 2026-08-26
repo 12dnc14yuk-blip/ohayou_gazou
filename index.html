@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おはよう画像メーカー v6.6</title>
+<title>おはよう画像メーカー v6.7</title>
 <style>
 :root{
   --ink:#352f44; --muted:#81798e; --line:#ece7f4; --panel:#fff;
@@ -48,11 +48,11 @@ input[type=range]{width:100%}
 </head>
 <body>
 <div class="wrap">
-<h1>🌞 おはよう画像メーカー v6.6</h1>
+<h1>🌞 おはよう画像メーカー v6.7</h1>
 <div class="lead">
   透過の手直し機能はそのまま。今回はデザインをさらに盛りました。
   <b>大きい絵文字＋小さい絵文字＋太めのかわいいフレーム</b>をランダム配置。
-  「全部ランダム」で毎朝ガチャできます。今回は<strong>輪郭アシスト付きの透過手直し</strong>はそのままに、<strong>文字を最前面</strong>に固定しつつ、<strong>iPhoneの絵文字っぽい見た目</strong>に寄せた飾りへ変更。<strong>四隅の大きい絵文字</strong>を対角で同系統に置き、さらに<strong>上下左右・文字下・空白部分</strong>へ<strong>四隅より少し小さめ＋小さめ</strong>の2段階絵文字を散らして、<strong>顔周辺と文字には重ならないように</strong>再調整しました。
+  「全部ランダム」で毎朝ガチャできます。今回は<strong>輪郭アシスト付きの透過手直し</strong>はそのままに、<strong>文字を最前面</strong>に固定。iPhone SafariのCanvasでカラー絵文字が薄く崩れる問題を避けるため、<strong>Apple絵文字風のカラーステッカー描画</strong>へ戻しました。四隅は大きく、空白には中・小を散らし、顔と文字を避けます。
 </div>
 
 <div class="card">
@@ -169,7 +169,7 @@ input[type=range]{width:100%}
   </div>
 </div>
 
-<div class="footer">おはよう画像メーカー v6.6</div>
+<div class="footer">おはよう画像メーカー v6.7</div>
 </div>
 
 <script>
@@ -512,12 +512,135 @@ function stickerSymbol(e,x,y,size,rot=0,alpha=1){
   ctx.globalAlpha=alpha;
   ctx.translate(x,y);
   ctx.rotate(rot);
-  ctx.textAlign='center';
-  ctx.textBaseline='middle';
-  ctx.shadowColor='rgba(255,255,255,.42)';
-  ctx.shadowBlur=Math.max(3,size*.04);
-  ctx.font=`${Math.round(size)}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`;
-  ctx.fillText(e,0,0);
+  const u=size/100;
+  ctx.lineJoin='round';
+  ctx.lineCap='round';
+
+  const white='#ffffff';
+  const pink='#ff5aa7';
+  const pink2='#ff8fc2';
+  const blue='#7ed8ef';
+  const yellow='#ffd95a';
+  const purple='#a68af2';
+  const mint='#7bd7c6';
+
+  function softStroke(w=7){ctx.strokeStyle=white;ctx.lineWidth=w*u}
+  function heart(fill=pink){
+    ctx.beginPath();
+    ctx.moveTo(0,34*u);
+    ctx.bezierCurveTo(-54*u,2*u,-42*u,-46*u,-12*u,-36*u);
+    ctx.bezierCurveTo(0,-31*u,8*u,-18*u,12*u,-36*u);
+    ctx.bezierCurveTo(42*u,-46*u,54*u,2*u,0,34*u);
+    ctx.fillStyle=fill;ctx.fill();softStroke(8);ctx.stroke();
+  }
+  function star(fill=yellow){
+    ctx.beginPath();
+    for(let i=0;i<10;i++){
+      const rr=(i%2?18:43)*u, a=-Math.PI/2+i*Math.PI/5;
+      const px=Math.cos(a)*rr, py=Math.sin(a)*rr;
+      i?ctx.lineTo(px,py):ctx.moveTo(px,py);
+    }
+    ctx.closePath();ctx.fillStyle=fill;ctx.fill();softStroke(7);ctx.stroke();
+  }
+  function sparkle(fill=yellow){
+    ctx.fillStyle=fill;softStroke(6);
+    ctx.beginPath();
+    ctx.moveTo(0,-44*u);ctx.quadraticCurveTo(8*u,-8*u,40*u,0);
+    ctx.quadraticCurveTo(8*u,8*u,0,44*u);
+    ctx.quadraticCurveTo(-8*u,8*u,-40*u,0);
+    ctx.quadraticCurveTo(-8*u,-8*u,0,-44*u);
+    ctx.closePath();ctx.fill();ctx.stroke();
+  }
+  function bow(fill=pink2){
+    ctx.fillStyle=fill;softStroke(7);
+    ctx.beginPath();ctx.moveTo(-8*u,0);
+    ctx.bezierCurveTo(-30*u,-40*u,-58*u,-35*u,-50*u,4*u);
+    ctx.bezierCurveTo(-44*u,32*u,-22*u,26*u,-8*u,8*u);ctx.fill();ctx.stroke();
+    ctx.beginPath();ctx.moveTo(8*u,0);
+    ctx.bezierCurveTo(30*u,-40*u,58*u,-35*u,50*u,4*u);
+    ctx.bezierCurveTo(44*u,32*u,22*u,26*u,8*u,8*u);ctx.fill();ctx.stroke();
+    ctx.beginPath();ctx.arc(0,3*u,13*u,0,Math.PI*2);ctx.fill();ctx.stroke();
+  }
+  function flower(){
+    for(let i=0;i<6;i++){
+      ctx.save();ctx.rotate(i*Math.PI/3);
+      ctx.beginPath();ctx.ellipse(0,-26*u,15*u,25*u,0,0,Math.PI*2);
+      ctx.fillStyle=i%2?pink2:'#ffc5dd';ctx.fill();softStroke(5);ctx.stroke();ctx.restore();
+    }
+    ctx.beginPath();ctx.arc(0,0,12*u,0,Math.PI*2);ctx.fillStyle=yellow;ctx.fill();softStroke(4);ctx.stroke();
+  }
+  function cloud(){
+    ctx.fillStyle=white;ctx.strokeStyle=blue;ctx.lineWidth=6*u;
+    ctx.beginPath();
+    ctx.arc(-22*u,4*u,22*u,Math.PI,0);
+    ctx.arc(0,-9*u,28*u,Math.PI,0);
+    ctx.arc(28*u,5*u,20*u,Math.PI,0);
+    ctx.lineTo(46*u,24*u);ctx.lineTo(-44*u,24*u);ctx.closePath();ctx.fill();ctx.stroke();
+  }
+  function rainbow(){
+    const cols=[pink2,yellow,mint,purple];
+    cols.forEach((c,i)=>{ctx.beginPath();ctx.arc(0,20*u,(44-i*9)*u,Math.PI,Math.PI*2);ctx.strokeStyle=c;ctx.lineWidth=9*u;ctx.stroke()});
+  }
+  function crown(){
+    ctx.fillStyle=yellow;softStroke(7);
+    ctx.beginPath();ctx.moveTo(-43*u,28*u);ctx.lineTo(-38*u,-25*u);ctx.lineTo(-14*u,2*u);
+    ctx.lineTo(0,-38*u);ctx.lineTo(17*u,2*u);ctx.lineTo(40*u,-25*u);ctx.lineTo(43*u,28*u);ctx.closePath();ctx.fill();ctx.stroke();
+  }
+  function bubble(){
+    const g=ctx.createRadialGradient(-10*u,-12*u,2*u,0,0,34*u);
+    g.addColorStop(0,'rgba(255,255,255,.95)');
+    g.addColorStop(.35,'rgba(180,235,255,.28)');
+    g.addColorStop(1,'rgba(255,200,240,.10)');
+    ctx.beginPath();ctx.arc(0,0,33*u,0,Math.PI*2);ctx.fillStyle=g;ctx.fill();ctx.strokeStyle='rgba(255,255,255,.95)';ctx.lineWidth=5*u;ctx.stroke();
+  }
+  function candy(){
+    ctx.fillStyle=pink2;softStroke(6);
+    ctx.beginPath();ctx.roundRect(-25*u,-18*u,50*u,36*u,12*u);ctx.fill();ctx.stroke();
+    ctx.beginPath();ctx.moveTo(-25*u,-11*u);ctx.lineTo(-47*u,-28*u);ctx.lineTo(-44*u,0);ctx.lineTo(-47*u,28*u);ctx.closePath();ctx.fill();ctx.stroke();
+    ctx.beginPath();ctx.moveTo(25*u,-11*u);ctx.lineTo(47*u,-28*u);ctx.lineTo(44*u,0);ctx.lineTo(47*u,28*u);ctx.closePath();ctx.fill();ctx.stroke();
+  }
+  function berry(){
+    ctx.fillStyle='#ff657d';softStroke(6);
+    ctx.beginPath();ctx.moveTo(0,34*u);
+    ctx.bezierCurveTo(-34*u,8*u,-30*u,-28*u,0,-30*u);
+    ctx.bezierCurveTo(30*u,-28*u,34*u,8*u,0,34*u);ctx.fill();ctx.stroke();
+    ctx.fillStyle='#6cc67a';ctx.beginPath();ctx.moveTo(-18*u,-26*u);ctx.lineTo(0,-42*u);ctx.lineTo(18*u,-26*u);ctx.closePath();ctx.fill();
+  }
+  function snow(){
+    ctx.strokeStyle=blue;ctx.lineWidth=6*u;
+    for(let i=0;i<3;i++){
+      ctx.save();ctx.rotate(i*Math.PI/3);
+      ctx.beginPath();ctx.moveTo(-38*u,0);ctx.lineTo(38*u,0);
+      ctx.moveTo(22*u,0);ctx.lineTo(30*u,-9*u);ctx.moveTo(22*u,0);ctx.lineTo(30*u,9*u);
+      ctx.moveTo(-22*u,0);ctx.lineTo(-30*u,-9*u);ctx.moveTo(-22*u,0);ctx.lineTo(-30*u,9*u);
+      ctx.stroke();ctx.restore();
+    }
+  }
+  function leaf(fill='#ef8a55'){
+    ctx.fillStyle=fill;softStroke(6);
+    ctx.beginPath();ctx.moveTo(0,-38*u);ctx.bezierCurveTo(34*u,-20*u,34*u,20*u,0,38*u);
+    ctx.bezierCurveTo(-34*u,20*u,-34*u,-20*u,0,-38*u);ctx.fill();ctx.stroke();
+  }
+
+  const draw={
+    '💗':()=>heart(pink),'💖':()=>heart('#ff4f95'),'💕':()=>heart('#ff7fb8'),'🩷':()=>heart('#ff9ac8'),
+    '💞':()=>heart('#ff7eb5'),'💓':()=>heart('#ff67aa'),'💘':()=>heart('#ff73ae'),'💝':()=>heart('#ff6aaa'),
+    '⭐':()=>star(yellow),'🌟':()=>star('#ffe66a'),'✨':()=>sparkle('#ffd45d'),'💫':()=>sparkle('#ffd45d'),'🌠':()=>sparkle('#ffd45d'),
+    '🎀':()=>bow(pink2),
+    '🌸':flower,'🌷':flower,'🌼':flower,'💐':flower,'🌺':flower,'🌹':flower,'🪻':flower,'🌻':flower,
+    '☁️':cloud,'🌈':rainbow,'👑':crown,'💎':()=>star(blue),'🫧':bubble,
+    '🍬':candy,'🍭':candy,'🍪':candy,'🍩':candy,'🍫':candy,
+    '🍓':berry,'🍒':berry,'🍎':berry,'🍉':berry,'🍋':berry,'🍍':berry,
+    '🍁':()=>leaf('#e77b46'),'🍂':()=>leaf('#d89a45'),'🌿':()=>leaf('#73bd78'),'🌱':()=>leaf('#86cf8c'),
+    '❄️':snow,'⛄':snow,'☃️':snow,'☀️':()=>star('#ffd95a'),'🌙':()=>star('#c9baff'),
+    '🐬':()=>star(blue),'🐝':()=>star(yellow),'🦋':()=>bow(purple),'🐣':()=>heart('#ffe987'),'🐰':()=>heart('#ffffff'),
+    '🦄':()=>star('#d9a8ff'),'🎁':()=>bow(pink2),'🧣':()=>bow(purple),'🧤':()=>bow(blue),
+    '🍄':()=>leaf('#f28a72'),'🌰':()=>leaf('#b07a4f'),'☕':()=>cloud(),'🧶':()=>bow('#d8a4ff'),
+    '🧁':()=>flower(),'🍰':()=>flower(),'🍦':()=>cloud(),'🍧':()=>cloud(),'🍡':candy,'🍹':()=>bubble(),
+    '🌊':rainbow,'🐚':()=>star('#f7c8d9'),'🌴':()=>leaf('#64bb78')
+  };
+
+  (draw[e]||(()=>heart(pink2)))();
   ctx.restore();
 }
 function emoji(e,x,y,size,rot=0,a=1){ stickerSymbol(e,x,y,size,rot,a); }
