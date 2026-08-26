@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おはよう画像メーカー v4.8</title>
+<title>おはよう画像メーカー v4.9</title>
 <style>
 :root{
   --ink:#352f44; --muted:#81798e; --line:#ece7f4; --panel:#fff;
@@ -48,11 +48,11 @@ input[type=range]{width:100%}
 </head>
 <body>
 <div class="wrap">
-<h1>🌞 おはよう画像メーカー v4.8</h1>
+<h1>🌞 おはよう画像メーカー v4.9</h1>
 <div class="lead">
   透過の手直し機能はそのまま。今回はデザインをさらに盛りました。
   <b>大きい絵文字＋小さい絵文字＋太めのかわいいフレーム</b>をランダム配置。
-  「全部ランダム」で毎朝ガチャできます。今回は「大きい飾りと小さい飾りが重なりやすい」問題を修正し、飾り同士の間隔を広げて、重なりにくく調整しました。
+  「全部ランダム」で毎朝ガチャできます。今回は<strong>輪郭アシスト付きの透過手直し</strong>と、<strong>メイン飾り＋サブ飾り＋空白埋め</strong>の配置ロジックに更新しました。
 </div>
 
 <div class="card">
@@ -88,8 +88,7 @@ input[type=range]{width:100%}
   <label class="slider"><span>ブラシ硬さ</span><input id="hardness" type="range" min="0" max="100" value="96"><output id="hardnesso">96</output></label>
   <div class="tip">
     白い服・羽・髪が消えたら「消えた部分を戻す」でなぞってください。
-    今回は<strong>硬めブラシが初期設定</strong>なので、前みたいに輪郭がふわっと溶けにくくなっています。
-    細部は「✏️ 細かく 10」がおすすめ。消しすぎ・戻しすぎは上の<strong>透過をひとつ戻す / 進む</strong>でやり直せます。<span class="pill">精密ブラシ v2</span>
+    今回は<strong>輪郭アシスト付き</strong>なので、線画や輪郭の近くをなぞると、そのアウトラインに寄せて戻し・消しをしやすくしています。細部は「✏️ 細かく 10」がおすすめ。消しすぎ・戻しすぎは上の<strong>透過をひとつ戻す / 進む</strong>でやり直せます。<span class="pill">精密ブラシ v3</span>
   </div>
 </div>
 
@@ -114,8 +113,8 @@ input[type=range]{width:100%}
 
 <div class="card">
   <div class="section-title">④ デザインを作る</div>
-  <div class="tip"><strong>センス重視モード</strong>：大きい飾りは2〜3個だけを端から大胆に見せ、中サイズでつなぎ、小さい飾りで余白を埋めます。今回は左右の散らばり差を減らし、アバター・「おはよう」文字・下の文章に飾りが乗りにくいようにしました。さらに大きい飾りと小さい飾りが重なりにくいよう、飾り同士の間隔も広げています。下の文章は自然な2行を優先して自動調整します。</div>
-  <div class="tip">飾りは<strong>空白を埋めるようにバラけて配置</strong>。アバターがある時だけ人物を避け、文字ブロックも避けます。未選択時は人物のための空白を作らず、四方へ均等に散らします。</div>
+  <div class="tip"><strong>センス重視モード</strong>：<strong>文字側下＋アバター側上</strong>に大きめメイン飾り、<strong>文字側上＋アバター側下</strong>に大きめサブ飾りを置き、残りの空白を中小飾りで埋めます。メイン飾りは同系色・近いモチーフで揃え、サブ飾りはそれを引き立てる役にします。下の文章は自然な2行を優先して自動調整します。</div>
+  <div class="tip">飾りは<strong>空白を埋めるようにバラけて配置</strong>。アバターがある時は顔・体・文字ブロックを避け、飾り同士も重なりにくくします。未選択時は四方へ均等に散らします。</div>
   <div class="tip">重なり順：<strong>背景 → フレーム → おはようメッセージ → 女の子 → 絵文字（飾り）</strong></div>
   <label class="field" style="margin-bottom:10px">
     <span>デザインの雰囲気</span>
@@ -170,7 +169,7 @@ input[type=range]{width:100%}
   </div>
 </div>
 
-<div class="footer">おはよう画像メーカー v4.8</div>
+<div class="footer">おはよう画像メーカー v4.9</div>
 </div>
 
 <script>
@@ -180,7 +179,8 @@ const state={
   sourceImg:null, cutoutImg:null, mask:null,
   charImg:null, x:-250,y:18,scale:1.72,flip:false,
   bg:0,deco:0,frame:0,frameWidth:4,layout:0,density:5,designMood:'pop',
-  mode:'move',drag:false,lastX:0,lastY:0,lastPaint:null,rebuildTimer:null
+  mode:'move',drag:false,lastX:0,lastY:0,lastPaint:null,rebuildTimer:null,
+  edgeGuide:null
 };
 
 const messages={
@@ -248,6 +248,61 @@ const textColors=[
  '#52b79a','#d65db1','#6f86e8','#e59a2f'
 ];
 const rand=n=>Math.floor(Math.random()*n),pick=a=>a[rand(a.length)],status=t=>document.getElementById('status').textContent=t;
+
+function buildEdgeGuide(img){
+  const off=document.createElement('canvas');
+  off.width=img.naturalWidth; off.height=img.naturalHeight;
+  const o=off.getContext('2d',{willReadFrequently:true});
+  o.drawImage(img,0,0,off.width,off.height);
+  const id=o.getImageData(0,0,off.width,off.height);
+  const data=id.data,w=off.width,h=off.height;
+  const luma=new Uint8ClampedArray(w*h);
+  for(let i=0,j=0;i<data.length;i+=4,j++) luma[j]=Math.round(data[i]*0.299+data[i+1]*0.587+data[i+2]*0.114);
+  const edge=new Uint8ClampedArray(w*h);
+  for(let y=1;y<h-1;y++) for(let x=1;x<w-1;x++){
+    const i=y*w+x;
+    const gx=
+      -luma[i-w-1]-2*luma[i-1]-luma[i+w-1]+
+       luma[i-w+1]+2*luma[i+1]+luma[i+w+1];
+    const gy=
+      -luma[i-w-1]-2*luma[i-w]-luma[i-w+1]+
+       luma[i+w-1]+2*luma[i+w]+luma[i+w+1];
+    edge[i]=Math.min(255,Math.hypot(gx,gy)*0.24);
+  }
+  state.edgeGuide={width:w,height:h,edge};
+}
+function normalizeMaskAlpha(id){
+  if(!id) return id;
+  const d=id.data, guide=state.edgeGuide?.edge;
+  for(let i=3,j=0;i<d.length;i+=4,j++){
+    let a=d[i];
+    if(a<10) { d[i]=0; continue; }
+    let n=Math.pow(a/255,0.68)*255;
+    if(guide){
+      const e=guide[j]||0;
+      if(e>70 && a>16) n=Math.max(n,190+Math.min(50,(e-70)*0.5));
+    }
+    if(n>236) n=255;
+    d[i]=Math.max(0,Math.min(255,Math.round(n)));
+  }
+  return id;
+}
+function snapToOutline(ix,iy,r){
+  const g=state.edgeGuide;
+  if(!g) return null;
+  const w=g.width,h=g.height,edge=g.edge;
+  const rr=Math.max(4,Math.min(18,Math.round(r*0.7)));
+  let best=null,bestScore=54;
+  for(let yy=Math.max(1,Math.floor(iy-rr)); yy<=Math.min(h-2,Math.ceil(iy+rr)); yy+=1){
+    for(let xx=Math.max(1,Math.floor(ix-rr)); xx<=Math.min(w-2,Math.ceil(ix+rr)); xx+=1){
+      const dist=Math.hypot(xx-ix,yy-iy);
+      if(dist>rr) continue;
+      const score=(edge[yy*w+xx]||0)-dist*6.8;
+      if(score>bestScore){ bestScore=score; best={x:xx,y:yy}; }
+    }
+  }
+  return best;
+}
 
 function rr(x,y,w,h,r,fill){ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fillStyle=fill;ctx.fill();}
 function circle(x,y,r,fill,a=1){ctx.save();ctx.globalAlpha=a;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fillStyle=fill;ctx.fill();ctx.restore();}
@@ -346,23 +401,69 @@ const themePools={
   ribbon:[25,26,27],
   sweets:[28,29,30]
 };
-const themeHeroPools={
-  mixed:['💗','⭐','🎀','🌸','🌈','👑','✨'],
-  spring:['🌸','🌷','💐','🦋'],
-  summer:['🌻','☀️','🌈','🌺','🍉'],
-  autumn:['🍁','🍂','🍄','🧡'],
-  winter:['❄️','🎄','🎀','💎'],
-  flower:['🌸','🌼','🌷','💐','🌺'],
-  heart:['💗','💖','🩷','💕'],
-  star:['⭐','🌟','✨','💫'],
-  ribbon:['🎀','💗','👑'],
-  sweets:['🧁','🍓','🍬','🍭']
+const decorRecipes={
+  mixed:{
+    mainPairs:[['💗','🌸'],['☁️','🫧'],['⭐','✨'],['🎀','🍬'],['🌈','☁️']],
+    subPairs:[['✨','⭐'],['💎','🎀'],['☁️','🫧'],['💕','🌸'],['🍬','💗']],
+    fill:['💗','💕','🎀','✨','⭐','🌸','🫧','☁️','🌈','🍬','💎']
+  },
+  spring:{
+    mainPairs:[['🌸','🌷'],['🌼','💐'],['🌸','🩷']],
+    subPairs:[['🦋','✨'],['☁️','🫧'],['🌱','💗']],
+    fill:['🌸','🌷','🌼','💐','🦋','✨','🫧','☁️','🌱','💗','🎀']
+  },
+  summer:{
+    mainPairs:[['🌻','☀️'],['🌺','🍉'],['🫧','🐬']],
+    subPairs:[['⭐','✨'],['🌈','☁️'],['🍋','🩵']],
+    fill:['🌻','☀️','🌺','🍉','🫧','🐬','⭐','✨','🌈','☁️','🍋','🩵']
+  },
+  autumn:{
+    mainPairs:[['🍁','🍂'],['🍄','🌰'],['🧡','☕']],
+    subPairs:[['✨','⭐'],['🤎','🍎'],['🎀','🫧']],
+    fill:['🍁','🍂','🍄','🌰','🧡','☕','✨','⭐','🤎','🍎','🎀','🫧']
+  },
+  winter:{
+    mainPairs:[['❄️','🩵'],['☃️','🤍'],['💎','🎀']],
+    subPairs:[['✨','⭐'],['☁️','🫧'],['🌙','💙']],
+    fill:['❄️','🩵','☃️','🤍','💎','🎀','✨','⭐','☁️','🫧','🌙','💙']
+  },
+  flower:{
+    mainPairs:[['🌸','🌷'],['🌼','💐'],['🌺','🌹']],
+    subPairs:[['💗','✨'],['🫧','☁️'],['🎀','⭐']],
+    fill:['🌸','🌷','🌼','💐','🌺','🌹','🪻','💗','✨','🫧','☁️','🎀','⭐']
+  },
+  heart:{
+    mainPairs:[['💗','💖'],['🩷','💕'],['💗','🌸']],
+    subPairs:[['✨','⭐'],['🎀','☁️'],['🫧','🌈']],
+    fill:['💗','💖','🩷','💕','💞','✨','⭐','🎀','☁️','🫧','🌈','🌸']
+  },
+  star:{
+    mainPairs:[['⭐','✨'],['🌟','💫'],['⭐','💎']],
+    subPairs:[['☁️','🫧'],['🌈','💜'],['🎀','🩵']],
+    fill:['⭐','✨','🌟','💫','💎','☁️','🫧','🌈','💜','🎀','🩵']
+  },
+  ribbon:{
+    mainPairs:[['🎀','💗'],['🎀','🍬'],['🎀','🌸']],
+    subPairs:[['✨','⭐'],['☁️','🫧'],['👑','💎']],
+    fill:['🎀','💗','🍬','🌸','✨','⭐','☁️','🫧','👑','💎','🩷']
+  },
+  sweets:{
+    mainPairs:[['🍬','🍓'],['🧁','🍭'],['🍩','🍒']],
+    subPairs:[['🎀','💗'],['✨','⭐'],['☁️','🫧']],
+    fill:['🍬','🍓','🧁','🍭','🍩','🍒','🎀','💗','✨','⭐','☁️','🫧']
+  }
 };
-function currentTheme(){return (document.getElementById('decoTheme')?.value)||'mixed'}
-function heroSet(){
+function decorRecipe(){
   const theme=currentTheme();
-  return themeHeroPools[theme]||themeHeroPools.mixed;
+  const base=decorRecipes[theme]||decorRecipes.mixed;
+  return {
+    mainPair: pick(base.mainPairs),
+    subPair: pick(base.subPairs),
+    fill: base.fill
+  };
 }
+const themeHeroPools={mixed:['💗']};
+function heroSet(){ return ['💗']; }
 
 const compositionPresets=[
   {x:-320,y:10,scale:1.60,flip:false,layout:0},
@@ -547,82 +648,57 @@ function drawBg(){
 }function drawEmojiLayer(front=false){
  decoSeed=1000+state.deco*7919+state.bg*313+(front?71:0);
  const set=emojiSets[state.deco%emojiSets.length];
- const heroes=heroSet();
+ const recipe=decorRecipe();
 
  let cx=W*.5+state.x, h=790*state.scale, top=H*.5+195+state.y-h;
- const headCy=top+h*.23;
  const faceCy=top+h*.25;
- const faceRx=184*state.scale, faceRy=198*state.scale;
+ const faceRx=186*state.scale, faceRy=202*state.scale;
  const leftChar=state.x<0;
- const textZone=leftChar?{cx:830,w:520}:{cx:370,w:520};
+ const textInfo=getTextLayoutInfo();
+ const avatarSide=leftChar?'left':'right';
+ const textSide=leftChar?'right':'left';
  const portraitSafe={
-   x1:cx-186*state.scale,
-   x2:cx+186*state.scale,
-   y1:top+18,
-   y2:top+h*.48
- };
- const avatarSafe={
-   x1:cx-240*state.scale,
-   x2:cx+240*state.scale,
-   y1:top-8,
-   y2:Math.min(H-28, top+h-6)
+   x1:cx-192*state.scale,
+   x2:cx+192*state.scale,
+   y1:top+10,
+   y2:top+h*.94
  };
  const placed=state._decoPlaced || (state._decoPlaced=[]);
- const textInfo=getTextLayoutInfo();
 
- function makeBalancedQueue(pairs){
-   const order=[...pairs.keys()];
-   for(let i=order.length-1;i>0;i--){const j=Math.floor(seeded()*(i+1));[order[i],order[j]]=[order[j],order[i]]}
-   const q=[];
-   for(const idx of order){
-     const pair=pairs[idx];
-     if(seeded()>.5) q.push(pair[0],pair[1]);
-     else q.push(pair[1],pair[0]);
-   }
-   return q;
- }
- const heroQueue=makeBalancedQueue([
-   [[120,118],[W-120,118]],
-   [[140,H-120],[W-140,H-120]],
-   [[132,H*.34],[W-132,H*.34]],
-   [[178,H*.78],[W-178,H*.78]]
- ]);
- const mediumQueue=makeBalancedQueue([
-   [[92,126],[W-92,126]],
-   [[112,246],[W-112,246]],
-   [[118,382],[W-118,382]],
-   [[112,530],[W-112,530]],
-   [[242,118],[W-242,118]],
-   [[258,548],[W-258,548]],
-   [[206,630],[W-206,630]]
- ]);
- const smallQueue=makeBalancedQueue([
-   [[82,98],[W-82,98]],[[180,96],[W-180,96]],[[284,96],[W-284,96]],[[392,98],[W-392,98]],
-   [[76,196],[W-76,196]],[[76,306],[W-76,306]],[[76,420],[W-76,420]],[[76,534],[W-76,534]],
-   [[76,620],[W-76,620]],[[190,620],[W-190,620]],[[300,620],[W-300,620]],[[410,620],[W-410,620]],
-   [[220,170],[W-220,170]],[[258,250],[W-258,250]],[[258,470],[W-258,470]],[[208,560],[W-208,560]],
-   [[516,100],[W-516,100]],[[516,620],[W-516,620]]
- ]);
- let heroIdx=0, mediumIdx=0, smallIdx=0;
+ function sideX(side,near=0.22,far=0.78){ return side==='left'?W*near:W*far; }
+ const slotAnchors={
+   avatarUpper:{x:sideX(avatarSide,.16,.84), y:118},
+   avatarLower:{x:sideX(avatarSide,.22,.78), y:H-120},
+   textUpper:{x:sideX(textSide,.28,.72), y:116},
+   textLower:{x:sideX(textSide,.28,.72), y:H-112},
+   midTop:{x:W*.5, y:96},
+   midBottom:{x:W*.5, y:H-82}
+ };
+
+ const mediumSpots=[
+   [92,124],[W-92,124],[92,550],[W-92,550],
+   [190,92],[W-190,92],[190,H-94],[W-190,H-94],
+   [302,112],[W-302,112],[302,H-108],[W-302,H-108],
+   [82,236],[W-82,236],[82,402],[W-82,402],
+   [250,210],[W-250,210],[250,470],[W-250,470],
+   [W*.5,112],[W*.5,H-102]
+ ];
+   const smallSpots=[
+   [72,86],[W-72,86],[156,82],[W-156,82],[256,86],[W-256,86],[366,92],[W-366,92],[470,98],[W-470,98],
+   [68,170],[W-68,170],[68,258],[W-68,258],[68,352],[W-68,352],[68,448],[W-68,448],[68,542],[W-68,542],[68,620],[W-68,620],
+   [160,618],[W-160,618],[264,620],[W-264,620],[366,618],[W-366,618],[470,612],[W-470,612],
+   [215,168],[W-215,168],[280,248],[W-280,248],[360,330],[W-360,330],[280,418],[W-280,418],[214,506],[W-214,506],
+   [W*.5,108],[W*.5,178],[W*.5,566],[W*.5,626]
+ ];
 
  function insideFaceSafe(x,y,size,kind){
    if(!state.charImg) return false;
-   const pad = size*.28;
-   const dx=(x-cx)/(faceRx+pad);
-   const dy=(y-faceCy)/(faceRy+pad);
+   const pad=size*.34;
+   const dx=(x-cx)/(faceRx+pad), dy=(y-faceCy)/(faceRy+pad);
    if(dx*dx+dy*dy<1) return true;
-   // Extra protection around the top of the head / hair ornaments.
-   const dx2=(x-cx)/(faceRx*1.06+size*.24);
-   const dy2=(y-headCy)/(faceRy*1.00+size*.20);
-   if(dx2*dx2+dy2*dy2<1) return true;
-   // Keep decorations away from the portrait core.
-   const sx = portraitSafe.x1 - size*.38, ex = portraitSafe.x2 + size*.38;
-   const sy = portraitSafe.y1 - size*.20, ey = portraitSafe.y2 + size*.24;
-   if(x>sx && x<ex && y>sy && y<ey) return true;
-   // Softer body-safe ellipse. This protects the visible body without creating a huge empty rectangle.
-   const bodyCy=top+h*.56;
-   const bodyRx=(kind==='small'?155:175)*state.scale + size*.12;
-   const bodyRy=(kind==='small'?245:270)*state.scale + size*.10;
+   const bodyCy=top+h*.58;
+   const bodyRx=(kind==='small'?165:196)*state.scale + size*.18;
+   const bodyRy=(kind==='small'?278:312)*state.scale + size*.12;
    const bdx=(x-cx)/bodyRx, bdy=(y-bodyCy)/bodyRy;
    return bdx*bdx+bdy*bdy<1;
  }
@@ -634,84 +710,87 @@ function drawBg(){
    return Math.hypot(x-nx,y-ny)<r;
  }
  function insideTextSafe(x,y,size,kind){
-   const r=size*.50;
-   if(circleHitsRect(x,y,r,textInfo.titleBox, kind==='small'?32:48)) return true;
-   if(circleHitsRect(x,y,r,textInfo.subBox, kind==='small'?26:42)) return true;
-   if(kind!=='small' && x>textZone.cx-textZone.w/2-28 && x<textZone.cx+textZone.w/2+28 && y>100 && y<568) return true;
+   const r=size*.52;
+   if(circleHitsRect(x,y,r,textInfo.titleBox, kind==='small'?42:74)) return true;
+   if(circleHitsRect(x,y,r,textInfo.subBox, kind==='small'?34:60)) return true;
    return false;
  }
  function clashes(x,y,size,kind){
    for(const p of placed){
-     let f=kind==='hero'?.86:kind==='medium'?.72:.62;
-     if(p.kind==='hero' || kind==='hero') f=Math.max(f,.90);
-     else if(p.kind==='medium' || kind==='medium') f=Math.max(f,.78);
-     const extraPad = (p.kind==='hero' || kind==='hero') ? 22 : ((p.kind==='medium' || kind==='medium') ? 14 : 10);
-     if(Math.hypot(x-p.x,y-p.y)<(p.size+size)*f + extraPad) return true;
+     let f=kind==='main'||p.kind==='main'?0.96:kind==='sub'||p.kind==='sub'?0.86:kind==='medium'||p.kind==='medium'?0.76:0.68;
+     const gap=kind==='small'&&p.kind==='small'?12:18;
+     if(Math.hypot(x-p.x,y-p.y)<(p.size+size)*f+gap) return true;
    }
    return false;
  }
- function pullAnchor(kind){
-   let a=null;
-   if(kind==='hero' && heroIdx<heroQueue.length) a=heroQueue[heroIdx++];
-   else if(kind==='medium' && mediumIdx<mediumQueue.length) a=mediumQueue[mediumIdx++];
-   else if(kind==='small' && smallIdx<smallQueue.length) a=smallQueue[smallIdx++];
-   return a;
- }
  function fallbackPoint(kind){
-   const counts=[0,0,0,0];
-   for(const p of placed){
-     const q=(p.x>=W/2?1:0)+(p.y>=H/2?2:0);
-     counts[q]++;
+   const source=(kind==='small'?smallSpots:mediumSpots).slice();
+   for(let i=source.length-1;i>0;i--){const j=Math.floor(seeded()*(i+1));[source[i],source[j]]=[source[j],source[i]]}
+   for(const [x,y] of source){
+     if(!insideFaceSafe(x,y,kind==='small'?90:120,kind) && !insideTextSafe(x,y,kind==='small'?90:120,kind)) return {x,y};
    }
-   const min=Math.min(...counts);
-   const choices=[0,1,2,3].filter(i=>counts[i]===min);
-   const q=choices[Math.floor(seeded()*choices.length)];
-   const left=(q%2===0), topHalf=(q<2);
-   const x1=left?48:W/2+40, x2=left?W/2-40:W-48;
-   const y1=topHalf?48:H/2+38, y2=topHalf?H/2-38:H-48;
-   return {x:x1+seeded()*(x2-x1), y:y1+seeded()*(y2-y1)};
+   return {x:W*.5,y:H*.5};
  }
- function put(symbol,kind,size){
-   for(let attempt=0;attempt<260;attempt++){
-     let x,y;
-     const anchor=pullAnchor(kind);
-     if(anchor){
-       const jx=kind==='hero'?42:kind==='medium'?56:28;
-       const jy=kind==='hero'?36:kind==='medium'?46:24;
-       x=Math.max(44,Math.min(W-44,anchor[0]+(seeded()-.5)*jx));
-       y=Math.max(44,Math.min(H-44,anchor[1]+(seeded()-.5)*jy));
-     }else{
-       const p=fallbackPoint(kind); x=p.x; y=p.y;
+ function tryPlace(symbol,kind,size,anchors,jx,jy,alpha){
+   const tries=Array.isArray(anchors)?anchors:[anchors];
+   for(const base of tries){
+     for(let attempt=0; attempt<80; attempt++){
+       const x=Math.max(44,Math.min(W-44,base.x+(seeded()-.5)*jx));
+       const y=Math.max(44,Math.min(H-44,base.y+(seeded()-.5)*jy));
+       if(insideFaceSafe(x,y,size,kind)) continue;
+       if(insideTextSafe(x,y,size,kind)) continue;
+       if(clashes(x,y,size,kind)) continue;
+       placed.push({x,y,size,kind});
+       emoji(symbol,x,y,size,(seeded()-.5)*(kind==='small'?0.28:0.18),alpha);
+       return true;
      }
-
+   }
+   const fb=fallbackPoint(kind);
+   for(let attempt=0; attempt<100; attempt++){
+     const x=Math.max(44,Math.min(W-44,fb.x+(seeded()-.5)*(kind==='small'?64:98)));
+     const y=Math.max(44,Math.min(H-44,fb.y+(seeded()-.5)*(kind==='small'?58:92)));
      if(insideFaceSafe(x,y,size,kind)) continue;
      if(insideTextSafe(x,y,size,kind)) continue;
      if(clashes(x,y,size,kind)) continue;
-
      placed.push({x,y,size,kind});
-     emoji(symbol,x,y,size,(seeded()-.5)*(kind==='small'?.34:.22),front?.94:.90);
+     emoji(symbol,x,y,size,(seeded()-.5)*(kind==='small'?0.28:0.18),alpha);
      return true;
    }
    return false;
  }
 
- const heroCount = front ? 0 : 2 + (seeded()>.72 ? 1 : 0);
- const mediumCount = front ? 2 : 4 + Math.floor(state.density/3);
- const smallCount = front ? 3+state.density : 7+state.density*2;
+ const largeMainSize=front?0:156+seeded()*26;
+ const largeSubSize=front?0:118+seeded()*18;
+ if(!front){
+   const mainA=recipe.mainPair[0], mainB=recipe.mainPair[1];
+   const subA=recipe.subPair[0], subB=recipe.subPair[1];
+   tryPlace(mainA,'main',largeMainSize,{x:slotAnchors.avatarUpper.x,y:slotAnchors.avatarUpper.y},56,44,.96);
+   tryPlace(mainB,'main',154+seeded()*24,{x:slotAnchors.textLower.x,y:slotAnchors.textLower.y},68,52,.96);
+   tryPlace(subA,'sub',largeSubSize,{x:slotAnchors.textUpper.x,y:slotAnchors.textUpper.y},64,46,.93);
+   tryPlace(subB,'sub',116+seeded()*18,{x:slotAnchors.avatarLower.x,y:slotAnchors.avatarLower.y},62,50,.93);
 
- for(let i=0;i<heroCount;i++){
-   const symbol=heroes[Math.floor(seeded()*heroes.length)];
-   put(symbol,'hero',172+seeded()*56);
+   const mediumCount=4+state.density;
+   const mediumPool=[...recipe.fill,...set];
+   const shuffled=mediumSpots.slice();
+   for(let i=shuffled.length-1;i>0;i--){const j=Math.floor(seeded()*(i+1));[shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]]}
+   for(let i=0;i<mediumCount;i++){
+     const sym=mediumPool[Math.floor(seeded()*mediumPool.length)];
+     const spot=shuffled[i%shuffled.length];
+     tryPlace(sym,'medium',92+seeded()*22,{x:spot[0],y:spot[1]},56,44,.91);
+   }
+ }else{
+   const smallPool=[...recipe.fill,...set];
+   const shuffled=smallSpots.slice();
+   for(let i=shuffled.length-1;i>0;i--){const j=Math.floor(seeded()*(i+1));[shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]]}
+   const smallCount=10+state.density*3;
+   for(let i=0;i<smallCount;i++){
+     const sym=smallPool[Math.floor(seeded()*smallPool.length)];
+     const spot=shuffled[i%shuffled.length];
+     tryPlace(sym,'small',84+seeded()*18,{x:spot[0],y:spot[1]},38,34,.92);
+   }
  }
- for(let i=0;i<mediumCount;i++){
-   const symbol=set[Math.floor(seeded()*set.length)];
-   put(symbol,'medium',98+seeded()*44);
- }
- for(let i=0;i<smallCount;i++){
-   const symbol=set[Math.floor(seeded()*set.length)];
-   put(symbol,'small',72+seeded()*28);
- }
-}function drawBackDeco(){drawEmojiLayer(false)}
+}
+function drawBackDeco(){drawEmojiLayer(false)}
 function drawFrontDeco(){drawEmojiLayer(true)}
 function rebuildChar(){
  if(!state.sourceImg||!state.mask){state.charImg=state.cutoutImg||state.sourceImg;return}
@@ -910,10 +989,13 @@ function charImagePoint(p){
 }
 function stampMaskAt(ix,iy,radiusPx){
  if(!state.mask||!state.sourceImg)return;
+ const snapped=snapToOutline(ix,iy,radiusPx);
+ if(snapped){ ix=ix*.38+snapped.x*.62; iy=iy*.38+snapped.y*.62; }
  const data=state.mask.data,iw=state.sourceImg.naturalWidth,ih=state.sourceImg.naturalHeight;
  const hardness=(+hardnessEl.value)/100;
+ const guide=state.edgeGuide?.edge;
  const r=Math.max(1.5,radiusPx);
- const inner=r*Math.min(.98,Math.max(.05,hardness));
+ const inner=r*Math.min(.985,Math.max(.08,hardness));
  const minX=Math.max(0,Math.floor(ix-r)),maxX=Math.min(iw-1,Math.ceil(ix+r));
  const minY=Math.max(0,Math.floor(iy-r)),maxY=Math.min(ih-1,Math.ceil(iy+r));
  for(let yy=minY;yy<=maxY;yy++){
@@ -925,15 +1007,18 @@ function stampMaskAt(ix,iy,radiusPx){
      else{
        const denom=Math.max(.001,r-inner);
        const t=(dist-inner)/denom;
-       // Smooth but very narrow feather when hardness is high.
        strength=1-(t*t*(3-2*t));
      }
-     const idx=(yy*iw+xx)*4+3;
+     const p=(yy*iw+xx);
+     const idx=p*4+3;
+     const edgeBoost=guide?(guide[p]||0)/255:0;
      if(state.mode==='restore'){
-       const target=Math.round(255*strength);
+       let target=Math.round(255*Math.min(1,strength*(0.9+edgeBoost*0.38)));
+       if(edgeBoost>.28) target=Math.max(target,188);
        if(target>data[idx])data[idx]=target;
      }else if(state.mode==='erase'){
-       const keep=Math.round(255*(1-strength));
+       const retain=edgeBoost>.40 ? Math.round(255*Math.min(.22,edgeBoost*0.22)) : 0;
+       const keep=Math.max(retain,Math.round(255*(1-strength)));
        if(keep<data[idx])data[idx]=keep;
      }
    }
@@ -995,7 +1080,7 @@ brushFine.onclick=()=>{brush.value=10;brusho.value=10};
 brushMid.onclick=()=>{brush.value=24;brusho.value=24};
 brushWide.onclick=()=>{brush.value=52;brusho.value=52};
 
-file.onchange=e=>{const f=e.target.files?.[0];if(!f)return;const url=URL.createObjectURL(f),img=new Image();img.onload=()=>{state.sourceImg=img;state.cutoutImg=null;state.mask=null;state.charImg=img;draw();status('画像を読み込みました。次にAI切り抜きを押してください。')};img.src=url};
+file.onchange=e=>{const f=e.target.files?.[0];if(!f)return;const url=URL.createObjectURL(f),img=new Image();img.onload=()=>{state.sourceImg=img;buildEdgeGuide(img);state.cutoutImg=null;state.mask=null;state.charImg=img;draw();status('画像を読み込みました。次にAI切り抜きを押してください。')};img.src=url};
 
 removeBg.onclick=async()=>{
  const f=file.files?.[0];if(!f){status('先に画像を選んでください。');return}
@@ -1009,10 +1094,11 @@ removeBg.onclick=async()=>{
      const off=document.createElement('canvas');off.width=state.sourceImg.naturalWidth;off.height=state.sourceImg.naturalHeight;
      const o=off.getContext('2d');o.drawImage(img,0,0,off.width,off.height);
      const id=o.getImageData(0,0,off.width,off.height);
+     normalizeMaskAlpha(id);
      state.mask=id;
      clearMaskHistory();
      state.charImg=img;draw();
-     status('✨ AI切り抜き完了。白い服が欠けたら「戻す」＋細かく10＋硬さ96で輪郭をなぞると精密に戻せます。大きい飾りは内側寄り。アバターがある時だけ人物を避け、文字ブロックも避けながら四方へ自然に散らします。');
+     status('✨ AI切り抜き完了。白い服が欠けたら「戻す」＋細かく10＋硬さ96で輪郭をなぞると、線画寄りに精密に戻しやすくなっています。飾りはメイン＋サブ＋空白埋めで、人物と文字を避けながら散らします。');
      removeBg.disabled=false;removeBg.textContent='✂️ AIで女の子を切り抜く';
    };
    img.src=url;
