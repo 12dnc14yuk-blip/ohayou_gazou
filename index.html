@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おはよう画像メーカー v3.1</title>
+<title>おはよう画像メーカー v3.2</title>
 <style>
 :root{
   --ink:#352f44; --muted:#81798e; --line:#ece7f4; --panel:#fff;
@@ -48,7 +48,7 @@ input[type=range]{width:100%}
 </head>
 <body>
 <div class="wrap">
-<h1>🌞 おはよう画像メーカー v3.1</h1>
+<h1>🌞 おはよう画像メーカー v3.2</h1>
 <div class="lead">
   透過の手直し機能はそのまま。今回はデザインをさらに盛りました。
   <b>大きい絵文字＋小さい絵文字＋太めのかわいいフレーム</b>をランダム配置。
@@ -143,7 +143,7 @@ input[type=range]{width:100%}
   </div>
 </div>
 
-<div class="footer">おはよう画像メーカー v3.1</div>
+<div class="footer">おはよう画像メーカー v3.2</div>
 </div>
 
 <script>
@@ -656,8 +656,6 @@ titleText.oninput=draw;subText.oninput=draw;
 randomAll.onclick=()=>{state.bg=rand(moods.length);state.deco=rand(emojiSets.length);state.frame=rand(6);state.frameWidth=2+rand(4);state.layout=rand(5);state.density=3+rand(3);density.value=state.density;densityo.value=state.density;frameWidth.value=state.frameWidth;frameWidtho.value=state.frameWidth;setRandomMessage();state.x=Math.random()<.5?(-285+rand(90)):(215+rand(100));state.y=-10+rand(80);state.scale=1.48+Math.random()*.4;state.flip=Math.random()<.35;sync();draw()};
 randomBg.onclick=()=>{state.bg=rand(moods.length);draw()};randomDeco.onclick=()=>{state.deco=rand(emojiSets.length);state.density=3+rand(3);density.value=state.density;densityo.value=state.density;draw()};randomFrame.onclick=()=>{state.frame=rand(6);state.frameWidth=3+rand(3);frameWidth.value=state.frameWidth;frameWidtho.value=state.frameWidth;draw()};randomLayout.onclick=()=>{state.layout=rand(5);draw()};
 
-el.addEventListener('touchstart',remember,{passive:true});
-});
 
 density.oninput=e=>{state.density=+e.target.value;densityo.value=e.target.value;draw()};frameWidth.oninput=e=>{state.frameWidth=+e.target.value;frameWidtho.value=e.target.value;draw()};
 flip.onclick=()=>{state.flip=!state.flip;draw()};
