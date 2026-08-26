@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おはよう画像メーカー v4.7</title>
+<title>おはよう画像メーカー v4.8</title>
 <style>
 :root{
   --ink:#352f44; --muted:#81798e; --line:#ece7f4; --panel:#fff;
@@ -48,11 +48,11 @@ input[type=range]{width:100%}
 </head>
 <body>
 <div class="wrap">
-<h1>🌞 おはよう画像メーカー v4.7</h1>
+<h1>🌞 おはよう画像メーカー v4.8</h1>
 <div class="lead">
   透過の手直し機能はそのまま。今回はデザインをさらに盛りました。
   <b>大きい絵文字＋小さい絵文字＋太めのかわいいフレーム</b>をランダム配置。
-  「全部ランダム」で毎朝ガチャできます。今回は「アバター未選択なのに飾りが片側へ逃げる」問題を修正し、飾りが四方へ自然に散るように調整しました。
+  「全部ランダム」で毎朝ガチャできます。今回は「大きい飾りと小さい飾りが重なりやすい」問題を修正し、飾り同士の間隔を広げて、重なりにくく調整しました。
 </div>
 
 <div class="card">
@@ -114,7 +114,7 @@ input[type=range]{width:100%}
 
 <div class="card">
   <div class="section-title">④ デザインを作る</div>
-  <div class="tip"><strong>センス重視モード</strong>：大きい飾りは2〜3個だけを端から大胆に見せ、中サイズでつなぎ、小さい飾りで余白を埋めます。今回は左右の散らばり差を減らし、アバター・「おはよう」文字・下の文章に飾りが乗りにくいようにしました。下の文章は自然な2行を優先して自動調整します。</div>
+  <div class="tip"><strong>センス重視モード</strong>：大きい飾りは2〜3個だけを端から大胆に見せ、中サイズでつなぎ、小さい飾りで余白を埋めます。今回は左右の散らばり差を減らし、アバター・「おはよう」文字・下の文章に飾りが乗りにくいようにしました。さらに大きい飾りと小さい飾りが重なりにくいよう、飾り同士の間隔も広げています。下の文章は自然な2行を優先して自動調整します。</div>
   <div class="tip">飾りは<strong>空白を埋めるようにバラけて配置</strong>。アバターがある時だけ人物を避け、文字ブロックも避けます。未選択時は人物のための空白を作らず、四方へ均等に散らします。</div>
   <div class="tip">重なり順：<strong>背景 → フレーム → おはようメッセージ → 女の子 → 絵文字（飾り）</strong></div>
   <label class="field" style="margin-bottom:10px">
@@ -170,7 +170,7 @@ input[type=range]{width:100%}
   </div>
 </div>
 
-<div class="footer">おはよう画像メーカー v4.7</div>
+<div class="footer">おはよう画像メーカー v4.8</div>
 </div>
 
 <script>
@@ -567,7 +567,7 @@ function drawBg(){
    y1:top-8,
    y2:Math.min(H-28, top+h-6)
  };
- const placed=[];
+ const placed=state._decoPlaced || (state._decoPlaced=[]);
  const textInfo=getTextLayoutInfo();
 
  function makeBalancedQueue(pairs){
@@ -642,10 +642,11 @@ function drawBg(){
  }
  function clashes(x,y,size,kind){
    for(const p of placed){
-     let f=kind==='hero'?.68:kind==='medium'?.56:.46;
-     if(p.kind==='hero' || kind==='hero') f+=.08;
-     else if(p.kind==='medium' || kind==='medium') f+=.05;
-     if(Math.hypot(x-p.x,y-p.y)<(p.size+size)*f) return true;
+     let f=kind==='hero'?.86:kind==='medium'?.72:.62;
+     if(p.kind==='hero' || kind==='hero') f=Math.max(f,.90);
+     else if(p.kind==='medium' || kind==='medium') f=Math.max(f,.78);
+     const extraPad = (p.kind==='hero' || kind==='hero') ? 22 : ((p.kind==='medium' || kind==='medium') ? 14 : 10);
+     if(Math.hypot(x-p.x,y-p.y)<(p.size+size)*f + extraPad) return true;
    }
    return false;
  }
@@ -671,7 +672,7 @@ function drawBg(){
    return {x:x1+seeded()*(x2-x1), y:y1+seeded()*(y2-y1)};
  }
  function put(symbol,kind,size){
-   for(let attempt=0;attempt<180;attempt++){
+   for(let attempt=0;attempt<260;attempt++){
      let x,y;
      const anchor=pullAnchor(kind);
      if(anchor){
@@ -696,7 +697,7 @@ function drawBg(){
 
  const heroCount = front ? 0 : 2 + (seeded()>.72 ? 1 : 0);
  const mediumCount = front ? 2 : 4 + Math.floor(state.density/3);
- const smallCount = front ? 4+state.density : 8+state.density*2;
+ const smallCount = front ? 3+state.density : 7+state.density*2;
 
  for(let i=0;i<heroCount;i++){
    const symbol=heroes[Math.floor(seeded()*heroes.length)];
@@ -889,6 +890,7 @@ function drawText(){
  info.sub.lines.forEach((v,i)=>outlined(v,info.sub.x,info.sub.startY+i*info.sub.gap,info.sub.size,subColor));
 }
 function draw(){
+ state._decoPlaced=[];
  drawBg();drawFrame();drawCharacter();drawText();drawBackDeco();drawFrontDeco();
 }
 
