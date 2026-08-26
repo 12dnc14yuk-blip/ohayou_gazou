@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おはよう画像メーカー v3.3</title>
+<title>おはよう画像メーカー v3.4</title>
 <style>
 :root{
   --ink:#352f44; --muted:#81798e; --line:#ece7f4; --panel:#fff;
@@ -48,7 +48,7 @@ input[type=range]{width:100%}
 </head>
 <body>
 <div class="wrap">
-<h1>🌞 おはよう画像メーカー v3.3</h1>
+<h1>🌞 おはよう画像メーカー v3.4</h1>
 <div class="lead">
   透過の手直し機能はそのまま。今回はデザインをさらに盛りました。
   <b>大きい絵文字＋小さい絵文字＋太めのかわいいフレーム</b>をランダム配置。
@@ -116,6 +116,21 @@ input[type=range]{width:100%}
   <div class="section-title">④ デザインを作る</div>
   <div class="tip">飾りは<strong>空白を埋めるようにバラけて配置</strong>。顔が来る真ん中付近には置かず、まわりは重なってもOK。文字は飾りより前に表示されます。</div>
   <div class="tip">重なり順：<strong>背景 → フレーム → おはようメッセージ → 女の子 → 絵文字（飾り）</strong></div>
+  <label class="field" style="margin-bottom:10px">
+    <span>飾りテーマ</span>
+    <select id="decoTheme">
+      <option value="mixed">ごちゃまぜ（ランダム）</option>
+      <option value="spring">春</option>
+      <option value="summer">夏</option>
+      <option value="autumn">秋</option>
+      <option value="winter">冬</option>
+      <option value="flower">花</option>
+      <option value="heart">ハート</option>
+      <option value="star">星</option>
+      <option value="ribbon">リボン</option>
+      <option value="sweets">おかし</option>
+    </select>
+  </label>
   <button id="randomAll" class="primary">✨ 全部ランダム作成</button>
   <div class="grid3" style="margin-top:8px">
     <button id="randomBg" class="soft">🎨 背景</button>
@@ -125,7 +140,7 @@ input[type=range]{width:100%}
   </div>
   <label class="slider"><span>飾り量</span><input id="density" type="range" min="1" max="5" value="5"><output id="densityo">5</output></label>
   <label class="slider"><span>フレーム太さ</span><input id="frameWidth" type="range" min="1" max="5" value="4"><output id="frameWidtho">4</output></label>
-  <div class="tip">💗🎀🌸⭐✨🌈☁️🍬🫧🐰💎👑などを<strong>大小・角度・位置ランダム</strong>で散らします。フレームも毎回ガチャできます。</div>
+  <div class="tip">春・夏・秋・冬 / 花 / ハート / 星 / リボン / おかし のテーマを追加。<strong>ごちゃまぜ</strong>なら今まで通り、可愛い絵文字を大小たくさん混ぜて使います。できるだけパターン数を増やして、毎回ちょっと手作り感が出るようにしています。</div>
 </div>
 
 <div class="card">
@@ -144,7 +159,7 @@ input[type=range]{width:100%}
   </div>
 </div>
 
-<div class="footer">おはよう画像メーカー v3.3</div>
+<div class="footer">おはよう画像メーカー v3.4</div>
 </div>
 
 <script>
@@ -230,11 +245,77 @@ function confetti(){
 
 
 const emojiSets=[
+ // mixed core
  ['💗','🎀','✨','⭐','🌸','🫧','💎','☁️','🌈','🍬','🐰','👑','💕','🌟'],
  ['💖','🩷','🎀','🌷','🍓','🧁','🍬','✨','☁️','🌈','🫧','🐰','💐','💎'],
  ['⭐','🌟','✨','🌙','☁️','🫧','💜','🩵','🎀','💎','🦄','🌈','🍭','💫'],
- ['🌼','🌸','🌷','💛','🩷','🫧','✨','🍓','🐰','🎀','☁️','🍬','🌈','💖']
+ ['🌼','🌸','🌷','💛','🩷','🫧','✨','🍓','🐰','🎀','☁️','🍬','🌈','💖'],
+
+ // spring
+ ['🌸','🌷','🌼','🩷','💗','✨','🫧','🎀','🐝','🦋','🌱','💐'],
+ ['🌸','🌼','🍡','🎀','☁️','🫧','💖','🌿','🐰','✨','🌷','🌈'],
+ ['💐','🌷','🌸','🦋','🐣','💛','✨','🌱','🎀','☁️','🫧','🌼'],
+
+ // summer
+ ['🌻','🍉','🍋','☀️','🌈','💙','🫧','🐬','⭐','✨','🌺','🩵'],
+ ['🍧','🍓','🫧','☀️','🌊','🐚','🌴','💛','💖','🌺','✨','🍹'],
+ ['🌺','🌻','🍦','🫧','☁️','🌈','☀️','⭐','🐬','💎','🩵','🍍'],
+
+ // autumn
+ ['🍁','🍂','🌰','🤎','☕','🧡','✨','🍎','🌟','🎀','🫧','🍄'],
+ ['🍠','🧶','🍁','🍂','🩷','✨','🌰','☁️','🍎','🎀','🌟','🤎'],
+ ['🧡','🍄','🍁','🍂','🌰','☕','🎀','✨','🍪','🍎','⭐','🫧'],
+
+ // winter
+ ['❄️','⛄','💙','🩵','✨','☁️','🎀','🫧','🌙','⭐','🤍','🧤'],
+ ['🎄','❄️','💎','🩵','🤍','✨','🎁','☃️','⭐','🌙','🎀','🫧'],
+ ['🧣','🧤','❄️','☕','🤍','🩵','✨','⭐','☁️','💎','🎀','🌙'],
+
+ // flower
+ ['🌸','🌼','🌷','💐','🌺','🪻','✨','🫧','🎀','🍓','☁️','💕'],
+ ['🌻','🌹','🌸','🌷','🌼','💐','🩷','✨','🌿','🎀','💛','🫧'],
+ ['🪻','🌺','🌹','🌸','🌼','💐','💖','✨','☁️','🎀','🌿','🍓'],
+
+ // heart
+ ['💗','💖','🩷','💕','💞','💓','🎀','✨','☁️','🌈','🫧','⭐'],
+ ['🩷','💗','💖','💘','💓','💝','✨','🎀','🌸','☁️','🫧','🌟'],
+ ['💕','💞','💗','🩷','💖','💘','🎀','✨','🌈','🫧','☁️','🌸'],
+
+ // star
+ ['⭐','🌟','✨','💫','🌙','☁️','🩵','💜','🎀','🌈','🫧','💎'],
+ ['🌟','⭐','✨','💫','🌙','☁️','🌈','💖','🎀','💎','🫧','🌠'],
+ ['⭐','💫','🌟','✨','🌙','🩵','💜','☁️','🎀','🌈','💎','🫧'],
+
+ // ribbon
+ ['🎀','🩷','💗','✨','🌸','☁️','🫧','⭐','💖','🌈','👑','💎'],
+ ['🎀','🎁','💖','🩷','✨','🌷','☁️','🫧','💎','👑','🌟','💗'],
+ ['🎀','💗','🩷','💎','✨','🌸','🌈','☁️','🫧','⭐','💕','👑'],
+
+ // sweets
+ ['🧁','🍓','🍬','🍭','🍩','🍪','✨','🩷','🎀','☁️','🫧','💖'],
+ ['🍰','🍒','🍬','🧁','🍓','🍦','✨','🎀','🩷','☁️','🌈','💎'],
+ ['🍪','🍩','🍫','🍭','🧁','🍓','✨','🩷','🎀','🌈','🫧','💖']
 ];
+const themePools={
+  mixed:[0,1,2,3],
+  spring:[4,5,6],
+  summer:[7,8,9],
+  autumn:[10,11,12],
+  winter:[13,14,15],
+  flower:[16,17,18],
+  heart:[19,20,21],
+  star:[22,23,24],
+  ribbon:[25,26,27],
+  sweets:[28,29,30]
+};
+function decoPool(){
+  const theme=(document.getElementById('decoTheme')?.value)||'mixed';
+  return themePools[theme]||themePools.mixed;
+}
+function pickDecoIndex(){
+  const pool=decoPool();
+  return pool[Math.floor(Math.random()*pool.length)];
+}
 let decoSeed=12345;
 function seeded(){decoSeed=(decoSeed*1664525+1013904223)>>>0;return decoSeed/4294967296}
 
@@ -696,8 +777,10 @@ function setRandomMessage(){
 function randomMsg(){ setRandomMessage(); }
 randomMsg.onclick=randomMsg;
 titleText.oninput=draw;subText.oninput=draw;
-randomAll.onclick=()=>{state.bg=rand(moods.length);state.deco=rand(emojiSets.length);state.frame=rand(6);state.frameWidth=2+rand(4);state.layout=rand(5);state.density=3+rand(3);density.value=state.density;densityo.value=state.density;frameWidth.value=state.frameWidth;frameWidtho.value=state.frameWidth;setRandomMessage();state.x=Math.random()<.5?(-285+rand(90)):(215+rand(100));state.y=-10+rand(80);state.scale=1.48+Math.random()*.4;state.flip=Math.random()<.35;sync();draw()};
-randomBg.onclick=()=>{state.bg=rand(moods.length);draw()};randomDeco.onclick=()=>{state.deco=rand(emojiSets.length);state.density=3+rand(3);density.value=state.density;densityo.value=state.density;draw()};randomFrame.onclick=()=>{state.frame=rand(6);state.frameWidth=3+rand(3);frameWidth.value=state.frameWidth;frameWidtho.value=state.frameWidth;draw()};randomLayout.onclick=()=>{state.layout=rand(5);draw()};
+randomAll.onclick=()=>{state.bg=rand(moods.length);state.deco=pickDecoIndex();state.frame=rand(6);state.frameWidth=2+rand(4);state.layout=rand(5);state.density=3+rand(3);density.value=state.density;densityo.value=state.density;frameWidth.value=state.frameWidth;frameWidtho.value=state.frameWidth;setRandomMessage();state.x=Math.random()<.5?(-285+rand(90)):(215+rand(100));state.y=-10+rand(80);state.scale=1.48+Math.random()*.4;state.flip=Math.random()<.35;sync();draw()};
+randomBg.onclick=()=>{state.bg=rand(moods.length);draw()};randomDeco.onclick=()=>{state.deco=pickDecoIndex();state.density=3+rand(3);density.value=state.density;densityo.value=state.density;draw()};randomFrame.onclick=()=>{state.frame=rand(6);state.frameWidth=3+rand(3);frameWidth.value=state.frameWidth;frameWidtho.value=state.frameWidth;draw()};randomLayout.onclick=()=>{state.layout=rand(5);draw()};
+
+decoTheme.onchange=()=>{state.deco=pickDecoIndex();draw()};
 
 
 density.oninput=e=>{state.density=+e.target.value;densityo.value=e.target.value;draw()};frameWidth.oninput=e=>{state.frameWidth=+e.target.value;frameWidtho.value=e.target.value;draw()};
@@ -705,7 +788,7 @@ flip.onclick=()=>{state.flip=!state.flip;draw()};
 function sync(){x.value=Math.round(state.x);y.value=Math.round(state.y);scale.value=Math.round(state.scale*100);xo.value=Math.round(state.x);yo.value=Math.round(state.y);so.value=Math.round(state.scale*100)+'%'}
 ['x','y','scale'].forEach(id=>document.getElementById(id).addEventListener('input',e=>{if(id==='scale')state.scale=+e.target.value/100;else state[id]=+e.target.value;sync();draw()}));
 save.onclick=()=>{draw();const a=document.createElement('a');a.download='ohayou.png';a.href=cv.toDataURL('image/png');a.click()};
-reset.onclick=()=>{clearMaskHistory();brush.value=22;brusho.value=22;hardnessEl.value=96;hardnesso.value=96;state.bg=0;state.deco=0;state.frame=0;state.frameWidth=4;state.layout=0;state.density=5;state.x=-250;state.y=18;state.scale=1.72;state.flip=false;titleText.value='おはよう！';subText.value='素敵を集めに\\n行ってみよー！';density.value=5;densityo.value=5;frameWidth.value=4;frameWidtho.value=4;sync();draw()};
+reset.onclick=()=>{clearMaskHistory();brush.value=22;brusho.value=22;hardnessEl.value=96;hardnesso.value=96;document.getElementById('decoTheme').value='mixed';state.bg=0;state.deco=0;state.frame=0;state.frameWidth=4;state.layout=0;state.density=5;state.x=-250;state.y=18;state.scale=1.72;state.flip=false;titleText.value='おはよう！';subText.value='素敵を集めに\\n行ってみよー！';density.value=5;densityo.value=5;frameWidth.value=4;frameWidtho.value=4;sync();draw()};
 sync();draw();updateHistoryButtons();
 </script>
 </body></html>
