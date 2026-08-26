@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おはよう画像メーカー v3.5</title>
+<title>おはよう画像メーカー v3.6</title>
 <style>
 :root{
   --ink:#352f44; --muted:#81798e; --line:#ece7f4; --panel:#fff;
@@ -48,7 +48,7 @@ input[type=range]{width:100%}
 </head>
 <body>
 <div class="wrap">
-<h1>🌞 おはよう画像メーカー v3.5</h1>
+<h1>🌞 おはよう画像メーカー v3.6</h1>
 <div class="lead">
   透過の手直し機能はそのまま。今回はデザインをさらに盛りました。
   <b>大きい絵文字＋小さい絵文字＋太めのかわいいフレーム</b>をランダム配置。
@@ -140,7 +140,7 @@ input[type=range]{width:100%}
   </div>
   <label class="slider"><span>飾り量</span><input id="density" type="range" min="1" max="5" value="5"><output id="densityo">5</output></label>
   <label class="slider"><span>フレーム太さ</span><input id="frameWidth" type="range" min="1" max="5" value="4"><output id="frameWidtho">4</output></label>
-  <div class="tip">春・夏・秋・冬 / 花 / ハート / 星 / リボン / おかし のテーマを追加。<strong>ごちゃまぜ</strong>なら今まで通り、可愛い絵文字を大小たくさん混ぜて使います。できるだけパターン数を増やして、毎回ちょっと手作り感が出るようにしています。</div>
+  <div class="tip">春・夏・秋・冬 / 花 / ハート / 星 / リボン / おかし のテーマを追加。<strong>テーマを選んだ瞬間に反映</strong>されます。<strong>ごちゃまぜ</strong>なら今まで通り、可愛い絵文字を大小たくさん混ぜて使います。できるだけパターン数を増やして、毎回ちょっと手作り感が出るようにしています。</div>
 </div>
 
 <div class="card">
@@ -160,7 +160,7 @@ input[type=range]{width:100%}
   </div>
 </div>
 
-<div class="footer">おはよう画像メーカー v3.5</div>
+<div class="footer">おはよう画像メーカー v3.6</div>
 </div>
 
 <script>
@@ -363,11 +363,57 @@ function stickerSymbol(e,x,y,size,rot=0,alpha=1){
     ctx.fillStyle='#ffd54a';ctx.strokeStyle='#fff';ctx.lineWidth=6*u;
     ctx.beginPath();ctx.moveTo(-43*u,28*u);ctx.lineTo(-38*u,-25*u);ctx.lineTo(-14*u,2*u);ctx.lineTo(0,-38*u);ctx.lineTo(17*u,2*u);ctx.lineTo(40*u,-25*u);ctx.lineTo(43*u,28*u);ctx.closePath();ctx.fill();ctx.stroke();
   }
+
+  function leaf(fill='#f08a54'){
+    ctx.fillStyle=fill;ctx.strokeStyle=stroke;ctx.lineWidth=5*u;
+    ctx.beginPath();ctx.moveTo(0,-38*u);ctx.bezierCurveTo(34*u,-20*u,34*u,20*u,0,38*u);ctx.bezierCurveTo(-34*u,20*u,-34*u,-20*u,0,-38*u);ctx.fill();ctx.stroke();
+    ctx.beginPath();ctx.moveTo(0,-30*u);ctx.lineTo(0,32*u);ctx.strokeStyle='rgba(255,255,255,.85)';ctx.lineWidth=3*u;ctx.stroke();
+  }
+  function snow(){
+    ctx.strokeStyle='#7fcff0';ctx.lineWidth=6*u;ctx.lineCap='round';
+    for(let i=0;i<3;i++){ctx.save();ctx.rotate(i*Math.PI/3);ctx.beginPath();ctx.moveTo(-38*u,0);ctx.lineTo(38*u,0);ctx.moveTo(22*u,0);ctx.lineTo(30*u,-9*u);ctx.moveTo(22*u,0);ctx.lineTo(30*u,9*u);ctx.moveTo(-22*u,0);ctx.lineTo(-30*u,-9*u);ctx.moveTo(-22*u,0);ctx.lineTo(-30*u,9*u);ctx.stroke();ctx.restore();}
+  }
+  function sun(){
+    ctx.fillStyle='#ffd54d';ctx.strokeStyle=stroke;ctx.lineWidth=5*u;
+    ctx.beginPath();ctx.arc(0,0,25*u,0,Math.PI*2);ctx.fill();ctx.stroke();
+    for(let i=0;i<8;i++){ctx.save();ctx.rotate(i*Math.PI/4);ctx.beginPath();ctx.moveTo(0,-34*u);ctx.lineTo(0,-49*u);ctx.strokeStyle='#ffd54d';ctx.lineWidth=6*u;ctx.stroke();ctx.restore();}
+  }
+  function candy(){
+    ctx.fillStyle='#ff8ac1';ctx.strokeStyle=stroke;ctx.lineWidth=5*u;
+    ctx.beginPath();ctx.roundRect(-24*u,-18*u,48*u,36*u,12*u);ctx.fill();ctx.stroke();
+    ctx.beginPath();ctx.moveTo(-24*u,-12*u);ctx.lineTo(-46*u,-28*u);ctx.lineTo(-43*u,0);ctx.lineTo(-46*u,28*u);ctx.closePath();ctx.fill();ctx.stroke();
+    ctx.beginPath();ctx.moveTo(24*u,-12*u);ctx.lineTo(46*u,-28*u);ctx.lineTo(43*u,0);ctx.lineTo(46*u,28*u);ctx.closePath();ctx.fill();ctx.stroke();
+  }
+  function berry(){
+    ctx.fillStyle='#ff657b';ctx.strokeStyle=stroke;ctx.lineWidth=5*u;
+    ctx.beginPath();ctx.moveTo(0,34*u);ctx.bezierCurveTo(-35*u,8*u,-30*u,-27*u,0,-30*u);ctx.bezierCurveTo(30*u,-27*u,35*u,8*u,0,34*u);ctx.fill();ctx.stroke();
+    ctx.fillStyle='#65be72';ctx.beginPath();ctx.moveTo(-18*u,-26*u);ctx.lineTo(0,-42*u);ctx.lineTo(18*u,-26*u);ctx.closePath();ctx.fill();
+  }
+  function cupcake(){
+    ctx.fillStyle='#f5c07c';ctx.strokeStyle=stroke;ctx.lineWidth=5*u;
+    ctx.beginPath();ctx.moveTo(-28*u,4*u);ctx.lineTo(28*u,4*u);ctx.lineTo(20*u,38*u);ctx.lineTo(-20*u,38*u);ctx.closePath();ctx.fill();ctx.stroke();
+    ctx.fillStyle='#ff9fca';ctx.beginPath();ctx.arc(-17*u,0,18*u,Math.PI,0);ctx.arc(0,-10*u,22*u,Math.PI,0);ctx.arc(18*u,0,18*u,Math.PI,0);ctx.lineTo(30*u,6*u);ctx.lineTo(-30*u,6*u);ctx.closePath();ctx.fill();ctx.stroke();
+  }
+  function mushroom(){
+    ctx.fillStyle='#f08b72';ctx.strokeStyle=stroke;ctx.lineWidth=5*u;
+    ctx.beginPath();ctx.arc(0,-8*u,30*u,Math.PI,0);ctx.lineTo(30*u,0);ctx.lineTo(-30*u,0);ctx.closePath();ctx.fill();ctx.stroke();
+    ctx.fillStyle='#fff7de';ctx.beginPath();ctx.roundRect(-10*u,-2*u,20*u,38*u,8*u);ctx.fill();ctx.stroke();
+  }
   const pick = {
     '💗':()=>heart('#ff5aa5'),'💖':()=>heart('#ff5aa5'),'💕':()=>heart('#ff82ba'),'🩷':()=>heart('#ff9ac8'),
-    '⭐':()=>star(),'🌟':()=>star('#ffe76a'),'✨':sparkle,'💫':sparkle,'🎀':bow,'🌸':flower,'🌷':flower,'🌼':flower,'💐':flower,
-    '☁️':cloud,'🌈':rainbow,'👑':crown,'💎':()=>star('#75d9ef'),'🫧':()=>{ctx.beginPath();ctx.arc(0,0,32*u,0,Math.PI*2);ctx.fillStyle='rgba(255,255,255,.28)';ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=5*u;ctx.stroke()},
-    '🍬':()=>heart('#ff8ac1'),'🍭':()=>heart('#ff8ac1'),'🐰':()=>heart('#fff'),'🦄':()=>star('#dca8ff'),'🍓':()=>heart('#ff657b'),'🧁':()=>heart('#ffb0d0')
+    '💞':()=>heart('#ff8ab8'),'💓':()=>heart('#ff6fae'),'💘':()=>heart('#ff7cac'),'💝':()=>heart('#ff78ad'),
+    '⭐':()=>star(),'🌟':()=>star('#ffe76a'),'✨':sparkle,'💫':sparkle,'🌠':sparkle,
+    '🎀':bow,'🌸':flower,'🌷':flower,'🌼':flower,'💐':flower,'🌺':flower,'🌹':flower,'🪻':flower,'🌻':()=>flower(),
+    '☁️':cloud,'🌈':rainbow,'👑':crown,'💎':()=>star('#75d9ef'),
+    '🫧':()=>{ctx.beginPath();ctx.arc(0,0,32*u,0,Math.PI*2);ctx.fillStyle='rgba(255,255,255,.28)';ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=5*u;ctx.stroke()},
+    '🍬':candy,'🍭':candy,'🍪':candy,'🍩':candy,'🍫':candy,
+    '🍓':berry,'🍒':berry,'🍎':berry,'🍉':berry,'🍋':berry,'🍍':berry,
+    '🧁':cupcake,'🍰':cupcake,'🍦':cupcake,'🍧':cupcake,'🍡':candy,'🍹':cupcake,
+    '🍁':()=>leaf('#e87a45'),'🍂':()=>leaf('#d89a45'),'🌿':()=>leaf('#73bd78'),'🌱':()=>leaf('#86cf8c'),
+    '🍄':mushroom,'🌰':mushroom,'🍠':mushroom,'☕':cupcake,'🧶':bow,
+    '❄️':snow,'⛄':snow,'☃️':snow,'🎄':()=>star('#6fb878'),'🎁':bow,'🧣':bow,'🧤':bow,
+    '☀️':sun,'🌙':()=>star('#c5b7ff'),'🌊':rainbow,'🐚':()=>star('#f8c9d9'),'🌴':()=>leaf('#65b87b'),'🐬':()=>star('#7bd8ec'),
+    '🐝':()=>star('#ffd75d'),'🦋':bow,'🐣':()=>heart('#ffe982'),'🐰':()=>heart('#fff'),'🦄':()=>star('#dca8ff')
   };
   (pick[e]||(()=>heart('#ff7eb6')))();
   ctx.restore();
@@ -779,9 +825,22 @@ function randomMsg(){ setRandomMessage(); }
 randomMsg.onclick=randomMsg;
 titleText.oninput=draw;subText.oninput=draw;
 randomAll.onclick=()=>{state.bg=rand(moods.length);state.deco=pickDecoIndex();state.frame=rand(6);state.frameWidth=2+rand(4);state.layout=rand(5);state.density=3+rand(3);density.value=state.density;densityo.value=state.density;frameWidth.value=state.frameWidth;frameWidtho.value=state.frameWidth;setRandomMessage();state.x=Math.random()<.5?(-285+rand(90)):(215+rand(100));state.y=-10+rand(80);state.scale=1.48+Math.random()*.4;state.flip=Math.random()<.35;sync();draw()};
-randomBg.onclick=()=>{state.bg=rand(moods.length);draw()};randomDeco.onclick=()=>{state.deco=pickDecoIndex();state.density=3+rand(3);density.value=state.density;densityo.value=state.density;draw()};randomFrame.onclick=()=>{state.frame=rand(6);state.frameWidth=3+rand(3);frameWidth.value=state.frameWidth;frameWidtho.value=state.frameWidth;draw()};randomLayout.onclick=()=>{state.layout=rand(5);draw()};
+randomBg.onclick=()=>{state.bg=rand(moods.length);draw()};randomDeco.onclick=()=>{
+  state.deco=pickDecoIndex();
+  state.density=3+rand(3);
+  density.value=state.density;densityo.value=state.density;
+  draw();
+};randomFrame.onclick=()=>{state.frame=rand(6);state.frameWidth=3+rand(3);frameWidth.value=state.frameWidth;frameWidtho.value=state.frameWidth;draw()};randomLayout.onclick=()=>{state.layout=rand(5);draw()};
 
-decoTheme.onchange=()=>{state.deco=pickDecoIndex();draw()};
+decoTheme.onchange=()=>{
+  state.deco=pickDecoIndex();
+  state.density=5;
+  density.value=5;
+  densityo.value=5;
+  draw();
+  const label=decoTheme.options[decoTheme.selectedIndex].text;
+  status('🎨 飾りテーマを「'+label+'」に変更しました。');
+};
 
 
 density.oninput=e=>{state.density=+e.target.value;densityo.value=e.target.value;draw()};frameWidth.oninput=e=>{state.frameWidth=+e.target.value;frameWidtho.value=e.target.value;draw()};
