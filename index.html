@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おはよう画像メーカー v2.7</title>
+<title>おはよう画像メーカー v2.8</title>
 <style>
 :root{
   --ink:#352f44; --muted:#81798e; --line:#ece7f4; --panel:#fff;
@@ -41,11 +41,14 @@ input[type=range]{width:100%}
 .footer{font-size:11px;color:#9891a3;text-align:center;margin-top:16px}
 .mode.active{outline:3px solid #9b86ef;background:#ece6ff}
 @media(max-width:560px){.grid3{grid-template-columns:1fr 1fr}}
+
+.history-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.history-row button:disabled{opacity:.38;filter:grayscale(.25)}
 </style>
 </head>
 <body>
 <div class="wrap">
-<h1>🌞 おはよう画像メーカー v2.7</h1>
+<h1>🌞 おはよう画像メーカー v2.8</h1>
 <div class="lead">
   透過の手直し機能はそのまま。今回はデザインをさらに盛りました。
   <b>大きい絵文字＋小さい絵文字＋太めのかわいいフレーム</b>をランダム配置。
@@ -106,6 +109,10 @@ input[type=range]{width:100%}
 
 <div class="card">
   <div class="section-title">④ デザインを作る</div>
+  <div class="row history-row" style="margin-bottom:10px">
+    <button id="undoBtn" class="soft" disabled>↩️ ひとつ戻る</button>
+    <button id="redoBtn" class="soft" disabled>↪️ ひとつ進む</button>
+  </div>
   <button id="randomAll" class="primary">✨ 全部ランダム作成</button>
   <div class="grid3" style="margin-top:8px">
     <button id="randomBg" class="soft">🎨 背景</button>
@@ -134,7 +141,7 @@ input[type=range]{width:100%}
   </div>
 </div>
 
-<div class="footer">おはよう画像メーカー v2.7</div>
+<div class="footer">おはよう画像メーカー v2.8</div>
 </div>
 
 <script>
@@ -586,31 +593,86 @@ removeBg.onclick=async()=>{
 };
 useOriginal.onclick=()=>{if(state.sourceImg){state.charImg=state.sourceImg;state.mask=null;draw();status('元画像に戻しました。')}};
 
-function randomMsg(){
+
+const undoStack=[], redoStack=[];
+function snapshot(){
+  return {
+    bg:state.bg,deco:state.deco,frame:state.frame,frameWidth:state.frameWidth,
+    layout:state.layout,density:state.density,x:state.x,y:state.y,
+    scale:state.scale,flip:state.flip,
+    title:titleText.value,sub:subText.value,
+    mask:state.mask ? new Uint8ClampedArray(state.mask.data) : null,
+    maskW:state.mask?.width||0, maskH:state.mask?.height||0
+  };
+}
+function sameSnap(a,b){
+  if(!a||!b)return false;
+  return ['bg','deco','frame','frameWidth','layout','density','x','y','scale','flip','title','sub']
+    .every(k=>a[k]===b[k]);
+}
+function updateHistoryButtons(){
+  undoBtn.disabled=undoStack.length===0;
+  redoBtn.disabled=redoStack.length===0;
+}
+function remember(){
+  const now=snapshot(), last=undoStack[undoStack.length-1];
+  if(!sameSnap(now,last)) undoStack.push(now);
+  if(undoStack.length>40)undoStack.shift();
+  redoStack.length=0; updateHistoryButtons();
+}
+function restoreSnap(v){
+  if(!v)return;
+  Object.assign(state,{bg:v.bg,deco:v.deco,frame:v.frame,frameWidth:v.frameWidth,
+    layout:v.layout,density:v.density,x:v.x,y:v.y,scale:v.scale,flip:v.flip});
+  titleText.value=v.title; subText.value=v.sub;
+  density.value=v.density; densityo.value=v.density;
+  frameWidth.value=v.frameWidth; frameWidtho.value=v.frameWidth;
+  if(v.mask && v.maskW && v.maskH){
+    const copy=new Uint8ClampedArray(v.mask);
+    state.mask=new ImageData(copy,v.maskW,v.maskH);
+  }
+  sync(); draw(); updateHistoryButtons();
+}
+undoBtn.onclick=()=>{
+  if(!undoStack.length)return;
+  redoStack.push(snapshot());
+  restoreSnap(undoStack.pop());
+};
+redoBtn.onclick=()=>{
+  if(!redoStack.length)return;
+  undoStack.push(snapshot());
+  restoreSnap(redoStack.pop());
+};
+
+function setRandomMessage(){
  let tone=document.getElementById('tone').value;if(tone==='auto')tone=pick(['genki','genki','gentle','yurui','ouen']);
  subText.value=pick(messages[tone]);draw();
 }
+function randomMsg(){ remember(); setRandomMessage(); }
 randomMsg.onclick=randomMsg;
-titleText.oninput=draw;subText.oninput=draw;
-randomAll.onclick=()=>{state.bg=rand(moods.length);state.deco=rand(emojiSets.length);state.frame=rand(6);state.frameWidth=2+rand(4);state.layout=rand(5);state.density=3+rand(3);density.value=state.density;densityo.value=state.density;frameWidth.value=state.frameWidth;frameWidtho.value=state.frameWidth;randomMsg();state.x=Math.random()<.5?(-285+rand(90)):(215+rand(100));state.y=-10+rand(80);state.scale=1.48+Math.random()*.4;state.flip=Math.random()<.35;sync();draw()};
-randomBg.onclick=()=>{state.bg=rand(moods.length);draw()};randomDeco.onclick=()=>{state.deco=rand(emojiSets.length);state.density=3+rand(3);density.value=state.density;densityo.value=state.density;draw()};randomFrame.onclick=()=>{state.frame=rand(6);state.frameWidth=3+rand(3);frameWidth.value=state.frameWidth;frameWidtho.value=state.frameWidth;draw()};randomLayout.onclick=()=>{state.layout=rand(5);draw()};
+let textHistoryTimer;
+function textChanged(){
+ clearTimeout(textHistoryTimer);
+ textHistoryTimer=setTimeout(()=>{ remember(); draw(); },180);
+ draw();
+}
+titleText.addEventListener('focus',()=>{titleText.dataset.before=titleText.value});
+subText.addEventListener('focus',()=>{subText.dataset.before=subText.value});
+titleText.oninput=textChanged;subText.oninput=textChanged;
+randomAll.onclick=()=>{remember();state.bg=rand(moods.length);state.deco=rand(emojiSets.length);state.frame=rand(6);state.frameWidth=2+rand(4);state.layout=rand(5);state.density=3+rand(3);density.value=state.density;densityo.value=state.density;frameWidth.value=state.frameWidth;frameWidtho.value=state.frameWidth;setRandomMessage();state.x=Math.random()<.5?(-285+rand(90)):(215+rand(100));state.y=-10+rand(80);state.scale=1.48+Math.random()*.4;state.flip=Math.random()<.35;sync();draw()};
+randomBg.onclick=()=>{remember();state.bg=rand(moods.length);draw()};randomDeco.onclick=()=>{remember();state.deco=rand(emojiSets.length);state.density=3+rand(3);density.value=state.density;densityo.value=state.density;draw()};randomFrame.onclick=()=>{remember();state.frame=rand(6);state.frameWidth=3+rand(3);frameWidth.value=state.frameWidth;frameWidtho.value=state.frameWidth;draw()};randomLayout.onclick=()=>{remember();state.layout=rand(5);draw()};
+
+[density,frameWidth,x,y,scale].forEach(el=>{
+  el.addEventListener('pointerdown',remember,{passive:true});
+  el.addEventListener('touchstart',remember,{passive:true});
+});
+
 density.oninput=e=>{state.density=+e.target.value;densityo.value=e.target.value;draw()};frameWidth.oninput=e=>{state.frameWidth=+e.target.value;frameWidtho.value=e.target.value;draw()};
-flip.onclick=()=>{state.flip=!state.flip;draw()};
+flip.onclick=()=>{remember();state.flip=!state.flip;draw()};
 function sync(){x.value=Math.round(state.x);y.value=Math.round(state.y);scale.value=Math.round(state.scale*100);xo.value=Math.round(state.x);yo.value=Math.round(state.y);so.value=Math.round(state.scale*100)+'%'}
 ['x','y','scale'].forEach(id=>document.getElementById(id).addEventListener('input',e=>{if(id==='scale')state.scale=+e.target.value/100;else state[id]=+e.target.value;sync();draw()}));
 save.onclick=()=>{draw();const a=document.createElement('a');a.download='ohayou.png';a.href=cv.toDataURL('image/png');a.click()};
-reset.onclick=()=>{brush.value=22;brusho.value=22;hardnessEl.value=96;hardnesso.value=96;state.bg=0;state.deco=0;state.frame=0;state.frameWidth=4;state.layout=0;state.density=5;state.x=-250;state.y=18;state.scale=1.72;state.flip=false;titleText.value='おはよう！';subText.value='素敵を集めに\\n行ってみよー！';density.value=5;densityo.value=5;frameWidth.value=4;frameWidtho.value=4;sync();draw()};
-sync();draw();
+reset.onclick=()=>{remember();brush.value=22;brusho.value=22;hardnessEl.value=96;hardnesso.value=96;state.bg=0;state.deco=0;state.frame=0;state.frameWidth=4;state.layout=0;state.density=5;state.x=-250;state.y=18;state.scale=1.72;state.flip=false;titleText.value='おはよう！';subText.value='素敵を集めに\\n行ってみよー！';density.value=5;densityo.value=5;frameWidth.value=4;frameWidtho.value=4;sync();draw()};
+sync();draw();updateHistoryButtons();
 </script>
-</body></html
-const textColors=[
- '#ff4f86', // raspberry pink
- '#8a6be8', // bright violet
- '#4fa8d8', // sky blue
- '#ff7a45', // coral orange
- '#52b79a', // mint green
- '#d65db1', // magenta
- '#6f86e8', // periwinkle blue
- '#e59a2f'  // honey orange
-];
->
+</body></html>
