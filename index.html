@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おはよう画像メーカー v4.4</title>
+<title>おはよう画像メーカー v4.5</title>
 <style>
 :root{
   --ink:#352f44; --muted:#81798e; --line:#ece7f4; --panel:#fff;
@@ -48,11 +48,11 @@ input[type=range]{width:100%}
 </head>
 <body>
 <div class="wrap">
-<h1>🌞 おはよう画像メーカー v4.4</h1>
+<h1>🌞 おはよう画像メーカー v4.5</h1>
 <div class="lead">
   透過の手直し機能はそのまま。今回はデザインをさらに盛りました。
   <b>大きい絵文字＋小さい絵文字＋太めのかわいいフレーム</b>をランダム配置。
-  「全部ランダム」で毎朝ガチャできます。今回は小さい絵文字の最小サイズを上げ、顔まわりに飾りが被りにくいように調整しました。
+  「全部ランダム」で毎朝ガチャできます。今回は小さい絵文字の最小サイズをさらに上げて、見やすさを強化しました。
 </div>
 
 <div class="card">
@@ -170,7 +170,7 @@ input[type=range]{width:100%}
   </div>
 </div>
 
-<div class="footer">おはよう画像メーカー v4.4</div>
+<div class="footer">おはよう画像メーカー v4.5</div>
 </div>
 
 <script>
@@ -686,7 +686,7 @@ function drawBg(){
  }
  for(let i=0;i<smallCount;i++){
    const symbol=set[Math.floor(seeded()*set.length)];
-   put(symbol,'small',52+seeded()*22);
+   put(symbol,'small',68+seeded()*26);
  }
 }function drawBackDeco(){drawEmojiLayer(false)}
 function drawFrontDeco(){drawEmojiLayer(true)}
@@ -988,7 +988,7 @@ removeBg.onclick=async()=>{
      state.mask=id;
      clearMaskHistory();
      state.charImg=img;draw();
-     status('✨ AI切り抜き完了。白い服が欠けたら「戻す」＋細かく10＋硬さ96で輪郭をなぞると精密に戻せます。大きい飾りは内側寄り、小さい飾りは前より大きめ＆顔まわりを強めに避けて散らします。');
+     status('✨ AI切り抜き完了。白い服が欠けたら「戻す」＋細かく10＋硬さ96で輪郭をなぞると精密に戻せます。大きい飾りは内側寄り、小さい飾りはさらに大きめ＆顔まわりを避けて散らします。');
      removeBg.disabled=false;removeBg.textContent='✂️ AIで女の子を切り抜く';
    };
    img.src=url;
