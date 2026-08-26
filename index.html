@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おはよう画像メーカー v3.2</title>
+<title>おはよう画像メーカー v3.3</title>
 <style>
 :root{
   --ink:#352f44; --muted:#81798e; --line:#ece7f4; --panel:#fff;
@@ -48,7 +48,7 @@ input[type=range]{width:100%}
 </head>
 <body>
 <div class="wrap">
-<h1>🌞 おはよう画像メーカー v3.2</h1>
+<h1>🌞 おはよう画像メーカー v3.3</h1>
 <div class="lead">
   透過の手直し機能はそのまま。今回はデザインをさらに盛りました。
   <b>大きい絵文字＋小さい絵文字＋太めのかわいいフレーム</b>をランダム配置。
@@ -114,6 +114,7 @@ input[type=range]{width:100%}
 
 <div class="card">
   <div class="section-title">④ デザインを作る</div>
+  <div class="tip">飾りは<strong>空白を埋めるようにバラけて配置</strong>。顔が来る真ん中付近には置かず、まわりは重なってもOK。文字は飾りより前に表示されます。</div>
   <div class="tip">重なり順：<strong>背景 → フレーム → おはようメッセージ → 女の子 → 絵文字（飾り）</strong></div>
   <button id="randomAll" class="primary">✨ 全部ランダム作成</button>
   <div class="grid3" style="margin-top:8px">
@@ -143,7 +144,7 @@ input[type=range]{width:100%}
   </div>
 </div>
 
-<div class="footer">おはよう画像メーカー v3.2</div>
+<div class="footer">おはよう画像メーカー v3.3</div>
 </div>
 
 <script>
@@ -340,22 +341,64 @@ function drawFrame(){
 function drawEmojiLayer(front=false){
  decoSeed=1000+state.deco*7919+state.bg*313+(front?71:0);
  const set=emojiSets[state.deco%emojiSets.length];
- const count=(front?4:10)+state.density*(front?1:6);
+ const count=(front?5:12)+state.density*(front?1:5);
+
+ // Estimate where the avatar is so the face/middle area stays readable.
+ let cx=W*.5+state.x, h=790*state.scale, top=H*.5+195+state.y-h;
+ let rxFace=115*state.scale, ryFace=120*state.scale;
+ let rxMid=145*state.scale, ryMid=175*state.scale;
+ const faceCy=top+h*.24;
+ const midCy=top+h*.36;
+
+ const placed=[];
+ function blocked(x,y,size){
+   // Keep the very center of the avatar/face open.
+   const dxFace=(x-cx)/Math.max(1,rxFace+size*.18);
+   const dyFace=(y-faceCy)/Math.max(1,ryFace+size*.15);
+   if(dxFace*dxFace+dyFace*dyFace < 1) return true;
+
+   const dxMid=(x-cx)/Math.max(1,rxMid+size*.10);
+   const dyMid=(y-midCy)/Math.max(1,ryMid+size*.06);
+   if(dxMid*dxMid+dyMid*dyMid < 1 && Math.abs(x-cx) < rxMid*.9) return true;
+
+   // Keep a little breathing room near the middle of the main message.
+   const textBandY1=160, textBandY2=H-150;
+   if(x>270 && x<930 && y>textBandY1 && y<textBandY2 && size>120) return true;
+
+   // Scatter decorations rather than clump.
+   for(const p of placed){
+     const minDist=(p.size+size)*(front?0.34:0.44);
+     if(Math.hypot(x-p.x,y-p.y) < minDist) return true;
+   }
+   return false;
+ }
+
  for(let i=0;i<count;i++){
    const e=set[Math.floor(seeded()*set.length)];
    let size;
-   if(i<5&&!front)size=120+seeded()*115;
-   else if(i<13&&!front)size=70+seeded()*80;
-   else size=32+seeded()*54;
-   let x=35+seeded()*(W-70),y=35+seeded()*(H-70);
-   if(i%4!==0){
-     const side=Math.floor(seeded()*4);
-     if(side===0)y=38+seeded()*145;
-     if(side===1)y=H-38-seeded()*135;
-     if(side===2)x=38+seeded()*140;
-     if(side===3)x=W-38-seeded()*140;
+   if(i<4&&!front) size=110+seeded()*100;
+   else if(i<10&&!front) size=64+seeded()*68;
+   else size=28+seeded()*42;
+
+   let x=0,y=0,ok=false;
+   for(let attempt=0;attempt<80 && !ok;attempt++){
+     // Mostly fill perimeter / empty areas, but allow a few in the interior.
+     if(seeded()<0.72){
+       const side=Math.floor(seeded()*4), pad=28;
+       if(side===0){x=pad+seeded()*(W-pad*2); y=pad+seeded()*120;}
+       if(side===1){x=pad+seeded()*(W-pad*2); y=H-pad-seeded()*120;}
+       if(side===2){x=pad+seeded()*130; y=pad+seeded()*(H-pad*2);}
+       if(side===3){x=W-pad-seeded()*130; y=pad+seeded()*(H-pad*2);}
+     }else{
+       x=40+seeded()*(W-80);
+       y=40+seeded()*(H-80);
+     }
+     if(!blocked(x,y,size)){
+       ok=true;
+       placed.push({x,y,size});
+       emoji(e,x,y,size,(seeded()-.5)*.55,front?.92:.88);
+     }
    }
-   emoji(e,x,y,size,(seeded()-.5)*.75,front?.9:.88);
  }
 }
 function drawBackDeco(){drawEmojiLayer(false)}
@@ -470,7 +513,7 @@ function drawText(){
  }
 }
 function draw(){
- drawBg();drawFrame();drawText();drawCharacter();drawBackDeco();drawFrontDeco();
+ drawBg();drawFrame();drawCharacter();drawBackDeco();drawFrontDeco();drawText();
 }
 
 function canvasPoint(ev){
