@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おはよう画像メーカー v5.0</title>
+<title>おはよう画像メーカー v5.1</title>
 <style>
 :root{
   --ink:#352f44; --muted:#81798e; --line:#ece7f4; --panel:#fff;
@@ -48,11 +48,11 @@ input[type=range]{width:100%}
 </head>
 <body>
 <div class="wrap">
-<h1>🌞 おはよう画像メーカー v5.0</h1>
+<h1>🌞 おはよう画像メーカー v5.1</h1>
 <div class="lead">
   透過の手直し機能はそのまま。今回はデザインをさらに盛りました。
   <b>大きい絵文字＋小さい絵文字＋太めのかわいいフレーム</b>をランダム配置。
-  「全部ランダム」で毎朝ガチャできます。今回は<strong>輪郭アシスト付きの透過手直し</strong>はそのままに、消えていた飾り生成処理を修復しました。<strong>メイン飾り＋サブ飾り＋空白埋め</strong>の配置ロジックで表示されます。
+  「全部ランダム」で毎朝ガチャできます。今回は<strong>輪郭アシスト付きの透過手直し</strong>はそのままに、<strong>大きい飾り4点＋中飾り＋小飾り</strong>で四隅感と空白埋めが出やすいように再調整しました。
 </div>
 
 <div class="card">
@@ -169,7 +169,7 @@ input[type=range]{width:100%}
   </div>
 </div>
 
-<div class="footer">おはよう画像メーカー v5.0</div>
+<div class="footer">おはよう画像メーカー v5.1</div>
 </div>
 
 <script>
@@ -649,60 +649,55 @@ function drawBg(){
    ctx.strokeStyle=c;ctx.lineWidth=5;ctx.strokeRect(inset+12,inset+12,W-(inset+12)*2,H-(inset+12)*2);
  }
  ctx.restore();
-}function drawEmojiLayer(front=false){
+}
+function drawEmojiLayer(front=false){
  decoSeed=1000+state.deco*7919+state.bg*313+(front?71:0);
  const set=emojiSets[state.deco%emojiSets.length];
  const recipe=decorRecipe();
 
+ const hasAvatar=!!state.charImg;
+ const textInfo=getTextLayoutInfo();
+ const leftChar=state.x<0;
+ const avatarSide=hasAvatar?(leftChar?'left':'right'):'left';
+ const textSide=hasAvatar?(leftChar?'right':'left'):'right';
+
  let cx=W*.5+state.x, h=790*state.scale, top=H*.5+195+state.y-h;
  const faceCy=top+h*.25;
  const faceRx=186*state.scale, faceRy=202*state.scale;
- const leftChar=state.x<0;
- const textInfo=getTextLayoutInfo();
- const avatarSide=leftChar?'left':'right';
- const textSide=leftChar?'right':'left';
- const portraitSafe={
-   x1:cx-192*state.scale,
-   x2:cx+192*state.scale,
-   y1:top+10,
-   y2:top+h*.94
- };
  const placed=state._decoPlaced || (state._decoPlaced=[]);
 
- function sideX(side,near=0.22,far=0.78){ return side==='left'?W*near:W*far; }
- const slotAnchors={
-   avatarUpper:{x:sideX(avatarSide,.16,.84), y:118},
-   avatarLower:{x:sideX(avatarSide,.22,.78), y:H-120},
-   textUpper:{x:sideX(textSide,.28,.72), y:116},
-   textLower:{x:sideX(textSide,.28,.72), y:H-112},
-   midTop:{x:W*.5, y:96},
-   midBottom:{x:W*.5, y:H-82}
+ function cornerX(side,pad){ return side==='left'?pad:W-pad; }
+ const slotAnchors = hasAvatar ? {
+   avatarUpper:{x:cornerX(avatarSide,128), y:104},
+   textUpper:{x:cornerX(textSide,108), y:100},
+   avatarLower:{x:cornerX(avatarSide,130), y:H-108},
+   textLower:{x:cornerX(textSide,116), y:H-106}
+ } : {
+   avatarUpper:{x:128, y:102},
+   textUpper:{x:W-128, y:102},
+   avatarLower:{x:128, y:H-108},
+   textLower:{x:W-128, y:H-108}
  };
 
- const mediumSpots=[
-   [92,124],[W-92,124],[92,550],[W-92,550],
-   [190,92],[W-190,92],[190,H-94],[W-190,H-94],
-   [302,112],[W-302,112],[302,H-108],[W-302,H-108],
-   [82,236],[W-82,236],[82,402],[W-82,402],
-   [250,210],[W-250,210],[250,470],[W-250,470],
-   [W*.5,112],[W*.5,H-102]
- ];
-   const smallSpots=[
-   [72,86],[W-72,86],[156,82],[W-156,82],[256,86],[W-256,86],[366,92],[W-366,92],[470,98],[W-470,98],
-   [68,170],[W-68,170],[68,258],[W-68,258],[68,352],[W-68,352],[68,448],[W-68,448],[68,542],[W-68,542],[68,620],[W-68,620],
-   [160,618],[W-160,618],[264,620],[W-264,620],[366,618],[W-366,618],[470,612],[W-470,612],
-   [215,168],[W-215,168],[280,248],[W-280,248],[360,330],[W-360,330],[280,418],[W-280,418],[214,506],[W-214,506],
-   [W*.5,108],[W*.5,178],[W*.5,566],[W*.5,626]
- ];
+ const mediumSpots=[];
+ for(let x=116;x<=W-116;x+=110){ mediumSpots.push([x,94],[x,H-94]); }
+ for(let y=160;y<=H-160;y+=84){ mediumSpots.push([90,y],[W-90,y],[144,y],[W-144,y]); }
+ [[250,190],[W-250,190],[250,H-190],[W-250,H-190],[W*.5,132],[W*.5,H-132],[W*.5,214],[W*.5,H-214],[250,338],[W-250,338]].forEach(v=>mediumSpots.push(v));
+
+ const smallSpots=[];
+ for(let x=76;x<=W-76;x+=78){ smallSpots.push([x,78],[x,126],[x,H-78],[x,H-126]); }
+ for(let y=132;y<=H-132;y+=66){ smallSpots.push([72,y],[120,y],[W-72,y],[W-120,y]); }
+ [[200,170],[W-200,170],[300,185],[W-300,185],[200,H-170],[W-200,H-170],[300,H-185],[W-300,H-185],
+  [W*.5,92],[W*.5,176],[W*.5,250],[W*.5,425],[W*.5,498],[W*.5,582],[235,270],[W-235,270],[235,420],[W-235,420]].forEach(v=>smallSpots.push(v));
 
  function insideFaceSafe(x,y,size,kind){
-   if(!state.charImg) return false;
+   if(!hasAvatar) return false;
    const pad=size*.34;
    const dx=(x-cx)/(faceRx+pad), dy=(y-faceCy)/(faceRy+pad);
    if(dx*dx+dy*dy<1) return true;
    const bodyCy=top+h*.58;
-   const bodyRx=(kind==='small'?165:196)*state.scale + size*.18;
-   const bodyRy=(kind==='small'?278:312)*state.scale + size*.12;
+   const bodyRx=(kind==='small'?158:190)*state.scale + size*.16;
+   const bodyRy=(kind==='small'?260:306)*state.scale + size*.12;
    const bdx=(x-cx)/bodyRx, bdy=(y-bodyCy)/bodyRy;
    return bdx*bdx+bdy*bdy<1;
  }
@@ -714,86 +709,94 @@ function drawBg(){
    return Math.hypot(x-nx,y-ny)<r;
  }
  function insideTextSafe(x,y,size,kind){
-   const r=size*.52;
-   if(circleHitsRect(x,y,r,textInfo.titleBox, kind==='small'?42:74)) return true;
-   if(circleHitsRect(x,y,r,textInfo.subBox, kind==='small'?34:60)) return true;
+   const r=size*.50;
+   if(circleHitsRect(x,y,r,textInfo.titleBox, kind==='small'?34:64)) return true;
+   if(circleHitsRect(x,y,r,textInfo.subBox, kind==='small'?28:56)) return true;
    return false;
  }
  function clashes(x,y,size,kind){
    for(const p of placed){
-     let f=kind==='main'||p.kind==='main'?0.96:kind==='sub'||p.kind==='sub'?0.86:kind==='medium'||p.kind==='medium'?0.76:0.68;
-     const gap=kind==='small'&&p.kind==='small'?12:18;
+     let f;
+     if(kind==='main'||p.kind==='main') f=0.80;
+     else if(kind==='sub'||p.kind==='sub') f=0.74;
+     else if(kind==='medium'||p.kind==='medium') f=0.68;
+     else f=0.58;
+     const gap = (kind==='small'&&p.kind==='small')?10:14;
      if(Math.hypot(x-p.x,y-p.y)<(p.size+size)*f+gap) return true;
    }
    return false;
+ }
+ function pointFits(x,y,size,kind){
+   const margin=size*.52+8;
+   if(x<margin||x>W-margin||y<margin||y>H-margin) return false;
+   if(insideFaceSafe(x,y,size,kind)) return false;
+   if(insideTextSafe(x,y,size,kind)) return false;
+   if(clashes(x,y,size,kind)) return false;
+   return true;
  }
  function fallbackPoint(kind){
    const source=(kind==='small'?smallSpots:mediumSpots).slice();
    for(let i=source.length-1;i>0;i--){const j=Math.floor(seeded()*(i+1));[source[i],source[j]]=[source[j],source[i]]}
    for(const [x,y] of source){
-     if(!insideFaceSafe(x,y,kind==='small'?90:120,kind) && !insideTextSafe(x,y,kind==='small'?90:120,kind)) return {x,y};
+     if(pointFits(x,y,kind==='small'?76:102,kind)) return {x,y};
    }
    return {x:W*.5,y:H*.5};
  }
  function tryPlace(symbol,kind,size,anchors,jx,jy,alpha){
    const tries=Array.isArray(anchors)?anchors:[anchors];
+   const margin=size*.54+10;
    for(const base of tries){
-     for(let attempt=0; attempt<80; attempt++){
-       const x=Math.max(44,Math.min(W-44,base.x+(seeded()-.5)*jx));
-       const y=Math.max(44,Math.min(H-44,base.y+(seeded()-.5)*jy));
-       if(insideFaceSafe(x,y,size,kind)) continue;
-       if(insideTextSafe(x,y,size,kind)) continue;
-       if(clashes(x,y,size,kind)) continue;
+     for(let attempt=0; attempt<140; attempt++){
+       const x=Math.max(margin,Math.min(W-margin,base.x+(seeded()-.5)*jx));
+       const y=Math.max(margin,Math.min(H-margin,base.y+(seeded()-.5)*jy));
+       if(!pointFits(x,y,size,kind)) continue;
        placed.push({x,y,size,kind});
-       emoji(symbol,x,y,size,(seeded()-.5)*(kind==='small'?0.28:0.18),alpha);
+       emoji(symbol,x,y,size,(seeded()-.5)*(kind==='small'?0.24:0.16),alpha);
        return true;
      }
    }
    const fb=fallbackPoint(kind);
-   for(let attempt=0; attempt<100; attempt++){
-     const x=Math.max(44,Math.min(W-44,fb.x+(seeded()-.5)*(kind==='small'?64:98)));
-     const y=Math.max(44,Math.min(H-44,fb.y+(seeded()-.5)*(kind==='small'?58:92)));
-     if(insideFaceSafe(x,y,size,kind)) continue;
-     if(insideTextSafe(x,y,size,kind)) continue;
-     if(clashes(x,y,size,kind)) continue;
+   for(let attempt=0; attempt<120; attempt++){
+     const x=Math.max(margin,Math.min(W-margin,fb.x+(seeded()-.5)*(kind==='small'?72:104)));
+     const y=Math.max(margin,Math.min(H-margin,fb.y+(seeded()-.5)*(kind==='small'?62:96)));
+     if(!pointFits(x,y,size,kind)) continue;
      placed.push({x,y,size,kind});
-     emoji(symbol,x,y,size,(seeded()-.5)*(kind==='small'?0.28:0.18),alpha);
+     emoji(symbol,x,y,size,(seeded()-.5)*(kind==='small'?0.24:0.16),alpha);
      return true;
    }
    return false;
  }
 
- const largeMainSize=front?0:156+seeded()*26;
- const largeSubSize=front?0:118+seeded()*18;
  if(!front){
-   const mainA=recipe.mainPair[0], mainB=recipe.mainPair[1];
-   const subA=recipe.subPair[0], subB=recipe.subPair[1];
-   tryPlace(mainA,'main',largeMainSize,{x:slotAnchors.avatarUpper.x,y:slotAnchors.avatarUpper.y},56,44,.96);
-   tryPlace(mainB,'main',154+seeded()*24,{x:slotAnchors.textLower.x,y:slotAnchors.textLower.y},68,52,.96);
-   tryPlace(subA,'sub',largeSubSize,{x:slotAnchors.textUpper.x,y:slotAnchors.textUpper.y},64,46,.93);
-   tryPlace(subB,'sub',116+seeded()*18,{x:slotAnchors.avatarLower.x,y:slotAnchors.avatarLower.y},62,50,.93);
+   const [mainA,mainB]=recipe.mainPair;
+   const [subA,subB]=recipe.subPair;
+   tryPlace(mainA,'main',168+seeded()*24,{x:slotAnchors.avatarUpper.x,y:slotAnchors.avatarUpper.y},34,28,.97);
+   tryPlace(mainB,'main',158+seeded()*22,{x:slotAnchors.textLower.x,y:slotAnchors.textLower.y},38,30,.97);
+   tryPlace(subA,'sub',132+seeded()*18,{x:slotAnchors.textUpper.x,y:slotAnchors.textUpper.y},34,28,.95);
+   tryPlace(subB,'sub',126+seeded()*18,{x:slotAnchors.avatarLower.x,y:slotAnchors.avatarLower.y},36,30,.95);
 
-   const mediumCount=4+state.density;
+   const mediumCount=8+state.density*2;
    const mediumPool=[...recipe.fill,...set];
    const shuffled=mediumSpots.slice();
    for(let i=shuffled.length-1;i>0;i--){const j=Math.floor(seeded()*(i+1));[shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]]}
    for(let i=0;i<mediumCount;i++){
      const sym=mediumPool[Math.floor(seeded()*mediumPool.length)];
      const spot=shuffled[i%shuffled.length];
-     tryPlace(sym,'medium',92+seeded()*22,{x:spot[0],y:spot[1]},56,44,.91);
+     tryPlace(sym,'medium',96+seeded()*18,{x:spot[0],y:spot[1]},42,34,.92);
    }
  }else{
    const smallPool=[...recipe.fill,...set];
    const shuffled=smallSpots.slice();
    for(let i=shuffled.length-1;i>0;i--){const j=Math.floor(seeded()*(i+1));[shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]]}
-   const smallCount=10+state.density*3;
+   const smallCount=18+state.density*5;
    for(let i=0;i<smallCount;i++){
      const sym=smallPool[Math.floor(seeded()*smallPool.length)];
      const spot=shuffled[i%shuffled.length];
-     tryPlace(sym,'small',84+seeded()*18,{x:spot[0],y:spot[1]},38,34,.92);
+     tryPlace(sym,'small',68+seeded()*18,{x:spot[0],y:spot[1]},30,26,.90);
    }
  }
 }
+
 function drawBackDeco(){drawEmojiLayer(false)}
 function drawFrontDeco(){drawEmojiLayer(true)}
 function rebuildChar(){
