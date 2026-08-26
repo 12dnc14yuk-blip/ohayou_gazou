@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おはよう画像メーカー v3.7</title>
+<title>おはよう画像メーカー v3.8</title>
 <style>
 :root{
   --ink:#352f44; --muted:#81798e; --line:#ece7f4; --panel:#fff;
@@ -48,7 +48,7 @@ input[type=range]{width:100%}
 </head>
 <body>
 <div class="wrap">
-<h1>🌞 おはよう画像メーカー v3.7</h1>
+<h1>🌞 おはよう画像メーカー v3.8</h1>
 <div class="lead">
   透過の手直し機能はそのまま。今回はデザインをさらに盛りました。
   <b>大きい絵文字＋小さい絵文字＋太めのかわいいフレーム</b>をランダム配置。
@@ -114,8 +114,18 @@ input[type=range]{width:100%}
 
 <div class="card">
   <div class="section-title">④ デザインを作る</div>
+  <div class="tip"><strong>センス重視モード</strong>：大きい飾りは主役として少数、小さい飾りは余白埋め。文字・顔まわりは抜いて、全体の色数も絞ってまとまりを出します。</div>
   <div class="tip">飾りは<strong>空白を埋めるようにバラけて配置</strong>。顔が来る真ん中付近には置かず、まわりは重なってもOK。文字は飾りより前に表示されます。</div>
   <div class="tip">重なり順：<strong>背景 → フレーム → おはようメッセージ → 女の子 → 絵文字（飾り）</strong></div>
+  <label class="field" style="margin-bottom:10px">
+    <span>デザインの雰囲気</span>
+    <select id="designMood">
+      <option value="pop">ポップかわいい</option>
+      <option value="sweet">甘めガーリー</option>
+      <option value="airy">ふわっと爽やか</option>
+      <option value="retro">レトロポップ</option>
+    </select>
+  </label>
   <label class="field" style="margin-bottom:10px">
     <span>飾りテーマ</span>
     <select id="decoTheme">
@@ -160,7 +170,7 @@ input[type=range]{width:100%}
   </div>
 </div>
 
-<div class="footer">おはよう画像メーカー v3.7</div>
+<div class="footer">おはよう画像メーカー v3.8</div>
 </div>
 
 <script>
@@ -169,7 +179,7 @@ const cv=document.getElementById('cv'),ctx=cv.getContext('2d'),W=cv.width,H=cv.h
 const state={
   sourceImg:null, cutoutImg:null, mask:null,
   charImg:null, x:-250,y:18,scale:1.72,flip:false,
-  bg:0,deco:0,frame:0,frameWidth:4,layout:0,density:5,
+  bg:0,deco:0,frame:0,frameWidth:4,layout:0,density:5,designMood:'pop',
   mode:'move',drag:false,lastX:0,lastY:0,lastPaint:null,rebuildTimer:null
 };
 
@@ -206,6 +216,33 @@ const moods=[
  {bg:'#c9f1e7',a:'#ff77b7',b:'#9b86ef',stroke:'#48aeb5',sub:'#ff5c9f'},
  {bg:'#c7d7ff',a:'#ff5f98',b:'#ffd95c',stroke:'#6f73e8',sub:'#ffffff'}
 ];
+
+const curatedLooks={
+ pop:{
+  bg:['#bfe8fb','#ffd1e4','#fff0ae','#d7c3f5'],
+  title:['#ff4d83','#795de4','#ff7a45'],
+  sub:['#45a8d6','#a06ad9','#53b89c'],
+  frame:['#ff4d9a','#ffd75a','#7bd9e4']
+ },
+ sweet:{
+  bg:['#ffd7e8','#f6c9e8','#ead3ff','#fff0f6'],
+  title:['#e94d91','#a25fd2','#d85aa8'],
+  sub:['#8b68d9','#d56da8','#6ba7d9'],
+  frame:['#ff8bbb','#c99af0','#fff']
+ },
+ airy:{
+  bg:['#d8f2ff','#d9f6ed','#eef7ff','#e8e4ff'],
+  title:['#4b9fd1','#5f83d6','#7a6ad8'],
+  sub:['#58b49e','#6d9bd8','#8f72d6'],
+  frame:['#86d9e8','#ffffff','#a7a0f0']
+ },
+ retro:{
+  bg:['#ffd8b8','#cde9df','#f9c7d8','#ead7a7'],
+  title:['#e55d43','#6c7bc9','#d85b86'],
+  sub:['#4e9a8a','#5b7fb8','#b57543'],
+  frame:['#ef7b65','#f2c45a','#6db6a5']
+ }
+};
 const textColors=[
  '#ff4f86','#8a6be8','#4fa8d8','#ff7a45',
  '#52b79a','#d65db1','#6f86e8','#e59a2f'
@@ -420,138 +457,107 @@ function stickerSymbol(e,x,y,size,rot=0,alpha=1){
 }
 function emoji(e,x,y,size,rot=0,a=1){ stickerSymbol(e,x,y,size,rot,a); }
 function drawBg(){
- const mood=moods[state.bg%moods.length];
- ctx.fillStyle=mood.bg;ctx.fillRect(0,0,W,H);
- const v=state.bg%6;
+ const mode=(document.getElementById('designMood')?.value)||state.designMood||'pop';
+ state.designMood=mode;
+ const look=curatedLooks[mode]||curatedLooks.pop;
+ const base=look.bg[state.bg%look.bg.length];
+ ctx.fillStyle=base;ctx.fillRect(0,0,W,H);
+
+ // Soft visual texture, never stronger than the content.
+ const v=state.bg%4;
  if(v===0){
-   let g=ctx.createRadialGradient(W*.68,H*.48,20,W*.68,H*.48,330);
-   g.addColorStop(0,'rgba(255,255,255,.92)');g.addColorStop(1,'rgba(255,255,255,0)');
+   let g=ctx.createRadialGradient(W*.72,H*.44,20,W*.72,H*.44,340);
+   g.addColorStop(0,'rgba(255,255,255,.88)');g.addColorStop(1,'rgba(255,255,255,0)');
    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
  }else if(v===1){
-   for(let x=0;x<W;x+=56){ctx.fillStyle=x%112===0?'rgba(255,255,255,.27)':'rgba(255,255,255,.11)';ctx.fillRect(x,0,28,H);}
+   for(let y=0;y<H;y+=64){ctx.fillStyle='rgba(255,255,255,.14)';ctx.fillRect(0,y,W,22);}
  }else if(v===2){
-   for(let y=0;y<H;y+=52){ctx.fillStyle=y%104===0?'rgba(255,255,255,.25)':'rgba(255,255,255,.10)';ctx.fillRect(0,y,W,26);}
- }else if(v===3){
-   for(let y=38;y<H;y+=72)for(let x=38;x<W;x+=72)circle(x,y,10,'rgba(255,255,255,.32)');
- }else if(v===4){
-   let g=ctx.createLinearGradient(0,0,W,H);g.addColorStop(0,'rgba(255,255,255,.55)');g.addColorStop(.5,'rgba(255,255,255,.03)');g.addColorStop(1,'rgba(255,255,255,.46)');
-   ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+   for(let y=40;y<H;y+=88)for(let x=42;x<W;x+=88)circle(x,y,8,'rgba(255,255,255,.24)');
  }else{
-   for(let i=0;i<10;i++){ctx.save();ctx.globalAlpha=.14;ctx.translate(rand(W),rand(H));ctx.rotate(rand(314)/100);rr(-120,-18,240,36,18,'#fff');ctx.restore();}
+   let g=ctx.createLinearGradient(0,0,W,H);
+   g.addColorStop(0,'rgba(255,255,255,.38)');g.addColorStop(.5,'rgba(255,255,255,.03)');g.addColorStop(1,'rgba(255,255,255,.34)');
+   ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
  }
-}
-function drawFrame(){
- const mood=moods[state.bg%moods.length];
- const f=state.frame%6,k=state.frameWidth,inset=48+7*k,thick=10+5*k;
+}function drawFrame(){
+ const mode=(document.getElementById('designMood')?.value)||state.designMood||'pop';
+ const look=curatedLooks[mode]||curatedLooks.pop;
+ const f=state.frame%5, k=state.frameWidth, inset=54+7*k, thick=7+4*k;
+ if(f===4) return; // intentional frameless design
+ const a=look.frame[0], b=look.frame[1], c=look.frame[2]||'#fff';
  ctx.save();ctx.lineJoin='round';
  if(f===0){
-   ctx.strokeStyle='#fff';ctx.lineWidth=thick+18;ctx.strokeRect(inset,inset,W-inset*2,H-inset*2);
-   ctx.strokeStyle=mood.a;ctx.lineWidth=thick+8;ctx.strokeRect(inset,inset,W-inset*2,H-inset*2);
-   ctx.strokeStyle=mood.b;ctx.lineWidth=5;ctx.strokeRect(inset+15,inset+15,W-(inset+15)*2,H-(inset+15)*2);
+   ctx.strokeStyle='#fff';ctx.lineWidth=thick+12;ctx.strokeRect(inset,inset,W-inset*2,H-inset*2);
+   ctx.strokeStyle=a;ctx.lineWidth=thick;ctx.strokeRect(inset,inset,W-inset*2,H-inset*2);
  }else if(f===1){
-   rr(inset,inset,W-inset*2,H-inset*2,34,'rgba(255,255,255,.04)',mood.a,thick+10);
-   rr(inset+16,inset+16,W-(inset+16)*2,H-(inset+16)*2,28,'rgba(255,255,255,.02)','#fff',8);
+   ctx.strokeStyle=a;ctx.lineWidth=thick+6;ctx.strokeRect(inset,inset,W-inset*2,H-inset*2);
+   ctx.strokeStyle=b;ctx.lineWidth=4;ctx.strokeRect(inset+14,inset+14,W-(inset+14)*2,H-(inset+14)*2);
  }else if(f===2){
-   ctx.setLineDash([28,16]);ctx.strokeStyle=mood.a;ctx.lineWidth=thick+6;ctx.strokeRect(inset,inset,W-inset*2,H-inset*2);
-   ctx.setLineDash([]);ctx.strokeStyle='#fff';ctx.lineWidth=6;ctx.strokeRect(inset+14,inset+14,W-(inset+14)*2,H-(inset+14)*2);
- }else if(f===3){
-   ctx.strokeStyle='#fff';ctx.lineWidth=thick+16;ctx.strokeRect(inset,inset,W-inset*2,H-inset*2);
-   ctx.strokeStyle=mood.b;ctx.lineWidth=thick+4;ctx.strokeRect(inset+8,inset+8,W-(inset+8)*2,H-(inset+8)*2);
- }else if(f===4){
-   rr(inset,inset,W-inset*2,H-inset*2,42,'rgba(255,255,255,.02)','#fff',thick+14);
-   rr(inset+12,inset+12,W-(inset+12)*2,H-(inset+12)*2,34,'rgba(255,255,255,.02)',mood.a,thick+2);
+   ctx.setLineDash([22,14]);ctx.strokeStyle=a;ctx.lineWidth=thick;ctx.strokeRect(inset,inset,W-inset*2,H-inset*2);
+   ctx.setLineDash([]);
  }else{
-   ctx.strokeStyle=mood.a;ctx.lineWidth=thick+10;ctx.strokeRect(inset,inset,W-inset*2,H-inset*2);
-   for(let x=inset+45;x<W-inset-20;x+=95)emoji(x%190===0?'🎀':'⭐',x,inset+3,46,0,.95);
+   ctx.strokeStyle='#fff';ctx.lineWidth=thick+10;ctx.strokeRect(inset,inset,W-inset*2,H-inset*2);
+   ctx.strokeStyle=c;ctx.lineWidth=5;ctx.strokeRect(inset+12,inset+12,W-(inset+12)*2,H-(inset+12)*2);
  }
  ctx.restore();
-}
-function drawEmojiLayer(front=false){
+}function drawEmojiLayer(front=false){
  decoSeed=1000+state.deco*7919+state.bg*313+(front?71:0);
  const set=emojiSets[state.deco%emojiSets.length];
- const count=(front?7:16)+state.density*(front?2:7);
 
- // Estimate where the avatar is so the face/middle area stays readable.
  let cx=W*.5+state.x, h=790*state.scale, top=H*.5+195+state.y-h;
- let rxFace=120*state.scale, ryFace=126*state.scale;
- let rxMid=155*state.scale, ryMid=190*state.scale;
  const faceCy=top+h*.24;
- const midCy=top+h*.38;
+ const faceRx=120*state.scale, faceRy=130*state.scale;
 
  const placed=[];
- function blocked(x,y,size,tier){
-   // Keep the face / center of the avatar open.
-   const dxFace=(x-cx)/Math.max(1,rxFace+size*.18);
-   const dyFace=(y-faceCy)/Math.max(1,ryFace+size*.15);
-   if(dxFace*dxFace+dyFace*dyFace < 1) return true;
-
-   const dxMid=(x-cx)/Math.max(1,rxMid+size*.10);
-   const dyMid=(y-midCy)/Math.max(1,ryMid+size*.07);
-   if(dxMid*dxMid+dyMid*dyMid < 1 && Math.abs(x-cx) < rxMid*.92) return true;
-
-   // Keep extra-open center zone where the avatar usually lands.
-   if(x>W*.28 && x<W*.72 && y>H*.20 && y<H*.78 && size>120) return true;
-
-   // Don't let large stickers stack too much over one another.
+ function inFaceSafe(x,y,size){
+   const dx=(x-cx)/(faceRx+size*.12);
+   const dy=(y-faceCy)/(faceRy+size*.10);
+   return dx*dx+dy*dy<1;
+ }
+ function tooClose(x,y,size,kind){
    for(const p of placed){
-     let ratio = 0.44;
-     if(tier==='large') ratio = 0.52;
-     else if(tier==='medium') ratio = 0.34;
-     else ratio = 0.22;
-     const minDist=(p.size+size)*ratio;
-     if(Math.hypot(x-p.x,y-p.y) < minDist) return true;
+     const factor=kind==='hero'?.50:kind==='medium'?.34:.20;
+     if(Math.hypot(x-p.x,y-p.y)<(p.size+size)*factor)return true;
    }
    return false;
  }
-
- function tryPlace(size,tier){
-   let x=0,y=0,ok=false;
-   for(let attempt=0;attempt<120 && !ok;attempt++){
-     const pad=24;
-     if(tier==='large'){
-       // Large stickers: strong perimeter placement.
-       const side=Math.floor(seeded()*4);
-       if(side===0){x=pad+seeded()*(W-pad*2); y=pad+seeded()*110;}
-       if(side===1){x=pad+seeded()*(W-pad*2); y=H-pad-seeded()*110;}
-       if(side===2){x=pad+seeded()*120; y=pad+seeded()*(H-pad*2);}
-       if(side===3){x=W-pad-seeded()*120; y=pad+seeded()*(H-pad*2);}
-     }else if(tier==='medium'){
-       // Medium stickers: edges plus the empty side zones.
-       if(seeded()<0.58){
-         const side=Math.floor(seeded()*4);
-         if(side===0){x=pad+seeded()*(W-pad*2); y=pad+seeded()*160;}
-         if(side===1){x=pad+seeded()*(W-pad*2); y=H-pad-seeded()*160;}
-         if(side===2){x=pad+seeded()*180; y=pad+seeded()*(H-pad*2);}
-         if(side===3){x=W-pad-seeded()*180; y=pad+seeded()*(H-pad*2);}
-       }else{
-         const zone = Math.floor(seeded()*4);
-         if(zone===0){x=36+seeded()*(W*.24); y=60+seeded()*(H-120);}      // left gap
-         if(zone===1){x=W*.76+seeded()*(W*.20); y=60+seeded()*(H-120);}   // right gap
-         if(zone===2){x=120+seeded()*(W-240); y=42+seeded()*150;}         // top gap
-         if(zone===3){x=120+seeded()*(W-240); y=H-190+seeded()*120;}      // bottom gap
-       }
+ function place(kind,size){
+   for(let attempt=0;attempt<100;attempt++){
+     let x,y;
+     if(kind==='hero'){
+       const anchors=[
+         [70,100],[W-85,95],[70,H-95],[W-85,H-90],
+         [W*.16,H*.24],[W*.84,H*.28],[W*.18,H*.78],[W*.82,H*.76]
+       ];
+       const a=anchors[Math.floor(seeded()*anchors.length)];
+       x=a[0]+(seeded()-.5)*90; y=a[1]+(seeded()-.5)*70;
+     }else if(kind==='medium'){
+       const zones=[
+         [W*.10,H*.18],[W*.90,H*.18],[W*.10,H*.52],[W*.90,H*.52],
+         [W*.12,H*.84],[W*.88,H*.84],[W*.52,H*.10],[W*.52,H*.88]
+       ];
+       const a=zones[Math.floor(seeded()*zones.length)];
+       x=a[0]+(seeded()-.5)*150; y=a[1]+(seeded()-.5)*110;
      }else{
-       // Small stickers: fill blank spaces between the big ones.
-       x=28+seeded()*(W-56);
-       y=28+seeded()*(H-56);
+       x=28+seeded()*(W-56); y=28+seeded()*(H-56);
      }
-     if(!blocked(x,y,size,tier)){
-       ok=true;
-       placed.push({x,y,size});
-       emoji(set[Math.floor(seeded()*set.length)],x,y,size,(seeded()-.5)*.55,front?.92:.88);
-     }
+     if(inFaceSafe(x,y,size))continue;
+     if(tooClose(x,y,size,kind))continue;
+     // Avoid putting large objects directly over text zones.
+     if(kind==='hero' && x>W*.48 && x<W*.96 && y>H*.18 && y<H*.72)continue;
+     placed.push({x,y,size});
+     emoji(set[Math.floor(seeded()*set.length)],x,y,size,(seeded()-.5)*.42,front?.95:.9);
+     return;
    }
  }
 
- const largeCount = front ? 1+Math.floor(state.density/3) : 5+Math.floor(state.density/2);
- const mediumCount = front ? 4+state.density : 8+state.density*2;
- const smallCount = Math.max(0, count-largeCount-mediumCount);
+ const heroCount=front?1:3;
+ const mediumCount=front?3:6;
+ const smallCount=front?4+state.density:10+state.density*3;
 
- for(let i=0;i<largeCount;i++) tryPlace((front?160:175)+seeded()*(front?55:85),'large');
- for(let i=0;i<mediumCount;i++) tryPlace((front?74:82)+seeded()*(front?46:62),'medium');
- for(let i=0;i<smallCount;i++) tryPlace(20+seeded()*34,'small');
-}
-function drawBackDeco(){drawEmojiLayer(false)}
+ for(let i=0;i<heroCount;i++) place('hero',(front?170:190)+seeded()*(front?45:80));
+ for(let i=0;i<mediumCount;i++) place('medium',(front?82:88)+seeded()*(front?40:55));
+ for(let i=0;i<smallCount;i++) place('small',20+seeded()*30);
+}function drawBackDeco(){drawEmojiLayer(false)}
 function drawFrontDeco(){drawEmojiLayer(true)}
 function rebuildChar(){
  if(!state.sourceImg||!state.mask){state.charImg=state.cutoutImg||state.sourceImg;return}
@@ -631,8 +637,10 @@ function drawText(){
  const leftChar=state.x<0;
  const zone=leftChar?{cx:875,w:520}:{cx:325,w:520};
 
- const titleColor=(typeof textColors!=='undefined'&&textColors.length)?textColors[(state.bg*2+state.layout)%textColors.length]:'#ff4f86';
- const subColor=(typeof textColors!=='undefined'&&textColors.length)?textColors[(state.bg*2+state.layout+2)%textColors.length]:'#6f86e8';
+ const mode=(document.getElementById('designMood')?.value)||state.designMood||'pop';
+ const look=curatedLooks[mode]||curatedLooks.pop;
+ const titleColor=look.title[(state.bg+state.layout)%look.title.length];
+ const subColor=look.sub[(state.bg+state.layout+1)%look.sub.length];
 
  if(L===0){
    const ts=fitText(title,zone.w,134,84);
@@ -846,7 +854,23 @@ function setRandomMessage(){
 function randomMsg(){ setRandomMessage(); }
 randomMsg.onclick=randomMsg;
 titleText.oninput=draw;subText.oninput=draw;
-randomAll.onclick=()=>{state.bg=rand(moods.length);state.deco=pickDecoIndex();state.frame=rand(6);state.frameWidth=2+rand(4);state.layout=rand(5);state.density=3+rand(3);density.value=state.density;densityo.value=state.density;frameWidth.value=state.frameWidth;frameWidtho.value=state.frameWidth;setRandomMessage();state.x=Math.random()<.5?(-285+rand(90)):(215+rand(100));state.y=-10+rand(80);state.scale=1.48+Math.random()*.4;state.flip=Math.random()<.35;sync();draw()};
+randomAll.onclick=()=>{
+  state.designMood=designMood.value;
+  state.bg=rand(4);
+  state.deco=pickDecoIndex();
+  state.frame=rand(5);
+  state.frameWidth=2+rand(3);
+  state.layout=rand(5);
+  state.density=3+rand(3);
+  density.value=state.density;densityo.value=state.density;
+  frameWidth.value=state.frameWidth;frameWidtho.value=state.frameWidth;
+  setRandomMessage();
+  state.x=Math.random()<.5?(-275+rand(70)):(220+rand(80));
+  state.y=-5+rand(55);
+  state.scale=1.52+Math.random()*.28;
+  state.flip=Math.random()<.25;
+  sync();draw();
+};
 randomBg.onclick=()=>{state.bg=rand(moods.length);draw()};randomDeco.onclick=()=>{
   state.deco=pickDecoIndex();
   state.density=3+rand(3);
@@ -863,6 +887,7 @@ decoTheme.onchange=()=>{
   const label=decoTheme.options[decoTheme.selectedIndex].text;
   status('🎨 飾りテーマを「'+label+'」に変更しました。');
 };
+designMood.onchange=()=>{state.designMood=designMood.value;state.bg=rand(4);state.frame=rand(5);draw();};
 
 
 density.oninput=e=>{state.density=+e.target.value;densityo.value=e.target.value;draw()};frameWidth.oninput=e=>{state.frameWidth=+e.target.value;frameWidtho.value=e.target.value;draw()};
@@ -918,7 +943,7 @@ save.onclick=async()=>{
     }
   }
 };
-reset.onclick=()=>{clearMaskHistory();brush.value=22;brusho.value=22;hardnessEl.value=96;hardnesso.value=96;document.getElementById('decoTheme').value='mixed';state.bg=0;state.deco=0;state.frame=0;state.frameWidth=4;state.layout=0;state.density=5;state.x=-250;state.y=18;state.scale=1.72;state.flip=false;titleText.value='おはよう！';subText.value='素敵を集めに\\n行ってみよー！';density.value=5;densityo.value=5;frameWidth.value=4;frameWidtho.value=4;sync();draw()};
+reset.onclick=()=>{clearMaskHistory();brush.value=22;brusho.value=22;hardnessEl.value=96;hardnesso.value=96;document.getElementById('decoTheme').value='mixed';document.getElementById('designMood').value='pop';state.designMood='pop';state.bg=0;state.deco=0;state.frame=0;state.frameWidth=4;state.layout=0;state.density=5;state.x=-250;state.y=18;state.scale=1.72;state.flip=false;titleText.value='おはよう！';subText.value='素敵を集めに\\n行ってみよー！';density.value=5;densityo.value=5;frameWidth.value=4;frameWidtho.value=4;sync();draw()};
 sync();draw();updateHistoryButtons();
 </script>
 </body></html>
