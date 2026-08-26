@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おはよう画像メーカー v4.2</title>
+<title>おはよう画像メーカー v4.3</title>
 <style>
 :root{
   --ink:#352f44; --muted:#81798e; --line:#ece7f4; --panel:#fff;
@@ -48,11 +48,11 @@ input[type=range]{width:100%}
 </head>
 <body>
 <div class="wrap">
-<h1>🌞 おはよう画像メーカー v4.2</h1>
+<h1>🌞 おはよう画像メーカー v4.3</h1>
 <div class="lead">
   透過の手直し機能はそのまま。今回はデザインをさらに盛りました。
   <b>大きい絵文字＋小さい絵文字＋太めのかわいいフレーム</b>をランダム配置。
-  「全部ランダム」で毎朝ガチャできます。
+  「全部ランダム」で毎朝ガチャできます。今回は飾りの左右バランス・文字保護・文字位置も調整しました。
 </div>
 
 <div class="card">
@@ -114,8 +114,8 @@ input[type=range]{width:100%}
 
 <div class="card">
   <div class="section-title">④ デザインを作る</div>
-  <div class="tip"><strong>センス重視モード</strong>：大きい飾りは2〜3個だけを端から大胆に見せ、中サイズでつなぎ、小さい飾りで余白を埋めます。顔と文字まわりはしっかり抜き、テーマごとに大きい主役飾りも選び分けます。下の文章は自然な2行を優先して自動調整します。</div>
-  <div class="tip">飾りは<strong>空白を埋めるようにバラけて配置</strong>。顔が来る真ん中付近には置かず、まわりは重なってもOK。文字は飾りより前に表示されます。</div>
+  <div class="tip"><strong>センス重視モード</strong>：大きい飾りは2〜3個だけを端から大胆に見せ、中サイズでつなぎ、小さい飾りで余白を埋めます。今回は左右の散らばり差を減らし、顔だけでなく「おはよう」文字の上にも飾りが乗りにくいようにしました。下の文章は自然な2行を優先して自動調整します。</div>
+  <div class="tip">飾りは<strong>空白を埋めるようにバラけて配置</strong>。顔が来る真ん中付近には置かず、まわりは重なってもOK。今回は<strong>左右差が出にくい配置</strong>＋<strong>おはよう文字の上保護</strong>も追加しています。</div>
   <div class="tip">重なり順：<strong>背景 → フレーム → おはようメッセージ → 女の子 → 絵文字（飾り）</strong></div>
   <label class="field" style="margin-bottom:10px">
     <span>デザインの雰囲気</span>
@@ -170,7 +170,7 @@ input[type=range]{width:100%}
   </div>
 </div>
 
-<div class="footer">おはよう画像メーカー v4.2</div>
+<div class="footer">おはよう画像メーカー v4.3</div>
 </div>
 
 <script>
@@ -554,11 +554,44 @@ function drawBg(){
  const faceCy=top+h*.25;
  const faceRx=158*state.scale, faceRy=172*state.scale;
  const leftChar=state.x<0;
- const textCx=leftChar?875:325;
- const textW=560;
- const textX1=textCx-textW/2, textX2=textCx+textW/2;
-
+ const textZone=leftChar?{cx:830,w:520}:{cx:370,w:520};
  const placed=[];
+ const textInfo=getTextLayoutInfo();
+
+ function makeBalancedQueue(pairs){
+   const order=[...pairs.keys()];
+   for(let i=order.length-1;i>0;i--){const j=Math.floor(seeded()*(i+1));[order[i],order[j]]=[order[j],order[i]]}
+   const q=[];
+   for(const idx of order){
+     const pair=pairs[idx];
+     if(seeded()>.5) q.push(pair[0],pair[1]);
+     else q.push(pair[1],pair[0]);
+   }
+   return q;
+ }
+ const heroQueue=makeBalancedQueue([
+   [[120,118],[W-120,118]],
+   [[140,H-120],[W-140,H-120]],
+   [[132,H*.34],[W-132,H*.34]],
+   [[178,H*.78],[W-178,H*.78]]
+ ]);
+ const mediumQueue=makeBalancedQueue([
+   [[92,126],[W-92,126]],
+   [[112,246],[W-112,246]],
+   [[118,382],[W-118,382]],
+   [[112,530],[W-112,530]],
+   [[242,118],[W-242,118]],
+   [[258,548],[W-258,548]],
+   [[206,630],[W-206,630]]
+ ]);
+ const smallQueue=makeBalancedQueue([
+   [[82,98],[W-82,98]],[[180,96],[W-180,96]],[[284,96],[W-284,96]],[[392,98],[W-392,98]],
+   [[76,196],[W-76,196]],[[76,306],[W-76,306]],[[76,420],[W-76,420]],[[76,534],[W-76,534]],
+   [[76,620],[W-76,620]],[[190,620],[W-190,620]],[[300,620],[W-300,620]],[[410,620],[W-410,620]],
+   [[220,170],[W-220,170]],[[258,250],[W-258,250]],[[258,470],[W-258,470]],[[208,560],[W-208,560]],
+   [[516,100],[W-516,100]],[[516,620],[W-516,620]]
+ ]);
+ let heroIdx=0, mediumIdx=0, smallIdx=0;
 
  function insideFaceSafe(x,y,size){
    const dx=(x-cx)/(faceRx+size*.18);
@@ -569,11 +602,18 @@ function drawBg(){
    const dy2=(y-headCy)/(faceRy*.9+size*.10);
    return dx2*dx2+dy2*dy2<1;
  }
+ function circleHitsRect(x,y,r,rect,pad=0){
+   if(!rect) return false;
+   const x1=rect.x1-pad, x2=rect.x2+pad, y1=rect.y1-pad, y2=rect.y2+pad;
+   const nx=Math.max(x1,Math.min(x,x2));
+   const ny=Math.max(y1,Math.min(y,y2));
+   return Math.hypot(x-nx,y-ny)<r;
+ }
  function insideTextSafe(x,y,size,kind){
-   if(x>textX1-40 && x<textX2+40 && y>110 && y<550){
-     if(kind!=='small') return true;
-     if(x>textX1+42 && x<textX2-42 && y>160 && y<515) return true;
-   }
+   const r=size*.48;
+   if(circleHitsRect(x,y,r,textInfo.titleBox, kind==='small'?18:34)) return true;
+   if(circleHitsRect(x,y,r,textInfo.subBox, kind==='small'?14:28)) return true;
+   if(kind!=='small' && x>textZone.cx-textZone.w/2-18 && x<textZone.cx+textZone.w/2+18 && y>120 && y<548) return true;
    return false;
  }
  function clashes(x,y,size,kind){
@@ -584,29 +624,30 @@ function drawBg(){
    }
    return false;
  }
+ function pullAnchor(kind){
+   let a=null;
+   if(kind==='hero' && heroIdx<heroQueue.length) a=heroQueue[heroIdx++];
+   else if(kind==='medium' && mediumIdx<mediumQueue.length) a=mediumQueue[mediumIdx++];
+   else if(kind==='small' && smallIdx<smallQueue.length) a=smallQueue[smallIdx++];
+   return a;
+ }
+ function fallbackPoint(kind){
+   let sideLeft = placed.filter(p=>p.x<W/2).length <= placed.filter(p=>p.x>=W/2).length;
+   let minX = sideLeft ? 38 : W/2+18;
+   let maxX = sideLeft ? W/2-18 : W-38;
+   return {x:minX+seeded()*(maxX-minX), y:38+seeded()*(H-76)};
+ }
  function put(symbol,kind,size){
-   for(let attempt=0;attempt<160;attempt++){
+   for(let attempt=0;attempt<180;attempt++){
      let x,y;
-     if(kind==='hero'){
-       const anchors=[
-         [110,112],[W-110,112],[108,H-112],[W-108,H-112],
-         [96,H*.32],[W-96,H*.32],[160,H*.78],[W-160,H*.78]
-       ];
-       const a=anchors[Math.floor(seeded()*anchors.length)];
-       x=Math.max(48,Math.min(W-48,a[0]+(seeded()-.5)*72));
-       y=Math.max(48,Math.min(H-48,a[1]+(seeded()-.5)*72));
-     }else if(kind==='medium'){
-       const anchors=[
-         [W*.12,H*.16],[W*.88,H*.16],[W*.11,H*.42],[W*.89,H*.42],
-         [W*.12,H*.73],[W*.88,H*.73],[W*.30,H*.14],[W*.72,H*.84],
-         [W*.22,H*.84],[W*.78,H*.26]
-       ];
-       const a=anchors[Math.floor(seeded()*anchors.length)];
-       x=a[0]+(seeded()-.5)*110;
-       y=a[1]+(seeded()-.5)*92;
+     const anchor=pullAnchor(kind);
+     if(anchor){
+       const jx=kind==='hero'?42:kind==='medium'?56:28;
+       const jy=kind==='hero'?36:kind==='medium'?46:24;
+       x=Math.max(44,Math.min(W-44,anchor[0]+(seeded()-.5)*jx));
+       y=Math.max(44,Math.min(H-44,anchor[1]+(seeded()-.5)*jy));
      }else{
-       x=34+seeded()*(W-68);
-       y=34+seeded()*(H-68);
+       const p=fallbackPoint(kind); x=p.x; y=p.y;
      }
 
      if(insideFaceSafe(x,y,size)) continue;
@@ -614,15 +655,15 @@ function drawBg(){
      if(clashes(x,y,size,kind)) continue;
 
      placed.push({x,y,size,kind});
-     emoji(symbol,x,y,size,(seeded()-.5)*(kind==='small'?.45:.28),front?.94:.90);
+     emoji(symbol,x,y,size,(seeded()-.5)*(kind==='small'?.34:.22),front?.94:.90);
      return true;
    }
    return false;
  }
 
- const heroCount = front ? 0 : 2 + (seeded()>.7 ? 1 : 0);
- const mediumCount = front ? 2 : 5 + Math.floor(state.density/2);
- const smallCount = front ? 5+state.density : 14+state.density*4;
+ const heroCount = front ? 0 : 2 + (seeded()>.72 ? 1 : 0);
+ const mediumCount = front ? 2 : 4 + Math.floor(state.density/2);
+ const smallCount = front ? 6+state.density : 12+state.density*4;
 
  for(let i=0;i<heroCount;i++){
    const symbol=heroes[Math.floor(seeded()*heroes.length)];
@@ -630,11 +671,11 @@ function drawBg(){
  }
  for(let i=0;i<mediumCount;i++){
    const symbol=set[Math.floor(seeded()*set.length)];
-   put(symbol,'medium',88+seeded()*48);
+   put(symbol,'medium',92+seeded()*42);
  }
  for(let i=0;i<smallCount;i++){
    const symbol=set[Math.floor(seeded()*set.length)];
-   put(symbol,'small',26+seeded()*22);
+   put(symbol,'small',34+seeded()*18);
  }
 }function drawBackDeco(){drawEmojiLayer(false)}
 function drawFrontDeco(){drawEmojiLayer(true)}
@@ -763,45 +804,56 @@ function outlined(text,x,y,size,fill,stroke,glow=null){
  ctx.fillText(text,x,y);
  ctx.restore();
 }
-function drawText(){
+function getTextLayoutInfo(){
  const title=document.getElementById('titleText').value||'おはよう！';
  const sub=document.getElementById('subText').value||'';
  const L=state.layout%5;
  const leftChar=state.x<0;
- const zone=leftChar?{cx:872,w:548}:{cx:328,w:548};
+ const zone=leftChar?{cx:830,w:520}:{cx:370,w:520};
+ const info={zone,title:null,sub:null,titleBox:null,subBox:null};
+ function makeTitle(x,y,size){
+   const w=measure(title,size), h=size*1.25;
+   info.title={x,y,size,text:title};
+   info.titleBox={x1:x-w/2-34,x2:x+w/2+34,y1:y-h/2-18,y2:y+h/2+18};
+ }
+ function makeSub(x,startY,size,lines,gap){
+   const widths=lines.map(v=>measure(v,size));
+   const w=Math.max(...widths,0), h=(lines.length-1)*gap + size*1.15;
+   const midY=startY + (lines.length-1)*gap/2;
+   info.sub={x,startY,size,lines,gap};
+   info.subBox={x1:x-w/2-28,x2:x+w/2+28,y1:midY-h/2-18,y2:midY+h/2+18};
+ }
+ if(L===0){
+   const ts=fitText(title,zone.w,128,86); makeTitle(zone.cx,238,ts);
+   const fit=fitBalancedText(sub,zone.w,62,46,2), gap=fit.size*1.05, startY=416-(fit.lines.length-1)*gap/2; makeSub(zone.cx,startY,fit.size,fit.lines,gap);
+ }else if(L===1){
+   const ts=fitText(title,zone.w,122,84); makeTitle(zone.cx,204,ts);
+   const fit=fitBalancedText(sub,zone.w,58,44,2), gap=fit.size*1.04, startY=394-(fit.lines.length-1)*gap/2; makeSub(zone.cx,startY,fit.size,fit.lines,gap);
+ }else if(L===2){
+   const ts=fitText(title,940,136,94); makeTitle(W/2,124,ts);
+   const fit=fitBalancedText(sub,930,60,46,2), gap=fit.size*1.02, startY=540-(fit.lines.length-1)*gap/2; makeSub(W/2,startY,fit.size,fit.lines,gap);
+ }else if(L===3){
+   const ts=fitText(title,zone.w,116,82); makeTitle(zone.cx,178,ts);
+   const fit=fitBalancedText(sub,zone.w,56,42,2), gap=fit.size*1.03, startY=344-(fit.lines.length-1)*gap/2; makeSub(zone.cx,startY,fit.size,fit.lines,gap);
+ }else{
+   const ts=fitText(title,zone.w-30,114,80); makeTitle(zone.cx,228,ts);
+   const fit=fitBalancedText(sub,zone.w-40,52,40,2), gap=fit.size*1.04, startY=368-(fit.lines.length-1)*gap/2; makeSub(zone.cx,startY,fit.size,fit.lines,gap);
+ }
+ return info;
+}
 
+function drawText(){
  const mode=(document.getElementById('designMood')?.value)||state.designMood||'pop';
  const look=curatedLooks[mode]||curatedLooks.pop;
+ const info=getTextLayoutInfo();
  const titleColor=look.title[(state.bg+state.layout)%look.title.length];
  const subColor=look.sub[(state.bg+state.layout+1)%look.sub.length];
-
- if(L===0){
-   const ts=fitText(title,zone.w,128,86);
-   outlined(title,zone.cx,238,ts,titleColor);
-   const fit=fitBalancedText(sub,zone.w,62,46,2), gap=fit.size*1.05, startY=416-(fit.lines.length-1)*gap/2;
-   fit.lines.forEach((v,i)=>outlined(v,zone.cx,startY+i*gap,fit.size,subColor));
- }else if(L===1){
-   const ts=fitText(title,zone.w,122,84);
-   outlined(title,zone.cx,204,ts,titleColor);
-   const fit=fitBalancedText(sub,zone.w,58,44,2), gap=fit.size*1.04, startY=394-(fit.lines.length-1)*gap/2;
-   fit.lines.forEach((v,i)=>outlined(v,zone.cx,startY+i*gap,fit.size,subColor));
- }else if(L===2){
-   const ts=fitText(title,940,136,94);
-   outlined(title,W/2,124,ts,titleColor);
-   const fit=fitBalancedText(sub,930,60,46,2), gap=fit.size*1.02, startY=540-(fit.lines.length-1)*gap/2;
-   fit.lines.forEach((v,i)=>outlined(v,W/2,startY+i*gap,fit.size,subColor));
- }else if(L===3){
-   const ts=fitText(title,zone.w,116,82);
-   outlined(title,zone.cx,178,ts,titleColor);
-   const fit=fitBalancedText(sub,zone.w,56,42,2), gap=fit.size*1.03, startY=344-(fit.lines.length-1)*gap/2;
-   fit.lines.forEach((v,i)=>outlined(v,zone.cx,startY+i*gap,fit.size,subColor));
- }else{
-   rr(zone.cx-zone.w/2,138,zone.w,364,38,'rgba(255,255,255,.18)');
-   const ts=fitText(title,zone.w-30,114,80);
-   outlined(title,zone.cx,228,ts,titleColor);
-   const fit=fitBalancedText(sub,zone.w-40,52,40,2), gap=fit.size*1.04, startY=368-(fit.lines.length-1)*gap/2;
-   fit.lines.forEach((v,i)=>outlined(v,zone.cx,startY+i*gap,fit.size,subColor));
+ if(state.layout%5===4){
+   const z=info.zone;
+   rr(z.cx-z.w/2,138,z.w,364,38,'rgba(255,255,255,.18)');
  }
+ outlined(info.title.text,info.title.x,info.title.y,info.title.size,titleColor);
+ info.sub.lines.forEach((v,i)=>outlined(v,info.sub.x,info.sub.startY+i*info.sub.gap,info.sub.size,subColor));
 }
 function draw(){
  drawBg();drawFrame();drawCharacter();drawText();drawBackDeco();drawFrontDeco();
