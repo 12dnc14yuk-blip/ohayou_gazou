@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おはよう画像メーカー v6.4</title>
+<title>おはよう画像メーカー v6.5</title>
 <style>
 :root{
   --ink:#352f44; --muted:#81798e; --line:#ece7f4; --panel:#fff;
@@ -48,7 +48,7 @@ input[type=range]{width:100%}
 </head>
 <body>
 <div class="wrap">
-<h1>🌞 おはよう画像メーカー v6.4</h1>
+<h1>🌞 おはよう画像メーカー v6.5</h1>
 <div class="lead">
   透過の手直し機能はそのまま。今回はデザインをさらに盛りました。
   <b>大きい絵文字＋小さい絵文字＋太めのかわいいフレーム</b>をランダム配置。
@@ -169,7 +169,7 @@ input[type=range]{width:100%}
   </div>
 </div>
 
-<div class="footer">おはよう画像メーカー v6.4</div>
+<div class="footer">おはよう画像メーカー v6.5</div>
 </div>
 
 <script>
@@ -652,292 +652,153 @@ function drawBg(){
 }
 
 
+
 function drawEmojiLayer(front=false){
- decoSeed=1000+state.deco*7919+state.bg*313+(front?71:0);
- const set=emojiSets[state.deco%emojiSets.length];
- const recipe=decorRecipe();
+  decoSeed=1000+state.deco*7919+state.bg*313+(front?71:0);
+  const set=emojiSets[state.deco%emojiSets.length];
+  const recipe=decorRecipe();
 
- const hasAvatar=!!state.charImg;
- const textInfo=getTextLayoutInfo();
- const centeredText=(state.layout%5)===2;
- const leftChar=state.x<0;
- const avatarSide=hasAvatar?(leftChar?'left':'right'):'left';
- const textSide=avatarSide==='left'?'right':'left';
- const placed=state._decoPlaced || (state._decoPlaced=[]);
+  const hasAvatar=!!state.charImg;
+  const textInfo=getTextLayoutInfo();
+  const centeredText=(state.layout%5)===2;
+  const avatarSide=(state.x<0)?'left':'right';
+  const placed=state._decoPlaced || (state._decoPlaced=[]);
 
- const cx=W*.5+state.x, h=790*state.scale, top=H*.5+195+state.y-h;
- const faceCy=top+h*.25;
- const faceRx=190*state.scale, faceRy=210*state.scale;
- const bodyCy=top+h*.59;
- const bodyRx=208*state.scale, bodyRy=286*state.scale;
+  const cx=W*.5+state.x, h=790*state.scale, top=H*.5+195+state.y-h;
+  const faceCy=top+h*.25;
+  const faceRx=190*state.scale, faceRy=210*state.scale;
 
- function circleHitsRect(x,y,r,rect,pad=0){
-   if(!rect) return false;
-   const x1=rect.x1-pad, x2=rect.x2+pad, y1=rect.y1-pad, y2=rect.y2+pad;
-   const nx=Math.max(x1,Math.min(x,x2));
-   const ny=Math.max(y1,Math.min(y,y2));
-   return Math.hypot(x-nx,y-ny)<r;
- }
- function insideAvatar(x,y,size){
-   if(!hasAvatar) return false;
-   const facePad=size*.26;
-   const dx=(x-cx)/(faceRx*0.9+facePad), dy=(y-faceCy)/(faceRy*0.92+facePad);
-   return dx*dx+dy*dy<1;
- }
- function insideText(x,y,size,kind){
-   const r=size*.50;
-   const pad = kind==='small' ? 20 : kind==='medium' ? 30 : 18;
-   if(circleHitsRect(x,y,r,textInfo.titleBox,pad)) return true;
-   if(circleHitsRect(x,y,r,textInfo.subBox,pad)) return true;
-   return false;
- }
- function clashes(x,y,size,kind){
-   for(const p of placed){
-     const largeGap = (kind==='corner'||p.kind==='corner') ? 18 : 4;
-     const smallAdjust = (kind==='small'||p.kind==='small') ? 10 : 2;
-     const factor = (kind==='corner'||p.kind==='corner') ? 0.52 : (kind==='medium'||p.kind==='medium' ? 0.34 : 0.24);
-     if(Math.hypot(x-p.x,y-p.y) < (p.size+size)*factor + largeGap - smallAdjust) return true;
-   }
-   return false;
- }
- function pointFits(x,y,size,kind){
-   const margin=size*.56+8;
-   if(x<margin||x>W-margin||y<margin||y>H-margin) return false;
-   if(kind!=='corner' && insideAvatar(x,y,size)) return false;
-   if(insideText(x,y,size,kind)) return false;
-   if(clashes(x,y,size,kind)) return false;
-   return true;
- }
- function stamp(sym,x,y,size,kind,alpha=.96,rot=.0){
-   placed.push({x,y,size,kind});
-   emoji(sym,x,y,size,rot||((seeded()-.5)*(kind==='small'?0.14:0.08)),alpha);
- }
+  function circleHitsRect(x,y,r,rect,pad=0){
+    if(!rect) return false;
+    const x1=rect.x1-pad, x2=rect.x2+pad, y1=rect.y1-pad, y2=rect.y2+pad;
+    const nx=Math.max(x1,Math.min(x,x2));
+    const ny=Math.max(y1,Math.min(y,y2));
+    return Math.hypot(x-nx,y-ny)<r;
+  }
+  function insideFace(x,y,size){
+    if(!hasAvatar) return false;
+    const pad=size*.28;
+    const dx=(x-cx)/(faceRx+pad), dy=(y-faceCy)/(faceRy+pad);
+    return dx*dx+dy*dy<1;
+  }
+  function insideText(x,y,size,kind){
+    const r=size*.48;
+    const pad = kind==='small' ? 18 : 26;
+    return circleHitsRect(x,y,r,textInfo.titleBox,pad) ||
+           circleHitsRect(x,y,r,textInfo.subBox,pad);
+  }
+  function clashes(x,y,size,kind){
+    for(const p of placed){
+      const cornerInvolved=(kind==='corner'||p.kind==='corner');
+      const factor=cornerInvolved?0.60:(kind==='medium'||p.kind==='medium'?0.46:0.36);
+      const gap=cornerInvolved?20:8;
+      if(Math.hypot(x-p.x,y-p.y) < (p.size+size)*factor + gap) return true;
+    }
+    return false;
+  }
+  function pointFits(x,y,size,kind){
+    const m=size*.53+6;
+    if(x<m||x>W-m||y<m||y>H-m) return false;
+    if(kind!=='corner' && insideFace(x,y,size)) return false;
+    if(insideText(x,y,size,kind)) return false;
+    if(clashes(x,y,size,kind)) return false;
+    return true;
+  }
+  function stamp(sym,x,y,size,kind,alpha=.96){
+    placed.push({x,y,size,kind});
+    emoji(sym,x,y,size,(seeded()-.5)*(kind==='small'?0.16:0.08),alpha);
+  }
 
- const anchorMap={
-   tl:{x:150,y:146},
-   tr:{x:W-150,y:146},
-   bl:{x:150,y:H-146},
-   br:{x:W-150,y:H-146}
- };
+  const corners={
+    tl:{x:150,y:145},
+    tr:{x:W-150,y:145},
+    bl:{x:150,y:H-145},
+    br:{x:W-150,y:H-145}
+  };
+  const mainCorners = avatarSide==='left' ? ['tl','br'] : ['tr','bl'];
+  const subCorners  = avatarSide==='left' ? ['tr','bl'] : ['tl','br'];
 
- const cornerRoles = avatarSide==='left'
-   ? {tl:'main', br:'main', tr:'sub', bl:'sub'}
-   : {tr:'main', bl:'main', tl:'sub', br:'sub'};
- const cornerOrder=['tl','tr','bl','br'];
+  function cornerSymbol(corner){
+    if(mainCorners.includes(corner)){
+      return corner===mainCorners[0] ? recipe.mainPair[0] : (recipe.mainPair[1]||recipe.mainPair[0]);
+    }
+    return corner===subCorners[0] ? recipe.subPair[0] : (recipe.subPair[1]||recipe.subPair[0]);
+  }
 
- function cornerSymbol(corner){
-   if(avatarSide==='left'){
-     if(corner==='tl') return recipe.mainPair[0] || recipe.mainPair[1] || '💗';
-     if(corner==='br') return recipe.mainPair[1] || recipe.mainPair[0] || '🌸';
-     if(corner==='tr') return recipe.subPair[0] || recipe.subPair[1] || '✨';
-     if(corner==='bl') return recipe.subPair[1] || recipe.subPair[0] || '⭐';
-   }else{
-     if(corner==='tr') return recipe.mainPair[0] || recipe.mainPair[1] || '💗';
-     if(corner==='bl') return recipe.mainPair[1] || recipe.mainPair[0] || '🌸';
-     if(corner==='tl') return recipe.subPair[0] || recipe.subPair[1] || '✨';
-     if(corner==='br') return recipe.subPair[1] || recipe.subPair[0] || '⭐';
-   }
-   return '💗';
- }
- function placeCorner(sym,corner,size){
-   const a=anchorMap[corner];
-   const n={tl:[6,6],tr:[-6,6],bl:[6,-6],br:[-6,-6]}[corner];
-   const x=a.x+n[0], y=a.y+n[1];
-   stamp(sym,x,y,size,'corner',.98,(seeded()-.5)*0.05);
- }
+  function placeCorner(corner,role){
+    const a=corners[corner];
+    const size=(role==='main'?222:194)+seeded()*(role==='main'?20:16);
+    stamp(cornerSymbol(corner),a.x,a.y,size,'corner',.98);
+  }
 
- function zonePoints(zone, stepX, stepY, jitter=16, weight=0){
-   const pts=[];
-   for(let y=zone.y1;y<=zone.y2;y+=stepY){
-     for(let x=zone.x1;x<=zone.x2;x+=stepX){
-       const px=x+(seeded()-.5)*jitter;
-       const py=y+(seeded()-.5)*jitter;
-       pts.push({x:px,y:py,score:seeded()+weight});
-     }
-   }
-   return pts;
- }
+  function zone(x1,x2,y1,y2){
+    return {x1,y1,x2,y2};
+  }
 
- function buildPrioritySlots(kind){
-   const slots=[];
-   const leftXs=[84,112,140,170,202,236,272,308,344,380];
-   const rightXs=[W-84,W-112,W-140,W-170,W-202,W-236,W-272,W-308,W-344,W-380];
-   const sideYs=[116,164,212,260,308,356,404,452,500,548,596,644];
-   const topYs=[96,128,160,192,224];
-   const botYs=[H-96,H-128,H-160,H-192,H-224];
-   const topXs=[138,204,270,336,402,468,534,600,666,732,798,864,930];
-   const botXs=[138,204,270,336,402,468,534,600,666,732,798,864,930];
+  // Eight balanced zones around the composition.
+  const zones=[
+    zone(90, W*.30, 95, H*.34),       // upper-left
+    zone(W*.70, W-90, 95, H*.34),     // upper-right
+    zone(90, W*.30, H*.35, H*.70),    // middle-left
+    zone(W*.70, W-90, H*.35, H*.70),  // middle-right
+    zone(150, W*.48, 85, H*.24),      // top-left band
+    zone(W*.52, W-150, 85, H*.24),    // top-right band
+    zone(150, W*.48, H*.72, H-85),    // bottom-left band
+    zone(W*.52, W-150, H*.72, H-85)   // bottom-right band
+  ];
 
-   // 左右を最優先で埋める
-   leftXs.forEach((x,ix)=>sideYs.forEach((y,iy)=>slots.push({x,y,score:1.90-ix*0.04-iy*0.02})));
-   rightXs.forEach((x,ix)=>sideYs.forEach((y,iy)=>slots.push({x,y,score:1.90-ix*0.04-iy*0.02})));
+  const underTextZone=zone(
+    Math.max(110,textInfo.subBox.x1-120),
+    Math.min(W-110,textInfo.subBox.x2+120),
+    Math.min(H*.74,textInfo.subBox.y2+44),
+    Math.min(H-92,textInfo.subBox.y2+150)
+  );
 
-   // 上下も埋める
-   topXs.forEach((x,ix)=>topYs.forEach((y,iy)=>slots.push({x,y,score:1.55-ix*0.01-iy*0.03})));
-   botXs.forEach((x,ix)=>botYs.forEach((y,iy)=>slots.push({x,y,score:1.58-ix*0.01-iy*0.03})));
+  function samplePoint(z){
+    return {
+      x:z.x1+seeded()*(z.x2-z.x1),
+      y:z.y1+seeded()*(z.y2-z.y1)
+    };
+  }
 
-   // 文字下は必須
-   const subCx=(textInfo.subBox.x1+textInfo.subBox.x2)/2;
-   const underY=Math.min(H-98, textInfo.subBox.y2 + (kind==='medium'?64:50));
-   const underXs=kind==='medium'
-      ? [textInfo.subBox.x1-110, textInfo.subBox.x1-40, subCx, textInfo.subBox.x2+40, textInfo.subBox.x2+110]
-      : [textInfo.subBox.x1-120, textInfo.subBox.x1-64, textInfo.subBox.x1-8, subCx, textInfo.subBox.x2+8, textInfo.subBox.x2+64, textInfo.subBox.x2+120];
-   underXs.forEach((x,ix)=>slots.push({x:Math.max(92,Math.min(W-92,x)), y:underY + ((ix%2)*16-8), score:2.05-ix*0.01}));
+  function placeInZone(z,kind,count,minSize,maxSize,pool){
+    let done=0;
+    for(let n=0;n<count;n++){
+      let placedOne=false;
+      for(let t=0;t<120;t++){
+        const p=samplePoint(z);
+        const size=minSize+seeded()*(maxSize-minSize);
+        if(!pointFits(p.x,p.y,size,kind)) continue;
+        const sym=pool[Math.floor(seeded()*pool.length)];
+        stamp(sym,p.x,p.y,size,kind,kind==='small'?.90:.94);
+        placedOne=true;
+        done++;
+        break;
+      }
+      if(!placedOne) break;
+    }
+    return done;
+  }
 
-   // 中央寄せ文字なら左右をさらに厚く
-   if(centeredText){
-     const biasY=[210,270,330,390,450,510];
-     [W*.16,W*.22,W*.28,W*.34].forEach((x,ix)=>biasY.forEach((y,iy)=>slots.push({x,y,score:1.84-ix*0.03-iy*0.02})));
-     [W*.66,W*.72,W*.78,W*.84].forEach((x,ix)=>biasY.forEach((y,iy)=>slots.push({x,y,score:1.84-ix*0.03-iy*0.02})));
-   }
+  if(!front){
+    placeCorner(mainCorners[0],'main');
+    placeCorner(mainCorners[1],'main');
+    placeCorner(subCorners[0],'sub');
+    placeCorner(subCorners[1],'sub');
 
-   // 左右・上下の空白をさらに埋める補助スロット
-   const helper=[
-     [W*.08,H*.14],[W*.08,H*.24],[W*.08,H*.34],[W*.08,H*.44],[W*.08,H*.54],[W*.08,H*.64],[W*.08,H*.74],[W*.08,H*.84],
-     [W*.92,H*.14],[W*.92,H*.24],[W*.92,H*.34],[W*.92,H*.44],[W*.92,H*.54],[W*.92,H*.64],[W*.92,H*.74],[W*.92,H*.84],
-     [W*.16,H*.10],[W*.26,H*.10],[W*.36,H*.10],[W*.46,H*.10],[W*.56,H*.10],[W*.66,H*.10],[W*.76,H*.10],[W*.86,H*.10],
-     [W*.16,H*.90],[W*.26,H*.90],[W*.36,H*.90],[W*.46,H*.90],[W*.56,H*.90],[W*.66,H*.90],[W*.76,H*.90],[W*.86,H*.90],
-     [W*.18,H*.22],[W*.30,H*.22],[W*.42,H*.22],[W*.58,H*.22],[W*.70,H*.22],[W*.82,H*.22],
-     [W*.18,H*.78],[W*.30,H*.78],[W*.42,H*.78],[W*.58,H*.78],[W*.70,H*.78],[W*.82,H*.78],
-     [W*.24,H*.24],[W*.76,H*.24],[W*.24,H*.76],[W*.76,H*.76],[W*.20,H*.50],[W*.80,H*.50]
-   ];
-   helper.forEach((p,i)=>slots.push({x:p[0],y:p[1],score:1.46-i*0.01}));
-
-   // 小サイズは空白を細かく埋める
-   if(kind==='small'){
-     const extra=[
-       [W*.12,H*.18],[W*.18,H*.18],[W*.24,H*.20],[W*.30,H*.24],[W*.36,H*.28],[W*.12,H*.32],[W*.18,H*.38],[W*.24,H*.44],[W*.30,H*.50],[W*.36,H*.56],[W*.12,H*.68],[W*.18,H*.74],[W*.24,H*.80],[W*.30,H*.74],[W*.36,H*.68],
-       [W*.88,H*.18],[W*.82,H*.18],[W*.76,H*.20],[W*.70,H*.24],[W*.64,H*.28],[W*.88,H*.32],[W*.82,H*.38],[W*.76,H*.44],[W*.70,H*.50],[W*.64,H*.56],[W*.88,H*.68],[W*.82,H*.74],[W*.76,H*.80],[W*.70,H*.74],[W*.64,H*.68],
-       [W*.42,H*.14],[W*.50,H*.14],[W*.58,H*.14],[W*.42,H*.86],[W*.50,H*.86],[W*.58,H*.86],
-       [W*.14,H*.50],[W*.86,H*.50],[W*.22,H*.60],[W*.78,H*.60],[W*.22,H*.28],[W*.78,H*.28],
-       [W*.44,H*.30],[W*.56,H*.30],[W*.44,H*.70],[W*.56,H*.70],[W*.48,H*.24],[W*.52,H*.24],[W*.48,H*.76],[W*.52,H*.76]
-     ];
-     extra.forEach((p,i)=>slots.push({x:p[0],y:p[1],score:1.34-i*0.01}));
-   }
-
-   return slots.sort((a,b)=>b.score-a.score);
- }
-
- function buildFallbackPoints(kind){
-   const pts=[];
-   const sideBoost=centeredText?0.95:0.72;
-   const underText = {
-     x1:Math.max(92,textInfo.subBox.x1-110),
-     x2:Math.min(W-92,textInfo.subBox.x2+110),
-     y1:Math.min(H-220,textInfo.subBox.y2+44),
-     y2:Math.min(H-96,textInfo.subBox.y2+172)
-   };
-   const leftStrip ={x1:96,x2:W*.34,y1:104,y2:H-104};
-   const rightStrip={x1:W*.66,x2:W-96,y1:104,y2:H-104};
-   const topStrip  ={x1:168,x2:W-168,y1:92,y2:196};
-   const bottomStrip={x1:168,x2:W-168,y1:H-208,y2:H-96};
-   const middleBand={x1:W*.20,x2:W*.80,y1:188,y2:H-196};
-
-   pts.push(...zonePoints(leftStrip, 44, 52, 12, sideBoost));
-   pts.push(...zonePoints(rightStrip,44, 52, 12, sideBoost));
-   pts.push(...zonePoints(topStrip, 52, 42, 10, 0.56));
-   pts.push(...zonePoints(bottomStrip,52, 42, 10, 0.6));
-   pts.push(...zonePoints(underText,56, 38, 8, centeredText?0.86:0.72));
-   if(kind==='small') pts.push(...zonePoints(middleBand, 58, 54, 8, 0.24));
-   const ringZone={x1:110,x2:W-110,y1:110,y2:H-110};
-   pts.push(...zonePoints(ringZone, 62, 56, 10, 0.34));
-
-   pts.sort((a,b)=>b.score-a.score);
-   return pts;
- }
-
- function placeFromCandidates(candidates, kind, targetCount, minSize, maxSize, pool){
-   let placedCount=0;
-   for(const pt of candidates){
-     if(placedCount>=targetCount) break;
-     const size=minSize+seeded()*(maxSize-minSize);
-     if(!pointFits(pt.x,pt.y,size,kind)) continue;
-     const sym=pool[Math.floor(seeded()*pool.length)];
-     stamp(sym,pt.x,pt.y,size,kind,kind==='small'?0.92:0.95);
-     placedCount++;
-   }
-   return placedCount;
- }
-
- function tryPlaceAt(pt, kind, sizes, pool){
-   const offsets=[
-     [0,0],[18,0],[-18,0],[0,18],[0,-18],[24,16],[-24,16],[24,-16],[-24,-16]
-   ];
-   for(const s of sizes){
-     for(const ofst of offsets){
-       const x=pt.x+ofst[0], y=pt.y+ofst[1];
-       if(!pointFits(x,y,s,kind)) continue;
-       const sym=pool[Math.floor(seeded()*pool.length)];
-       stamp(sym,x,y,s,kind,kind==='small'?0.92:0.95);
-       return 1;
-     }
-   }
-   return 0;
- }
-
- function buildMandatoryPoints(kind){
-   const subCx=(textInfo.subBox.x1+textInfo.subBox.x2)/2;
-   const underY1=Math.min(H-122, textInfo.subBox.y2 + (kind==='medium'?54:44));
-   const underY2=Math.min(H-96, textInfo.subBox.y2 + (kind==='medium'?110:92));
-   const pts=[];
-   const leftCol = kind==='medium' ? [102,136,170,204,238,272,306,340,374] : [96,122,148,174,200,226,252,278,304,330,356,382];
-   const rightCol = leftCol.map(v=>W-v);
-   const sideYs = kind==='medium' ? [128,172,216,260,304,348,392,436,480,524,568,612] : [116,152,188,224,260,296,332,368,404,440,476,512,548,584,620,656];
-   leftCol.forEach((x,ix)=>sideYs.forEach((y,iy)=>pts.push({x,y,score:2.5-ix*0.03-iy*0.015})));
-   rightCol.forEach((x,ix)=>sideYs.forEach((y,iy)=>pts.push({x,y,score:2.5-ix*0.03-iy*0.015})));
-   const topXs = kind==='medium' ? [128,184,240,296,352,408,464,520,576,632,688,744,800,856,912] : [118,164,210,256,302,348,394,440,486,532,578,624,670,716,762,808,854,900,946];
-   const botXs = topXs;
-   const topYs = kind==='medium' ? [102,136,170,204] : [96,122,148,174,200];
-   const botYs = kind==='medium' ? [H-102,H-136,H-170,H-204] : [H-96,H-122,H-148,H-174,H-200];
-   topXs.forEach((x,ix)=>topYs.forEach((y,iy)=>pts.push({x,y,score:2.18-ix*0.01-iy*0.02})));
-   botXs.forEach((x,ix)=>botYs.forEach((y,iy)=>pts.push({x,y,score:2.2-ix*0.01-iy*0.02})));
-   const underXs = kind==='medium'
-      ? [textInfo.subBox.x1-210,textInfo.subBox.x1-160,textInfo.subBox.x1-110,textInfo.subBox.x1-60,textInfo.subBox.x1-10,subCx,textInfo.subBox.x2+10,textInfo.subBox.x2+60,textInfo.subBox.x2+110,textInfo.subBox.x2+160,textInfo.subBox.x2+210]
-      : [textInfo.subBox.x1-230,textInfo.subBox.x1-184,textInfo.subBox.x1-138,textInfo.subBox.x1-92,textInfo.subBox.x1-46,textInfo.subBox.x1,subCx,textInfo.subBox.x2,textInfo.subBox.x2+46,textInfo.subBox.x2+92,textInfo.subBox.x2+138,textInfo.subBox.x2+184,textInfo.subBox.x2+230];
-   underXs.forEach((x,ix)=>{
-      pts.push({x:Math.max(90,Math.min(W-90,x)),y:underY1+((ix%2)*10-5),score:2.9-ix*0.01});
-      pts.push({x:Math.max(90,Math.min(W-90,x)),y:underY2+((ix%2)*10-5),score:2.72-ix*0.01});
-   });
-   return pts.sort((a,b)=>b.score-a.score);
- }
-
- function placeFill(kind,count,minSize,maxSize,pool){
-   let placedCount=0;
-   const mandatory=buildMandatoryPoints(kind);
-   const mandatorySizes = kind==='medium'
-      ? [maxSize, (maxSize+minSize)/2, minSize]
-      : [maxSize, Math.round((maxSize+minSize)/2), minSize];
-   for(const pt of mandatory){
-     if(placedCount>=Math.ceil(count*0.92)) break;
-     placedCount += tryPlaceAt(pt, kind, mandatorySizes, pool);
-   }
-   const priority=buildPrioritySlots(kind);
-   if(placedCount<count){
-     placedCount += placeFromCandidates(priority,kind,count-placedCount,minSize,maxSize,pool);
-   }
-   if(placedCount<count){
-     const fallback=buildFallbackPoints(kind);
-     placeFromCandidates(fallback,kind,count-placedCount,minSize,maxSize,pool);
-   }
- }
-
- if(!front){
-   cornerOrder.forEach((corner)=>{
-     const role=cornerRoles[corner];
-     const sym=cornerSymbol(corner);
-     const baseSize=role==='main' ? 232 : 208;
-     const varSize=role==='main' ? 26 : 20;
-     placeCorner(sym,corner,baseSize+seeded()*varSize);
-   });
-
-   const mediumPool=[...recipe.fill,...set,...recipe.fill,...recipe.fill];
-   const mediumCount=(centeredText?42:38)+state.density*12;
-   placeFill('medium',mediumCount,88,118,mediumPool);
- }else{
-   const smallPool=[...recipe.fill,...set,...recipe.fill,...recipe.fill];
-   const smallCount=(centeredText?120:108)+state.density*24;
-   placeFill('small',smallCount,46,74,smallPool);
- }
+    const pool=[...recipe.fill,...set,...recipe.fill];
+    // A few medium pieces in EVERY zone. This is the key fix.
+    const perZone = centeredText ? 3 : 2;
+    zones.forEach(z=>placeInZone(z,'medium',perZone,88,118,pool));
+    // Additional medium pieces below the smaller message.
+    placeInZone(underTextZone,'medium',3,88,112,pool);
+  }else{
+    const pool=[...recipe.fill,...set,...recipe.fill,...recipe.fill];
+    // Small pieces are also quota-based, preventing one-side clustering.
+    const perZone = centeredText ? 5 : 4;
+    zones.forEach(z=>placeInZone(z,'small',perZone,54,76,pool));
+    placeInZone(underTextZone,'small',6,52,72,pool);
+  }
 }
 
 function drawBackDeco(){drawEmojiLayer(false)}
