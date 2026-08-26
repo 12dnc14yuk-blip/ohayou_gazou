@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おはよう画像メーカー v5.9</title>
+<title>おはよう画像メーカー v6.0</title>
 <style>
 :root{
   --ink:#352f44; --muted:#81798e; --line:#ece7f4; --panel:#fff;
@@ -48,11 +48,11 @@ input[type=range]{width:100%}
 </head>
 <body>
 <div class="wrap">
-<h1>🌞 おはよう画像メーカー v5.9</h1>
+<h1>🌞 おはよう画像メーカー v6.0</h1>
 <div class="lead">
   透過の手直し機能はそのまま。今回はデザインをさらに盛りました。
   <b>大きい絵文字＋小さい絵文字＋太めのかわいいフレーム</b>をランダム配置。
-  「全部ランダム」で毎朝ガチャできます。今回は<strong>輪郭アシスト付きの透過手直し</strong>はそのままに、<strong>四隅の大きい飾り</strong>を維持しつつ、<strong>メイン / サブを対角に固定</strong>し、<strong>上下左右と文字下の空白を中〜小の飾りで必ず散らして埋めやすい</strong>ように再調整しました。
+  「全部ランダム」で毎朝ガチャできます。今回は<strong>輪郭アシスト付きの透過手直し</strong>はそのままに、<strong>文字を最前面</strong>にしつつ、<strong>四隅の大きい飾り</strong>を維持し、<strong>上下左右と文字下の中〜小飾り</strong>をさらに増やして空白を埋めやすく再調整しました。
 </div>
 
 <div class="card">
@@ -113,7 +113,7 @@ input[type=range]{width:100%}
 
 <div class="card">
   <div class="section-title">④ デザインを作る</div>
-  <div class="tip"><strong>センス重視モード</strong>：<strong>四隅すべてに大きい飾り</strong>を必ず置き、<strong>アバター側上＋文字側下</strong>をメイン、<strong>文字側上＋アバター側下</strong>をサブとして<strong>対角に固定</strong>します。残りは<strong>上下左右と文字の下</strong>に中〜小の飾りを散らして、空白を減らします。下の文章は自然な2行を優先して自動調整します。</div>
+  <div class="tip"><strong>センス重視モード</strong>：<strong>四隅すべてに大きい飾り</strong>を必ず置き、<strong>アバター側上＋文字側下</strong>をメイン、<strong>文字側上＋アバター側下</strong>をサブとして<strong>対角に固定</strong>します。残りは<strong>上下左右と文字の下</strong>に中〜小の飾りを前より多めに散らして、空白を減らします。文字は常に最前面に表示します。</div>
   <div class="tip">飾りは<strong>空白を埋めるようにバラけて配置</strong>。四隅の大きい飾りはアバターより前に出し、中〜小飾りは顔・文字ブロックを避けながら、<strong>上下左右と文字下の余白</strong>を優先的に埋めます。文字が中央寄せの時は特に左右へ散らしてバランスを取ります。</div>
   <div class="tip">重なり順：<strong>背景 → フレーム → おはようメッセージ → 女の子 → 絵文字（飾り）</strong></div>
   <label class="field" style="margin-bottom:10px">
@@ -169,7 +169,7 @@ input[type=range]{width:100%}
   </div>
 </div>
 
-<div class="footer">おはよう画像メーカー v5.9</div>
+<div class="footer">おはよう画像メーカー v6.0</div>
 </div>
 
 <script>
@@ -727,9 +727,19 @@ function drawEmojiLayer(front=false){
    : {tr:'main', bl:'main', tl:'sub', br:'sub'};
  const cornerOrder=['tl','tr','bl','br'];
 
- function cornerSymbol(role, index){
-   const pair = role==='main' ? recipe.mainPair : recipe.subPair;
-   return pair[index%pair.length];
+ function cornerSymbol(corner){
+   if(avatarSide==='left'){
+     if(corner==='tl') return recipe.mainPair[0] || recipe.mainPair[1] || '💗';
+     if(corner==='br') return recipe.mainPair[1] || recipe.mainPair[0] || '🌸';
+     if(corner==='tr') return recipe.subPair[0] || recipe.subPair[1] || '✨';
+     if(corner==='bl') return recipe.subPair[1] || recipe.subPair[0] || '⭐';
+   }else{
+     if(corner==='tr') return recipe.mainPair[0] || recipe.mainPair[1] || '💗';
+     if(corner==='bl') return recipe.mainPair[1] || recipe.mainPair[0] || '🌸';
+     if(corner==='tl') return recipe.subPair[0] || recipe.subPair[1] || '✨';
+     if(corner==='br') return recipe.subPair[1] || recipe.subPair[0] || '⭐';
+   }
+   return '💗';
  }
  function placeCorner(sym,corner,size){
    const a=anchorMap[corner];
@@ -778,10 +788,19 @@ function drawEmojiLayer(front=false){
 
    // 中央寄せ文字なら左右をさらに厚く
    if(centeredText){
-     const biasY=[230,310,390,470];
-     [W*.18,W*.24,W*.30].forEach((x,ix)=>biasY.forEach((y,iy)=>slots.push({x,y,score:1.78-ix*0.03-iy*0.02})));
-     [W*.70,W*.76,W*.82].forEach((x,ix)=>biasY.forEach((y,iy)=>slots.push({x,y,score:1.78-ix*0.03-iy*0.02})));
+     const biasY=[210,270,330,390,450,510];
+     [W*.16,W*.22,W*.28,W*.34].forEach((x,ix)=>biasY.forEach((y,iy)=>slots.push({x,y,score:1.84-ix*0.03-iy*0.02})));
+     [W*.66,W*.72,W*.78,W*.84].forEach((x,ix)=>biasY.forEach((y,iy)=>slots.push({x,y,score:1.84-ix*0.03-iy*0.02})));
    }
+
+   // 左右・上下の空白をさらに埋める補助スロット
+   const helper=[
+     [W*.11,H*.18],[W*.11,H*.33],[W*.11,H*.49],[W*.11,H*.65],[W*.11,H*.80],
+     [W*.89,H*.18],[W*.89,H*.33],[W*.89,H*.49],[W*.89,H*.65],[W*.89,H*.80],
+     [W*.22,H*.12],[W*.38,H*.12],[W*.62,H*.12],[W*.78,H*.12],
+     [W*.22,H*.88],[W*.38,H*.88],[W*.62,H*.88],[W*.78,H*.88]
+   ];
+   helper.forEach((p,i)=>slots.push({x:p[0],y:p[1],score:1.46-i*0.01}));
 
    // 小サイズは空白を細かく埋める
    if(kind==='small'){
@@ -855,11 +874,11 @@ function drawEmojiLayer(front=false){
    });
 
    const mediumPool=[...recipe.fill,...set,...recipe.fill];
-   const mediumCount=(centeredText?14:12)+state.density*5;
+   const mediumCount=(centeredText?20:17)+state.density*7;
    placeFill('medium',mediumCount,88,118,mediumPool);
  }else{
    const smallPool=[...recipe.fill,...set,...recipe.fill];
-   const smallCount=(centeredText?24:20)+state.density*6;
+   const smallCount=(centeredText?34:30)+state.density*9;
    placeFill('small',smallCount,68,96,smallPool);
  }
 }
@@ -1045,7 +1064,12 @@ function drawText(){
 }
 function draw(){
  state._decoPlaced=[];
- drawBg();drawFrame();drawText();drawCharacter();drawBackDeco();drawFrontDeco();
+ drawBg();
+ drawFrame();
+ drawCharacter();
+ drawBackDeco();
+ drawFrontDeco();
+ drawText();
 }
 
 function canvasPoint(ev){
@@ -1173,7 +1197,7 @@ removeBg.onclick=async()=>{
      state.mask=id;
      clearMaskHistory();
      state.charImg=img;draw();
-     status('✨ AI切り抜き完了。白い服が欠けたら「戻す」＋細かく10＋硬さ96で輪郭をなぞると、線画寄りに精密に戻しやすくなっています。飾りは四隅に大きく置き、アバター側上 / 文字側下をメイン、文字側上 / アバター側下をサブとして対角に固定。さらに上下左右と文字下の空白を中〜小飾りで埋めます。');
+     status('✨ AI切り抜き完了。白い服が欠けたら「戻す」＋細かく10＋硬さ96で輪郭をなぞると、線画寄りに精密に戻しやすくなっています。飾りは四隅に大きく置き、アバター側上 / 文字側下をメイン、文字側上 / アバター側下をサブとして対角に固定。さらに上下左右と文字下の空白を中〜小飾りで多めに埋め、文字は最前面に表示します。');
      removeBg.disabled=false;removeBg.textContent='✂️ AIで女の子を切り抜く';
    };
    img.src=url;
