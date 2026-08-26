@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おはよう画像メーカー v6.0</title>
+<title>おはよう画像メーカー v6.1</title>
 <style>
 :root{
   --ink:#352f44; --muted:#81798e; --line:#ece7f4; --panel:#fff;
@@ -48,11 +48,11 @@ input[type=range]{width:100%}
 </head>
 <body>
 <div class="wrap">
-<h1>🌞 おはよう画像メーカー v6.0</h1>
+<h1>🌞 おはよう画像メーカー v6.1</h1>
 <div class="lead">
   透過の手直し機能はそのまま。今回はデザインをさらに盛りました。
   <b>大きい絵文字＋小さい絵文字＋太めのかわいいフレーム</b>をランダム配置。
-  「全部ランダム」で毎朝ガチャできます。今回は<strong>輪郭アシスト付きの透過手直し</strong>はそのままに、<strong>文字を最前面</strong>にしつつ、<strong>四隅の大きい飾り</strong>を維持し、<strong>上下左右と文字下の中〜小飾り</strong>をさらに増やして空白を埋めやすく再調整しました。
+  「全部ランダム」で毎朝ガチャできます。今回は<strong>輪郭アシスト付きの透過手直し</strong>はそのままに、<strong>文字を最前面</strong>に固定しつつ、<strong>四隅大きめ＋上下左右＋文字下の中〜小飾り</strong>がしっかり出るように再調整しました。
 </div>
 
 <div class="card">
@@ -113,7 +113,7 @@ input[type=range]{width:100%}
 
 <div class="card">
   <div class="section-title">④ デザインを作る</div>
-  <div class="tip"><strong>センス重視モード</strong>：<strong>四隅すべてに大きい飾り</strong>を必ず置き、<strong>アバター側上＋文字側下</strong>をメイン、<strong>文字側上＋アバター側下</strong>をサブとして<strong>対角に固定</strong>します。残りは<strong>上下左右と文字の下</strong>に中〜小の飾りを前より多めに散らして、空白を減らします。文字は常に最前面に表示します。</div>
+  <div class="tip"><strong>センス重視モード</strong>：<strong>四隅すべてに大きい飾り</strong>を必ず置き、<strong>アバター側上＋文字側下</strong>をメイン、<strong>文字側上＋アバター側下</strong>をサブとして<strong>対角に固定</strong>します。さらに<strong>上下左右と文字の下</strong>へ中〜小の飾りを必ず散らし、空白を減らします。文字は常に最前面に表示します。</div>
   <div class="tip">飾りは<strong>空白を埋めるようにバラけて配置</strong>。四隅の大きい飾りはアバターより前に出し、中〜小飾りは顔・文字ブロックを避けながら、<strong>上下左右と文字下の余白</strong>を優先的に埋めます。文字が中央寄せの時は特に左右へ散らしてバランスを取ります。</div>
   <div class="tip">重なり順：<strong>背景 → フレーム → おはようメッセージ → 女の子 → 絵文字（飾り）</strong></div>
   <label class="field" style="margin-bottom:10px">
@@ -169,7 +169,7 @@ input[type=range]{width:100%}
   </div>
 </div>
 
-<div class="footer">おはよう画像メーカー v6.0</div>
+<div class="footer">おはよう画像メーカー v6.1</div>
 </div>
 
 <script>
@@ -669,7 +669,7 @@ function drawEmojiLayer(front=false){
  const faceCy=top+h*.25;
  const faceRx=176*state.scale, faceRy=192*state.scale;
  const bodyCy=top+h*.59;
- const bodyRx=226*state.scale, bodyRy=320*state.scale;
+ const bodyRx=208*state.scale, bodyRy=286*state.scale;
 
  function circleHitsRect(x,y,r,rect,pad=0){
    if(!rect) return false;
@@ -683,7 +683,7 @@ function drawEmojiLayer(front=false){
    const pad=size*.36;
    const dx=(x-cx)/(faceRx+pad), dy=(y-faceCy)/(faceRy+pad);
    if(dx*dx+dy*dy<1) return true;
-   const bdx=(x-cx)/(bodyRx+size*.20), bdy=(y-bodyCy)/(bodyRy+size*.18);
+   const bdx=(x-cx)/(bodyRx+size*.08), bdy=(y-bodyCy)/(bodyRy+size*.08);
    return bdx*bdx+bdy*bdy<1;
  }
  function insideText(x,y,size,kind){
@@ -695,9 +695,9 @@ function drawEmojiLayer(front=false){
  }
  function clashes(x,y,size,kind){
    for(const p of placed){
-     const largeGap = (kind==='corner'||p.kind==='corner') ? 52 : 34;
-     const smallAdjust = (kind==='small'||p.kind==='small') ? 10 : 0;
-     const factor = (kind==='corner'||p.kind==='corner') ? 0.82 : (kind==='medium'||p.kind==='medium' ? 0.78 : 0.72);
+     const largeGap = (kind==='corner'||p.kind==='corner') ? 44 : 22;
+     const smallAdjust = (kind==='small'||p.kind==='small') ? 12 : 4;
+     const factor = (kind==='corner'||p.kind==='corner') ? 0.74 : (kind==='medium'||p.kind==='medium' ? 0.62 : 0.52);
      if(Math.hypot(x-p.x,y-p.y) < (p.size+size)*factor + largeGap - smallAdjust) return true;
    }
    return false;
@@ -855,12 +855,65 @@ function drawEmojiLayer(front=false){
    return placedCount;
  }
 
+ function tryPlaceAt(pt, kind, sizes, pool){
+   const offsets=[
+     [0,0],[18,0],[-18,0],[0,18],[0,-18],[24,16],[-24,16],[24,-16],[-24,-16]
+   ];
+   for(const s of sizes){
+     for(const ofst of offsets){
+       const x=pt.x+ofst[0], y=pt.y+ofst[1];
+       if(!pointFits(x,y,s,kind)) continue;
+       const sym=pool[Math.floor(seeded()*pool.length)];
+       stamp(sym,x,y,s,kind,kind==='small'?0.92:0.95);
+       return 1;
+     }
+   }
+   return 0;
+ }
+
+ function buildMandatoryPoints(kind){
+   const subCx=(textInfo.subBox.x1+textInfo.subBox.x2)/2;
+   const underY1=Math.min(H-122, textInfo.subBox.y2 + (kind==='medium'?54:44));
+   const underY2=Math.min(H-96, textInfo.subBox.y2 + (kind==='medium'?110:92));
+   const pts=[];
+   const leftCol = kind==='medium' ? [120,170,220,270] : [110,150,190,230,270,310];
+   const rightCol = leftCol.map(v=>W-v);
+   const sideYs = kind==='medium' ? [170,250,340,430,520,600] : [145,210,275,340,405,470,535,600];
+   leftCol.forEach((x,ix)=>sideYs.forEach((y,iy)=>pts.push({x,y,score:2.5-ix*0.03-iy*0.015})));
+   rightCol.forEach((x,ix)=>sideYs.forEach((y,iy)=>pts.push({x,y,score:2.5-ix*0.03-iy*0.015})));
+   const topXs = kind==='medium' ? [170,260,350,440,530,620,710,800,890] : [150,220,290,360,430,500,570,640,710,780,850,920];
+   const botXs = topXs;
+   const topYs = kind==='medium' ? [118,158] : [112,148,184];
+   const botYs = kind==='medium' ? [H-118,H-158] : [H-112,H-148,H-184];
+   topXs.forEach((x,ix)=>topYs.forEach((y,iy)=>pts.push({x,y,score:2.18-ix*0.01-iy*0.02})));
+   botXs.forEach((x,ix)=>botYs.forEach((y,iy)=>pts.push({x,y,score:2.2-ix*0.01-iy*0.02})));
+   const underXs = kind==='medium'
+      ? [textInfo.subBox.x1-130,textInfo.subBox.x1-70,textInfo.subBox.x1-10,subCx,textInfo.subBox.x2+10,textInfo.subBox.x2+70,textInfo.subBox.x2+130]
+      : [textInfo.subBox.x1-140,textInfo.subBox.x1-92,textInfo.subBox.x1-44,textInfo.subBox.x1+8,subCx,textInfo.subBox.x2-8,textInfo.subBox.x2+44,textInfo.subBox.x2+92,textInfo.subBox.x2+140];
+   underXs.forEach((x,ix)=>{
+      pts.push({x:Math.max(90,Math.min(W-90,x)),y:underY1+((ix%2)*10-5),score:2.9-ix*0.01});
+      pts.push({x:Math.max(90,Math.min(W-90,x)),y:underY2+((ix%2)*10-5),score:2.72-ix*0.01});
+   });
+   return pts.sort((a,b)=>b.score-a.score);
+ }
+
  function placeFill(kind,count,minSize,maxSize,pool){
+   let placedCount=0;
+   const mandatory=buildMandatoryPoints(kind);
+   const mandatorySizes = kind==='medium'
+      ? [maxSize, (maxSize+minSize)/2, minSize]
+      : [maxSize, Math.round((maxSize+minSize)/2), minSize];
+   for(const pt of mandatory){
+     if(placedCount>=Math.ceil(count*0.72)) break;
+     placedCount += tryPlaceAt(pt, kind, mandatorySizes, pool);
+   }
    const priority=buildPrioritySlots(kind);
-   const fallback=buildFallbackPoints(kind);
-   const placedPrimary=placeFromCandidates(priority,kind,count,minSize,maxSize,pool);
-   if(placedPrimary<count){
-     placeFromCandidates(fallback,kind,count-placedPrimary,minSize,maxSize,pool);
+   if(placedCount<count){
+     placedCount += placeFromCandidates(priority,kind,count-placedCount,minSize,maxSize,pool);
+   }
+   if(placedCount<count){
+     const fallback=buildFallbackPoints(kind);
+     placeFromCandidates(fallback,kind,count-placedCount,minSize,maxSize,pool);
    }
  }
 
@@ -874,11 +927,11 @@ function drawEmojiLayer(front=false){
    });
 
    const mediumPool=[...recipe.fill,...set,...recipe.fill];
-   const mediumCount=(centeredText?20:17)+state.density*7;
+   const mediumCount=(centeredText?24:20)+state.density*8;
    placeFill('medium',mediumCount,88,118,mediumPool);
  }else{
    const smallPool=[...recipe.fill,...set,...recipe.fill];
-   const smallCount=(centeredText?34:30)+state.density*9;
+   const smallCount=(centeredText?42:36)+state.density*10;
    placeFill('small',smallCount,68,96,smallPool);
  }
 }
@@ -1197,7 +1250,7 @@ removeBg.onclick=async()=>{
      state.mask=id;
      clearMaskHistory();
      state.charImg=img;draw();
-     status('✨ AI切り抜き完了。白い服が欠けたら「戻す」＋細かく10＋硬さ96で輪郭をなぞると、線画寄りに精密に戻しやすくなっています。飾りは四隅に大きく置き、アバター側上 / 文字側下をメイン、文字側上 / アバター側下をサブとして対角に固定。さらに上下左右と文字下の空白を中〜小飾りで多めに埋め、文字は最前面に表示します。');
+     status('✨ AI切り抜き完了。白い服が欠けたら「戻す」＋細かく10＋硬さ96で輪郭をなぞると、線画寄りに精密に戻しやすくなっています。飾りは四隅に大きく置き、アバター側上 / 文字側下をメイン、文字側上 / アバター側下をサブとして対角に固定。さらに上下左右と文字下の空白を中〜小飾りでしっかり埋め、文字は最前面に表示します。');
      removeBg.disabled=false;removeBg.textContent='✂️ AIで女の子を切り抜く';
    };
    img.src=url;
