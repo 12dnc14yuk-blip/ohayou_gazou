@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おはよう画像メーカー v4.6</title>
+<title>おはよう画像メーカー v4.7</title>
 <style>
 :root{
   --ink:#352f44; --muted:#81798e; --line:#ece7f4; --panel:#fff;
@@ -48,11 +48,11 @@ input[type=range]{width:100%}
 </head>
 <body>
 <div class="wrap">
-<h1>🌞 おはよう画像メーカー v4.6</h1>
+<h1>🌞 おはよう画像メーカー v4.7</h1>
 <div class="lead">
   透過の手直し機能はそのまま。今回はデザインをさらに盛りました。
   <b>大きい絵文字＋小さい絵文字＋太めのかわいいフレーム</b>をランダム配置。
-  「全部ランダム」で毎朝ガチャできます。今回は飾り同士の重なりを減らし、アバター・おはよう文字・下の文章に飾りが乗りにくいよう調整しました。
+  「全部ランダム」で毎朝ガチャできます。今回は「アバター未選択なのに飾りが片側へ逃げる」問題を修正し、飾りが四方へ自然に散るように調整しました。
 </div>
 
 <div class="card">
@@ -115,7 +115,7 @@ input[type=range]{width:100%}
 <div class="card">
   <div class="section-title">④ デザインを作る</div>
   <div class="tip"><strong>センス重視モード</strong>：大きい飾りは2〜3個だけを端から大胆に見せ、中サイズでつなぎ、小さい飾りで余白を埋めます。今回は左右の散らばり差を減らし、アバター・「おはよう」文字・下の文章に飾りが乗りにくいようにしました。下の文章は自然な2行を優先して自動調整します。</div>
-  <div class="tip">飾りは<strong>空白を埋めるようにバラけて配置</strong>。顔が来る真ん中付近には置かず、アバター全体と文字ブロックは避けます。今回は<strong>左右差が出にくい配置</strong>＋<strong>文字・アバター保護</strong>も追加しています。</div>
+  <div class="tip">飾りは<strong>空白を埋めるようにバラけて配置</strong>。アバターがある時だけ人物を避け、文字ブロックも避けます。未選択時は人物のための空白を作らず、四方へ均等に散らします。</div>
   <div class="tip">重なり順：<strong>背景 → フレーム → おはようメッセージ → 女の子 → 絵文字（飾り）</strong></div>
   <label class="field" style="margin-bottom:10px">
     <span>デザインの雰囲気</span>
@@ -170,7 +170,7 @@ input[type=range]{width:100%}
   </div>
 </div>
 
-<div class="footer">おはよう画像メーカー v4.6</div>
+<div class="footer">おはよう画像メーカー v4.7</div>
 </div>
 
 <script>
@@ -606,7 +606,8 @@ function drawBg(){
  let heroIdx=0, mediumIdx=0, smallIdx=0;
 
  function insideFaceSafe(x,y,size,kind){
-   const pad = size*.32;
+   if(!state.charImg) return false;
+   const pad = size*.28;
    const dx=(x-cx)/(faceRx+pad);
    const dy=(y-faceCy)/(faceRy+pad);
    if(dx*dx+dy*dy<1) return true;
@@ -618,11 +619,12 @@ function drawBg(){
    const sx = portraitSafe.x1 - size*.38, ex = portraitSafe.x2 + size*.38;
    const sy = portraitSafe.y1 - size*.20, ey = portraitSafe.y2 + size*.24;
    if(x>sx && x<ex && y>sy && y<ey) return true;
-   // Also keep them away from the overall avatar silhouette so text / decor does not sit on the body.
-   const apad = kind==='small' ? size*.18 : size*.28;
-   const ax1 = avatarSafe.x1 - apad, ax2 = avatarSafe.x2 + apad;
-   const ay1 = avatarSafe.y1 - apad, ay2 = avatarSafe.y2 + apad;
-   return x>ax1 && x<ax2 && y>ay1 && y<ay2;
+   // Softer body-safe ellipse. This protects the visible body without creating a huge empty rectangle.
+   const bodyCy=top+h*.56;
+   const bodyRx=(kind==='small'?155:175)*state.scale + size*.12;
+   const bodyRy=(kind==='small'?245:270)*state.scale + size*.10;
+   const bdx=(x-cx)/bodyRx, bdy=(y-bodyCy)/bodyRy;
+   return bdx*bdx+bdy*bdy<1;
  }
  function circleHitsRect(x,y,r,rect,pad=0){
    if(!rect) return false;
@@ -640,9 +642,9 @@ function drawBg(){
  }
  function clashes(x,y,size,kind){
    for(const p of placed){
-     let f=kind==='hero'?.62:kind==='medium'?.48:.38;
+     let f=kind==='hero'?.68:kind==='medium'?.56:.46;
      if(p.kind==='hero' || kind==='hero') f+=.08;
-     else if(p.kind==='medium' || kind==='medium') f+=.04;
+     else if(p.kind==='medium' || kind==='medium') f+=.05;
      if(Math.hypot(x-p.x,y-p.y)<(p.size+size)*f) return true;
    }
    return false;
@@ -655,10 +657,18 @@ function drawBg(){
    return a;
  }
  function fallbackPoint(kind){
-   let sideLeft = placed.filter(p=>p.x<W/2).length <= placed.filter(p=>p.x>=W/2).length;
-   let minX = sideLeft ? 38 : W/2+18;
-   let maxX = sideLeft ? W/2-18 : W-38;
-   return {x:minX+seeded()*(maxX-minX), y:38+seeded()*(H-76)};
+   const counts=[0,0,0,0];
+   for(const p of placed){
+     const q=(p.x>=W/2?1:0)+(p.y>=H/2?2:0);
+     counts[q]++;
+   }
+   const min=Math.min(...counts);
+   const choices=[0,1,2,3].filter(i=>counts[i]===min);
+   const q=choices[Math.floor(seeded()*choices.length)];
+   const left=(q%2===0), topHalf=(q<2);
+   const x1=left?48:W/2+40, x2=left?W/2-40:W-48;
+   const y1=topHalf?48:H/2+38, y2=topHalf?H/2-38:H-48;
+   return {x:x1+seeded()*(x2-x1), y:y1+seeded()*(y2-y1)};
  }
  function put(symbol,kind,size){
    for(let attempt=0;attempt<180;attempt++){
@@ -685,8 +695,8 @@ function drawBg(){
  }
 
  const heroCount = front ? 0 : 2 + (seeded()>.72 ? 1 : 0);
- const mediumCount = front ? 2 : 4 + Math.floor(state.density/2);
- const smallCount = front ? 5+state.density : 10+state.density*3;
+ const mediumCount = front ? 2 : 4 + Math.floor(state.density/3);
+ const smallCount = front ? 4+state.density : 8+state.density*2;
 
  for(let i=0;i<heroCount;i++){
    const symbol=heroes[Math.floor(seeded()*heroes.length)];
@@ -1000,7 +1010,7 @@ removeBg.onclick=async()=>{
      state.mask=id;
      clearMaskHistory();
      state.charImg=img;draw();
-     status('✨ AI切り抜き完了。白い服が欠けたら「戻す」＋細かく10＋硬さ96で輪郭をなぞると精密に戻せます。大きい飾りは内側寄り、小さい飾りも含めてアバター・文字ブロックを避けて散らします。');
+     status('✨ AI切り抜き完了。白い服が欠けたら「戻す」＋細かく10＋硬さ96で輪郭をなぞると精密に戻せます。大きい飾りは内側寄り。アバターがある時だけ人物を避け、文字ブロックも避けながら四方へ自然に散らします。');
      removeBg.disabled=false;removeBg.textContent='✂️ AIで女の子を切り抜く';
    };
    img.src=url;
