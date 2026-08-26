@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おはよう画像メーカー v3.9</title>
+<title>おはよう画像メーカー v4.0</title>
 <style>
 :root{
   --ink:#352f44; --muted:#81798e; --line:#ece7f4; --panel:#fff;
@@ -48,7 +48,7 @@ input[type=range]{width:100%}
 </head>
 <body>
 <div class="wrap">
-<h1>🌞 おはよう画像メーカー v3.9</h1>
+<h1>🌞 おはよう画像メーカー v4.0</h1>
 <div class="lead">
   透過の手直し機能はそのまま。今回はデザインをさらに盛りました。
   <b>大きい絵文字＋小さい絵文字＋太めのかわいいフレーム</b>をランダム配置。
@@ -114,7 +114,7 @@ input[type=range]{width:100%}
 
 <div class="card">
   <div class="section-title">④ デザインを作る</div>
-  <div class="tip"><strong>センス重視モード</strong>：大きい飾りは主役として少数、小さい飾りは余白埋め。文字・顔まわりは抜いて、全体の色数も絞ってまとまりを出します。下の文章は、改行が不自然になりにくいよう自動でバランス調整します。</div>
+  <div class="tip"><strong>センス重視モード</strong>：大きい飾りは2〜3個だけを端から大胆に見せ、中サイズでつなぎ、小さい飾りで余白を埋めます。顔と文字まわりはしっかり抜き、テーマごとに大きい主役飾りも選び分けます。下の文章は自然な2行を優先して自動調整します。</div>
   <div class="tip">飾りは<strong>空白を埋めるようにバラけて配置</strong>。顔が来る真ん中付近には置かず、まわりは重なってもOK。文字は飾りより前に表示されます。</div>
   <div class="tip">重なり順：<strong>背景 → フレーム → おはようメッセージ → 女の子 → 絵文字（飾り）</strong></div>
   <label class="field" style="margin-bottom:10px">
@@ -170,7 +170,7 @@ input[type=range]{width:100%}
   </div>
 </div>
 
-<div class="footer">おはよう画像メーカー v3.9</div>
+<div class="footer">おはよう画像メーカー v4.0</div>
 </div>
 
 <script>
@@ -346,6 +346,24 @@ const themePools={
   ribbon:[25,26,27],
   sweets:[28,29,30]
 };
+const themeHeroPools={
+  mixed:['💗','⭐','🎀','🌸','🌈','👑','✨'],
+  spring:['🌸','🌷','💐','🦋'],
+  summer:['🌻','☀️','🌈','🌺','🍉'],
+  autumn:['🍁','🍂','🍄','🧡'],
+  winter:['❄️','🎄','🎀','💎'],
+  flower:['🌸','🌼','🌷','💐','🌺'],
+  heart:['💗','💖','🩷','💕'],
+  star:['⭐','🌟','✨','💫'],
+  ribbon:['🎀','💗','👑'],
+  sweets:['🧁','🍓','🍬','🍭']
+};
+function currentTheme(){return (document.getElementById('decoTheme')?.value)||'mixed'}
+function heroSet(){
+  const theme=currentTheme();
+  return themeHeroPools[theme]||themeHeroPools.mixed;
+}
+
 function decoPool(){
   const theme=(document.getElementById('decoTheme')?.value)||'mixed';
   return themePools[theme]||themePools.mixed;
@@ -481,7 +499,7 @@ function drawBg(){
 }function drawFrame(){
  const mode=(document.getElementById('designMood')?.value)||state.designMood||'pop';
  const look=curatedLooks[mode]||curatedLooks.pop;
- const f=state.frame%5, k=state.frameWidth, inset=54+7*k, thick=7+4*k;
+ const f=state.frame%5, k=state.frameWidth, inset=58+7*k, thick=6+3*k;
  if(f===4) return; // intentional frameless design
  const a=look.frame[0], b=look.frame[1], c=look.frame[2]||'#fff';
  ctx.save();ctx.lineJoin='round';
@@ -502,61 +520,94 @@ function drawBg(){
 }function drawEmojiLayer(front=false){
  decoSeed=1000+state.deco*7919+state.bg*313+(front?71:0);
  const set=emojiSets[state.deco%emojiSets.length];
+ const heroes=heroSet();
 
  let cx=W*.5+state.x, h=790*state.scale, top=H*.5+195+state.y-h;
  const faceCy=top+h*.24;
- const faceRx=120*state.scale, faceRy=130*state.scale;
+ const faceRx=128*state.scale, faceRy=138*state.scale;
+ const leftChar=state.x<0;
+ const textCx=leftChar?875:325;
+ const textW=540;
+ const textX1=textCx-textW/2, textX2=textCx+textW/2;
 
  const placed=[];
- function inFaceSafe(x,y,size){
-   const dx=(x-cx)/(faceRx+size*.12);
-   const dy=(y-faceCy)/(faceRy+size*.10);
+
+ function insideFaceSafe(x,y,size){
+   const dx=(x-cx)/(faceRx+size*.15);
+   const dy=(y-faceCy)/(faceRy+size*.12);
    return dx*dx+dy*dy<1;
  }
- function tooClose(x,y,size,kind){
-   for(const p of placed){
-     const factor=kind==='hero'?.50:kind==='medium'?.34:.20;
-     if(Math.hypot(x-p.x,y-p.y)<(p.size+size)*factor)return true;
+ function insideTextSafe(x,y,size,kind){
+   // Headline + subtitle zone. Hero/medium accents should not compete with text.
+   if(x>textX1-35 && x<textX2+35 && y>125 && y<540){
+     if(kind!=='small') return true;
+     // Tiny accents are allowed only near the outer edge of the text block.
+     if(x>textX1+50 && x<textX2-50 && y>175 && y<500) return true;
    }
    return false;
  }
- function place(kind,size){
-   for(let attempt=0;attempt<100;attempt++){
+ function clashes(x,y,size,kind){
+   for(const p of placed){
+     let f=kind==='hero'?.52:kind==='medium'?.32:.16;
+     if(p.kind==='hero' || kind==='hero') f+=.07;
+     if(Math.hypot(x-p.x,y-p.y)<(p.size+size)*f) return true;
+   }
+   return false;
+ }
+ function put(symbol,kind,size){
+   for(let attempt=0;attempt<130;attempt++){
      let x,y;
      if(kind==='hero'){
+       // Deliberately let the largest accents "bleed" off the canvas edges.
        const anchors=[
-         [70,100],[W-85,95],[70,H-95],[W-85,H-90],
-         [W*.16,H*.24],[W*.84,H*.28],[W*.18,H*.78],[W*.82,H*.76]
+         [-15,90],[W+10,95],[-18,H-65],[W+15,H-65],
+         [W*.10,-6],[W*.90,-4],[W*.08,H*.58],[W*.92,H*.58]
        ];
        const a=anchors[Math.floor(seeded()*anchors.length)];
-       x=a[0]+(seeded()-.5)*90; y=a[1]+(seeded()-.5)*70;
+       x=a[0]+(seeded()-.5)*90;
+       y=a[1]+(seeded()-.5)*85;
      }else if(kind==='medium'){
-       const zones=[
-         [W*.10,H*.18],[W*.90,H*.18],[W*.10,H*.52],[W*.90,H*.52],
-         [W*.12,H*.84],[W*.88,H*.84],[W*.52,H*.10],[W*.52,H*.88]
+       const anchors=[
+         [W*.12,H*.19],[W*.88,H*.18],[W*.10,H*.46],[W*.90,H*.46],
+         [W*.16,H*.82],[W*.84,H*.82],[W*.38,H*.10],[W*.63,H*.88]
        ];
-       const a=zones[Math.floor(seeded()*zones.length)];
-       x=a[0]+(seeded()-.5)*150; y=a[1]+(seeded()-.5)*110;
+       const a=anchors[Math.floor(seeded()*anchors.length)];
+       x=a[0]+(seeded()-.5)*125;
+       y=a[1]+(seeded()-.5)*100;
      }else{
-       x=28+seeded()*(W-56); y=28+seeded()*(H-56);
+       // Small pieces are true gap-fillers.
+       x=25+seeded()*(W-50);
+       y=25+seeded()*(H-50);
      }
-     if(inFaceSafe(x,y,size))continue;
-     if(tooClose(x,y,size,kind))continue;
-     // Avoid putting large objects directly over text zones.
-     if(kind==='hero' && x>W*.48 && x<W*.96 && y>H*.18 && y<H*.72)continue;
-     placed.push({x,y,size});
-     emoji(set[Math.floor(seeded()*set.length)],x,y,size,(seeded()-.5)*.42,front?.95:.9);
-     return;
+
+     if(insideFaceSafe(x,y,size)) continue;
+     if(insideTextSafe(x,y,size,kind)) continue;
+     if(clashes(x,y,size,kind)) continue;
+
+     placed.push({x,y,size,kind});
+     emoji(symbol,x,y,size,(seeded()-.5)*(kind==='small'?.65:.35),front?.94:.90);
+     return true;
    }
+   return false;
  }
 
- const heroCount=front?1:3;
- const mediumCount=front?3:6;
- const smallCount=front?4+state.density:10+state.density*3;
+ // Strong hierarchy: only a few huge accents, then medium connectors, then many tiny fillers.
+ const heroCount = front ? 0 : 2 + (seeded()>.62 ? 1 : 0);
+ const mediumCount = front ? 2 : 5 + Math.floor(state.density/2);
+ const smallCount = front ? 5+state.density : 12+state.density*4;
 
- for(let i=0;i<heroCount;i++) place('hero',(front?170:190)+seeded()*(front?45:80));
- for(let i=0;i<mediumCount;i++) place('medium',(front?82:88)+seeded()*(front?40:55));
- for(let i=0;i<smallCount;i++) place('small',20+seeded()*30);
+ for(let i=0;i<heroCount;i++){
+   const symbol=heroes[Math.floor(seeded()*heroes.length)];
+   put(symbol,'hero',220+seeded()*80);
+ }
+ for(let i=0;i<mediumCount;i++){
+   const symbol=set[Math.floor(seeded()*set.length)];
+   put(symbol,'medium',84+seeded()*58);
+ }
+ for(let i=0;i<smallCount;i++){
+   const symbol=set[Math.floor(seeded()*set.length)];
+   put(symbol,'small',16+seeded()*30);
+ }
 }function drawBackDeco(){drawEmojiLayer(false)}
 function drawFrontDeco(){drawEmojiLayer(true)}
 function rebuildChar(){
@@ -699,28 +750,28 @@ function drawText(){
  if(L===0){
    const ts=fitText(title,zone.w,134,84);
    outlined(title,zone.cx,242,ts,titleColor);
-   const fit=fitBalancedText(sub,zone.w,64,48,3), gap=fit.size*1.06, startY=420-(fit.lines.length-1)*gap/2;
+   const fit=fitBalancedText(sub,zone.w,64,44,2), gap=fit.size*1.06, startY=420-(fit.lines.length-1)*gap/2;
    fit.lines.forEach((v,i)=>outlined(v,zone.cx,startY+i*gap,fit.size,subColor));
  }else if(L===1){
    const ts=fitText(title,zone.w,126,82);
    outlined(title,zone.cx,205,ts,titleColor);
-   const fit=fitBalancedText(sub,zone.w,60,46,3), gap=fit.size*1.05, startY=398-(fit.lines.length-1)*gap/2;
+   const fit=fitBalancedText(sub,zone.w,60,42,2), gap=fit.size*1.05, startY=398-(fit.lines.length-1)*gap/2;
    fit.lines.forEach((v,i)=>outlined(v,zone.cx,startY+i*gap,fit.size,subColor));
  }else if(L===2){
    const ts=fitText(title,940,140,92);
    outlined(title,W/2,118,ts,titleColor);
-   const fit=fitBalancedText(sub,920,62,48,2), gap=fit.size*1.02, startY=548-(fit.lines.length-1)*gap/2;
+   const fit=fitBalancedText(sub,920,62,46,2), gap=fit.size*1.02, startY=548-(fit.lines.length-1)*gap/2;
    fit.lines.forEach((v,i)=>outlined(v,W/2,startY+i*gap,fit.size,subColor));
  }else if(L===3){
    const ts=fitText(title,zone.w,118,80);
    outlined(title,zone.cx,175,ts,titleColor);
-   const fit=fitBalancedText(sub,zone.w,58,44,3), gap=fit.size*1.03, startY=342-(fit.lines.length-1)*gap/2;
+   const fit=fitBalancedText(sub,zone.w,58,40,2), gap=fit.size*1.03, startY=342-(fit.lines.length-1)*gap/2;
    fit.lines.forEach((v,i)=>outlined(v,zone.cx,startY+i*gap,fit.size,subColor));
  }else{
    rr(zone.cx-zone.w/2,135,zone.w,370,38,'rgba(255,255,255,.18)');
    const ts=fitText(title,zone.w-30,116,78);
    outlined(title,zone.cx,230,ts,titleColor);
-   const fit=fitBalancedText(sub,zone.w-40,54,42,3), gap=fit.size*1.04, startY=370-(fit.lines.length-1)*gap/2;
+   const fit=fitBalancedText(sub,zone.w-40,54,38,2), gap=fit.size*1.04, startY=370-(fit.lines.length-1)*gap/2;
    fit.lines.forEach((v,i)=>outlined(v,zone.cx,startY+i*gap,fit.size,subColor));
  }
 }
