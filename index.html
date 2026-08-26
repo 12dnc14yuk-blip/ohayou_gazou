@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おはよう画像メーカー v4.9</title>
+<title>おはよう画像メーカー v5.0</title>
 <style>
 :root{
   --ink:#352f44; --muted:#81798e; --line:#ece7f4; --panel:#fff;
@@ -48,11 +48,11 @@ input[type=range]{width:100%}
 </head>
 <body>
 <div class="wrap">
-<h1>🌞 おはよう画像メーカー v4.9</h1>
+<h1>🌞 おはよう画像メーカー v5.0</h1>
 <div class="lead">
   透過の手直し機能はそのまま。今回はデザインをさらに盛りました。
   <b>大きい絵文字＋小さい絵文字＋太めのかわいいフレーム</b>をランダム配置。
-  「全部ランダム」で毎朝ガチャできます。今回は<strong>輪郭アシスト付きの透過手直し</strong>と、<strong>メイン飾り＋サブ飾り＋空白埋め</strong>の配置ロジックに更新しました。
+  「全部ランダム」で毎朝ガチャできます。今回は<strong>輪郭アシスト付きの透過手直し</strong>はそのままに、消えていた飾り生成処理を修復しました。<strong>メイン飾り＋サブ飾り＋空白埋め</strong>の配置ロジックで表示されます。
 </div>
 
 <div class="card">
@@ -169,7 +169,7 @@ input[type=range]{width:100%}
   </div>
 </div>
 
-<div class="footer">おはよう画像メーカー v4.9</div>
+<div class="footer">おはよう画像メーカー v5.0</div>
 </div>
 
 <script>
@@ -401,6 +401,10 @@ const themePools={
   ribbon:[25,26,27],
   sweets:[28,29,30]
 };
+function currentTheme(){
+  return (document.getElementById('decoTheme')?.value)||'mixed';
+}
+
 const decorRecipes={
   mixed:{
     mainPairs:[['💗','🌸'],['☁️','🫧'],['⭐','✨'],['🎀','🍬'],['🌈','☁️']],
