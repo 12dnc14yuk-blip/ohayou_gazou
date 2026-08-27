@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おはよう画像メーカー v7.1</title>
+<title>おはよう画像メーカー v7.2</title>
 <style>
 :root{
   --ink:#352f44; --muted:#81798e; --line:#ece7f4; --panel:#fff;
@@ -48,11 +48,11 @@ input[type=range]{width:100%}
 </head>
 <body>
 <div class="wrap">
-<h1>🌞 おはよう画像メーカー v7.1</h1>
+<h1>🌞 おはよう画像メーカー v7.2</h1>
 <div class="lead">
   透過の手直し機能はそのまま。今回はデザインをさらに盛りました。
   <b>大きい絵文字＋小さい絵文字＋太めのかわいいフレーム</b>をランダム配置。
-  「全部ランダム」で毎朝ガチャできます。今回は<strong>輪郭アシスト付きの透過手直し</strong>はそのままに、<strong>顔全体は完全保護</strong>へ戻しました。絵文字は顔の外側・髪・肩・服まわりには置けますが、<strong>顔の中には入らない</strong>ように調整しています。女の子はランダムで勝手に左右反転しません。
+  「全部ランダム」で毎朝ガチャできます。今回は<strong>輪郭アシスト付きの透過手直し</strong>はそのままに、<strong>目・鼻・口だけを重点保護</strong>する方式に変更しました。女の子全体や透過された空白は避けず、髪・頬の外側・肩・服まわりにも飾りを置けますが、<strong>目・鼻・口には重ならない</strong>ように調整しています。女の子はランダムで勝手に左右反転しません。
 </div>
 
 <div class="card">
@@ -113,8 +113,9 @@ input[type=range]{width:100%}
 
 <div class="card">
   <div class="section-title">④ デザインを作る</div>
-  <div class="tip"><strong>センス重視モード</strong>：<strong>四隅すべてに大きい飾り</strong>を必ず置き、<strong>アバター側上＋文字側下</strong>をメイン、<strong>文字側上＋アバター側下</strong>をサブとして<strong>対角に固定</strong>します。さらに<strong>上下左右と文字の下</strong>へ、<strong>四隅より少し小さめ</strong>と<strong>小さめ</strong>の2段階絵文字をもっと多く散らし、<strong>顔周辺だけ避けて、上下左右と文字下の空白をしっかり埋めます</strong>。文字は常に最前面に表示します。</div>
-  <div class="tip">飾りは<strong>空白を埋めるようにバラけて配置</strong>。四隅の大きい飾りはアバターより前に出し、中〜小飾りは顔・文字ブロックを避けながら、<strong>上下左右と文字下の余白</strong>を優先的に埋めます。今回は<strong>iPhone絵文字っぽい表示</strong>に寄せ、外周だけでなく内側の空白にも散らします。</div>
+  <div class="tip"><strong>顔パーツ保護 v7.2</strong>：女の子全体や透過部分を禁止エリアにせず、<strong>左右の目・鼻・口だけ</strong>を保護します。髪・頬の外側・肩・服・透過された空白には飾りを置けるので、画面をしっかり盛れます。文字ブロックへの重なり防止はそのままです。</div>
+  <div class="tip"><strong>センス重視モード</strong>：<strong>四隅すべてに大きい飾り</strong>を必ず置き、<strong>アバター側上＋文字側下</strong>をメイン、<strong>文字側上＋アバター側下</strong>をサブとして<strong>対角に固定</strong>します。さらに<strong>上下左右と文字の下</strong>へ、<strong>四隅より少し小さめ</strong>と<strong>小さめ</strong>の2段階絵文字をもっと多く散らし、<strong>目・鼻・口だけ避けて、上下左右と文字下の空白をしっかり埋めます</strong>。文字は常に最前面に表示します。</div>
+  <div class="tip">飾りは<strong>空白を埋めるようにバラけて配置</strong>。四隅の大きい飾りはアバターより前に出し、中〜小飾りは目・鼻・口・文字ブロックを避けながら、<strong>上下左右と文字下の余白</strong>を優先的に埋めます。今回は<strong>iPhone絵文字っぽい表示</strong>に寄せ、外周だけでなく内側の空白にも散らします。</div>
   <div class="tip">重なり順：<strong>背景 → フレーム → 女の子 → 絵文字（飾り） → おはようメッセージ</strong></div>
   <label class="field" style="margin-bottom:10px">
     <span>デザインの雰囲気</span>
@@ -170,7 +171,7 @@ input[type=range]{width:100%}
   </div>
 </div>
 
-<div class="footer">おはよう画像メーカー v7.1</div>
+<div class="footer">おはよう画像メーカー v7.2</div>
 </div>
 
 <script>
@@ -722,25 +723,33 @@ function drawEmojiLayer(front=false){
   function circleHitsCircle(x,y,r,cx,cy,cr,pad=0){
     return Math.hypot(x-cx,y-cy) < r + cr + pad;
   }
-  function insideProtectedFace(x,y,size){
+  function insideProtectedFeatures(x,y,size){
     if(!hasAvatar) return false;
-    const r=size*.34;
-    const pad=Math.max(28,size*.16);
-    const dx=(x-cx)/(faceRx + r + pad);
-    const dy=(y-faceCy)/(faceRy + r + pad);
-    return dx*dx + dy*dy < 1;
-  }
-  function insideAvatarBody(x,y,size){
-    if(!hasAvatar) return false;
-    const img=state.charImg||state.sourceImg;
-    const charH=790*state.scale;
-    const charW=charH*(img.naturalWidth/img.naturalHeight);
-    const bottom=H*.5+195+state.y;
-    const r=size*.38;
-    // 顔だけでなく髪・肩・服も含めた大きめの保護領域
-    const x1=cx-charW*.46-r-18, x2=cx+charW*.46+r+18;
-    const y1=bottom-charH*.96-r-12, y2=bottom+r+8;
-    return x>x1 && x<x2 && y>y1 && y<y2;
+
+    // v7.2: 女の子全体や透過領域は避けない。
+    // 表情に必要な「左右の目・鼻・口」だけを禁止エリアにする。
+    const r=size*.30;
+    const pad=Math.max(12,size*.09);
+
+    const eyePad=Math.max(18,24*state.scale);
+    const nosePad=Math.max(12,16*state.scale);
+    const mouthPad=Math.max(16,21*state.scale);
+
+    if(circleHitsCircle(x,y,r,leftEye.x,leftEye.y,leftEye.r,eyePad+pad)) return true;
+    if(circleHitsCircle(x,y,r,rightEye.x,rightEye.y,rightEye.r,eyePad+pad)) return true;
+    if(circleHitsCircle(x,y,r,nose.x,nose.y,nose.r,nosePad+pad)) return true;
+    if(circleHitsCircle(x,y,r,mouth.x,mouth.y,mouth.r,mouthPad+pad)) return true;
+
+    // 眉間から鼻・口にかけて大きな飾りが横切るのを防ぐ細い保護帯。
+    const bridge={
+      x1:featureCx-faceRx*.14,
+      x2:featureCx+faceRx*.14,
+      y1:faceCy-faceRy*.10,
+      y2:faceCy+faceRy*.38
+    };
+    if(circleHitsRect(x,y,r,bridge,pad*.4)) return true;
+
+    return false;
   }
   function insideText(x,y,size){
     const r=size*.46;
@@ -757,8 +766,7 @@ function drawEmojiLayer(front=false){
   function pointFits(x,y,size,kind){
     const m=size*.45+8;
     if(x<m||x>W-m||y<m||y>H-m) return false;
-    if(insideProtectedFace(x,y,size)) return false;
-    if(kind!=='corner' && insideAvatarBody(x,y,size)) return false;
+    if(insideProtectedFeatures(x,y,size)) return false;
     if(insideText(x,y,size)) return false;
     if(clashes(x,y,size,kind)) return false;
     return true;
