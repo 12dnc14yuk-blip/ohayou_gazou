@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おはよう画像メーカー v7.0</title>
+<title>おはよう画像メーカー v7.1</title>
 <style>
 :root{
   --ink:#352f44; --muted:#81798e; --line:#ece7f4; --panel:#fff;
@@ -48,7 +48,7 @@ input[type=range]{width:100%}
 </head>
 <body>
 <div class="wrap">
-<h1>🌞 おはよう画像メーカー v7.0</h1>
+<h1>🌞 おはよう画像メーカー v7.1</h1>
 <div class="lead">
   透過の手直し機能はそのまま。今回はデザインをさらに盛りました。
   <b>大きい絵文字＋小さい絵文字＋太めのかわいいフレーム</b>をランダム配置。
@@ -147,6 +147,7 @@ input[type=range]{width:100%}
     <button id="randomFrame" class="soft">🎀 フレーム</button>
     <button id="randomLayout" class="soft">🔤 文字配置</button>
   </div>
+  <div class="grid3" style="margin-top:8px"><button id="densityClean" class="soft">🌱 すっきり</button><button id="densityNormal" class="soft">🌼 ふつう</button><button id="densityFull" class="soft">🌈 もりもり</button></div>
   <label class="slider"><span>飾り量</span><input id="density" type="range" min="1" max="5" value="5"><output id="densityo">5</output></label>
   <label class="slider"><span>フレーム太さ</span><input id="frameWidth" type="range" min="1" max="5" value="4"><output id="frameWidtho">4</output></label>
   <div class="tip">春・夏・秋・冬 / 花 / ハート / 星 / リボン / おかし のテーマを追加。<strong>テーマを選んだ瞬間に反映</strong>されます。<strong>ごちゃまぜ</strong>なら今まで通り、可愛い絵文字を大小たくさん混ぜて使います。できるだけパターン数を増やして、毎回ちょっと手作り感が出るようにしています。</div>
@@ -169,7 +170,7 @@ input[type=range]{width:100%}
   </div>
 </div>
 
-<div class="footer">おはよう画像メーカー v7.0</div>
+<div class="footer">おはよう画像メーカー v7.1</div>
 </div>
 
 <script>
@@ -473,17 +474,18 @@ const compositionPresets=[
   {x:-320,y:10,scale:1.60,flip:false,layout:0},
   {x:-300,y:18,scale:1.68,flip:false,layout:1},
   {x:-290,y:20,scale:1.58,flip:false,layout:3},
-  {x:280,y:12,scale:1.60,flip:true,layout:0},
-  {x:300,y:18,scale:1.68,flip:true,layout:1},
-  {x:285,y:16,scale:1.58,flip:true,layout:3},
+  {x:280,y:12,scale:1.60,flip:false,layout:0},
+  {x:300,y:18,scale:1.68,flip:false,layout:1},
+  {x:285,y:16,scale:1.58,flip:false,layout:3},
   {x:-250,y:6,scale:1.50,flip:false,layout:2},
-  {x:250,y:6,scale:1.50,flip:true,layout:2}
+  {x:250,y:6,scale:1.50,flip:false,layout:2}
 ];
 function applyComposition(p){
   state.x=p.x+Math.round((Math.random()-.5)*24);
   state.y=p.y+Math.round((Math.random()-.5)*16);
   state.scale=p.scale+(Math.random()-.5)*0.06;
   state.layout=p.layout;
+  // ランダム作成では現在の左右反転状態を変更しない
 }
 function randomComposition(){
   applyComposition(compositionPresets[rand(compositionPresets.length)]);
@@ -723,10 +725,22 @@ function drawEmojiLayer(front=false){
   function insideProtectedFace(x,y,size){
     if(!hasAvatar) return false;
     const r=size*.34;
-    const pad=Math.max(18,size*.12);
+    const pad=Math.max(28,size*.16);
     const dx=(x-cx)/(faceRx + r + pad);
     const dy=(y-faceCy)/(faceRy + r + pad);
     return dx*dx + dy*dy < 1;
+  }
+  function insideAvatarBody(x,y,size){
+    if(!hasAvatar) return false;
+    const img=state.charImg||state.sourceImg;
+    const charH=790*state.scale;
+    const charW=charH*(img.naturalWidth/img.naturalHeight);
+    const bottom=H*.5+195+state.y;
+    const r=size*.38;
+    // 顔だけでなく髪・肩・服も含めた大きめの保護領域
+    const x1=cx-charW*.46-r-18, x2=cx+charW*.46+r+18;
+    const y1=bottom-charH*.96-r-12, y2=bottom+r+8;
+    return x>x1 && x<x2 && y>y1 && y<y2;
   }
   function insideText(x,y,size){
     const r=size*.46;
@@ -743,7 +757,8 @@ function drawEmojiLayer(front=false){
   function pointFits(x,y,size,kind){
     const m=size*.45+8;
     if(x<m||x>W-m||y<m||y>H-m) return false;
-    if(kind!=='corner' && insideProtectedFace(x,y,size)) return false;
+    if(insideProtectedFace(x,y,size)) return false;
+    if(kind!=='corner' && insideAvatarBody(x,y,size)) return false;
     if(insideText(x,y,size)) return false;
     if(clashes(x,y,size,kind)) return false;
     return true;
@@ -754,15 +769,15 @@ function drawEmojiLayer(front=false){
   }
 
   const corners={
-    tl:{x:120,y:125},
-    tr:{x:W-120,y:125},
-    bl:{x:120,y:H-125},
-    br:{x:W-120,y:H-125}
+    tl:{x:105,y:105},
+    tr:{x:W-105,y:105},
+    bl:{x:105,y:H-105},
+    br:{x:W-105,y:H-105}
   };
   const mainCorners = avatarSide==='left' ? ['tl','br'] : ['tr','bl'];
   const subCorners  = avatarSide==='left' ? ['tr','bl'] : ['tl','br'];
-  const cornerSizeMain = 176 + (state.density-1)*4;
-  const cornerSizeSub  = 164 + (state.density-1)*3;
+  const cornerSizeMain = 205 + (state.density-1)*5;
+  const cornerSizeSub  = 190 + (state.density-1)*4;
 
   function cornerSymbol(corner){
     if(mainCorners.includes(corner)) return corner===mainCorners[0] ? recipe.mainPair[0] : (recipe.mainPair[1]||recipe.mainPair[0]);
@@ -836,12 +851,12 @@ function drawEmojiLayer(front=false){
   const mediumPlan = [
     [topPts,4+densityBoost],[bottomPts,4+densityBoost],[leftPts,3+densityBoost],[rightPts,3+densityBoost],[underTextPts,3],[centerPts,4+densityBoost],[faceAroundPts,3+densityBoost]
   ];
-  mediumPlan.forEach(([pts,count])=>tryPlaceFromPoints(pts,'medium',count,92,114,mediumPool));
+  mediumPlan.forEach(([pts,count])=>tryPlaceFromPoints(pts,'medium',count,108,136,mediumPool));
 
   const smallPlan = [
     [topPts,6+densityBoost],[bottomPts,6+densityBoost],[leftPts,5+densityBoost],[rightPts,5+densityBoost],[underTextPts,5+densityBoost],[centerPts,8+densityBoost],[faceAroundPts,4+densityBoost]
   ];
-  smallPlan.forEach(([pts,count])=>tryPlaceFromPoints(pts,'small',count,60,82,smallPool));
+  smallPlan.forEach(([pts,count])=>tryPlaceFromPoints(pts,'small',count,76,98,smallPool));
 }
 
 function drawBackDeco(){}
@@ -1226,7 +1241,7 @@ randomAll.onclick=()=>{
   state.deco=pickDecoIndex();
   state.frame=rand(5);
   state.frameWidth=2+rand(3);
-  state.density=3+rand(3);
+  state.density=pick([2,3,5]);
   density.value=state.density;densityo.value=state.density;
   frameWidth.value=state.frameWidth;frameWidtho.value=state.frameWidth;
   setRandomMessage();
@@ -1251,6 +1266,11 @@ decoTheme.onchange=()=>{
 };
 designMood.onchange=()=>{state.designMood=designMood.value;state.bg=rand(4);state.frame=rand(5);draw();};
 
+
+
+densityClean.onclick=()=>{state.density=2;density.value=2;densityo.value=2;draw()};
+densityNormal.onclick=()=>{state.density=3;density.value=3;densityo.value=3;draw()};
+densityFull.onclick=()=>{state.density=5;density.value=5;densityo.value=5;draw()};
 
 density.oninput=e=>{state.density=+e.target.value;densityo.value=e.target.value;draw()};frameWidth.oninput=e=>{state.frameWidth=+e.target.value;frameWidtho.value=e.target.value;draw()};
 flip.onclick=()=>{state.flip=!state.flip;draw()};
