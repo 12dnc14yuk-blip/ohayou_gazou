@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おはよう画像メーカー v8.2</title>
+<title>おはよう画像メーカー v8.3</title>
 <style>
 :root{
   --ink:#352f44; --muted:#81798e; --line:#ece7f4; --panel:#fff;
@@ -49,7 +49,7 @@ input[type=range]{width:100%}
 </head>
 <body>
 <div class="wrap">
-<h1>🌞 おはよう画像メーカー v8.2</h1>
+<h1>🌞 おはよう画像メーカー v8.3</h1>
 <div class="lead">
   透過の手直し機能はそのまま。今回はデザインをさらに盛りました。
   <b>大きい絵文字＋小さい絵文字＋太めのかわいいフレーム</b>をランダム配置。
@@ -197,7 +197,7 @@ input[type=range]{width:100%}
   </div>
 </div>
 
-<div class="footer">おはよう画像メーカー v8.2</div>
+<div class="footer">おはよう画像メーカー v8.3</div>
 </div>
 
 <script>
@@ -740,26 +740,26 @@ function drawBgPattern(look){
    // ふわっと大きめドット
    for(let y=55;y<H;y+=105) for(let x=55;x<W;x+=115){
      const off=((Math.floor(y/105)%2)*45);
-     circle(x+off,y,13,'rgba(255,255,255,.24)');
-     circle(x+off+22,y+18,5,'rgba(255,255,255,.18)');
+     circle(x+off,y,15,'rgba(255,255,255,.42)');
+     circle(x+off+24,y+20,6,'rgba(255,255,255,.30)');
    }
  }else if(style===1){
    // 手描きっぽい小花
-   const cols=['rgba(255,255,255,.26)','rgba(255,240,180,.22)','rgba(255,185,220,.18)'];
+   const cols=['rgba(255,255,255,.46)','rgba(255,232,150,.38)','rgba(255,155,205,.30)'];
    for(let y=70;y<H;y+=130) for(let x=70;x<W;x+=145){
      ctx.save();ctx.translate(x+((y/130)%2)*34,y);ctx.globalAlpha=.9;
      for(let i=0;i<5;i++){ctx.save();ctx.rotate(i*Math.PI*2/5);ctx.beginPath();ctx.ellipse(0,-12,6,13,0,0,Math.PI*2);ctx.fillStyle=cols[(i+Math.floor(x/145))%cols.length];ctx.fill();ctx.restore();}
-     circle(0,0,4,'rgba(255,220,110,.30)');ctx.restore();
+     circle(0,0,5,'rgba(255,205,80,.48)');ctx.restore();
    }
  }else if(style===2){
    // 星とキラキラ
    for(let y=65;y<H;y+=125) for(let x=65;x<W;x+=150){
-     ctx.save();ctx.globalAlpha=.18; sparkle(x,y,.34,'#ffffff'); ctx.restore();
-     circle(x+48,y+34,5,'rgba(255,255,255,.22)');
+     ctx.save();ctx.globalAlpha=.36; sparkle(x,y,.38,'#ffffff'); ctx.restore();
+     circle(x+48,y+34,6,'rgba(255,255,255,.34)');
    }
  }else{
    // やわらかチェック
-   ctx.strokeStyle='rgba(255,255,255,.16)';ctx.lineWidth=3;
+   ctx.strokeStyle='rgba(255,255,255,.30)';ctx.lineWidth=4;
    for(let x=40;x<W;x+=92){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
    for(let y=40;y<H;y+=92){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
  }
@@ -776,15 +776,15 @@ function drawBg(){
  const v=state.bg%4;
  if(v===0){
    let g=ctx.createRadialGradient(W*.72,H*.44,20,W*.72,H*.44,340);
-   g.addColorStop(0,'rgba(255,255,255,.72)');g.addColorStop(1,'rgba(255,255,255,0)');
+   g.addColorStop(0,'rgba(255,255,255,.46)');g.addColorStop(1,'rgba(255,255,255,0)');
    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
  }else if(v===1){
-   for(let y=0;y<H;y+=64){ctx.fillStyle='rgba(255,255,255,.10)';ctx.fillRect(0,y,W,22);}
+   for(let y=0;y<H;y+=64){ctx.fillStyle='rgba(255,255,255,.07)';ctx.fillRect(0,y,W,22);}
  }else if(v===2){
-   for(let y=40;y<H;y+=88)for(let x=42;x<W;x+=88)circle(x,y,7,'rgba(255,255,255,.16)');
+   for(let y=40;y<H;y+=88)for(let x=42;x<W;x+=88)circle(x,y,7,'rgba(255,255,255,.11)');
  }else{
    let g=ctx.createLinearGradient(0,0,W,H);
-   g.addColorStop(0,'rgba(255,255,255,.30)');g.addColorStop(.5,'rgba(255,255,255,.02)');g.addColorStop(1,'rgba(255,255,255,.28)');
+   g.addColorStop(0,'rgba(255,255,255,.18)');g.addColorStop(.5,'rgba(255,255,255,.02)');g.addColorStop(1,'rgba(255,255,255,.17)');
    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
  }
  const eff=resolvedBgEffect();
@@ -1419,13 +1419,13 @@ function drawTextBackdrop(info,look){
    const x=box.x1-extraX,y=box.y1-extraY,w=(box.x2-box.x1)+extraX*2,h=(box.y2-box.y1)+extraY*2;
    ctx.shadowColor='rgba(74,54,110,.08)';ctx.shadowBlur=18;
    ctx.fillStyle=`rgba(255,255,255,${alpha})`;ctx.beginPath();ctx.roundRect(x,y,w,h,28);ctx.fill();
-   ctx.shadowColor='transparent';ctx.globalAlpha=.18;ctx.strokeStyle=accent;ctx.lineWidth=4;ctx.stroke();ctx.globalAlpha=1;
+   ctx.shadowColor='transparent';ctx.globalAlpha=.26;ctx.strokeStyle=accent;ctx.lineWidth=4;ctx.stroke();ctx.globalAlpha=1;
  }
  // どちらか片方だけ色面にするパターンも混ぜて、毎回同じ板っぽさを避ける
  const variant=(state.bg+state.layout+state.deco)%3;
- if(variant===0){panel(title,.34,8,3); panel(sub,.27,5,2);}
- else if(variant===1){panel(sub,.32,8,4);}
- else {panel(title,.30,8,3);}
+ if(variant===0){panel(title,.44,8,3); panel(sub,.36,5,2);}
+ else if(variant===1){panel(sub,.42,8,4);}
+ else {panel(title,.40,8,3);}
  ctx.restore();
 }
 function drawText(){
