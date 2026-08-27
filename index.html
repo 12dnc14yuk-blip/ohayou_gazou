@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おはよう画像メーカー v7.3</title>
+<title>おはよう画像メーカー v7.5</title>
 <style>
 :root{
   --ink:#352f44; --muted:#81798e; --line:#ece7f4; --panel:#fff;
@@ -19,6 +19,7 @@ h1{font-size:22px;margin:6px 0 3px}
 canvas{width:100%;height:100%;display:block;touch-action:none}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 button,.filebtn,select,input[type=range],input[type=text],textarea{font:inherit}
 button,.filebtn{width:100%;border:0;border-radius:13px;padding:12px 10px;font-weight:800;cursor:pointer;text-align:center}
 .primary{background:linear-gradient(135deg,#8b74eb,#bd8cf5);color:#fff}
@@ -40,7 +41,7 @@ input[type=range]{width:100%}
 .pill{display:inline-block;background:#f1edff;color:#6c58c0;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:800}
 .footer{font-size:11px;color:#9891a3;text-align:center;margin-top:16px}
 .mode.active{outline:3px solid #9b86ef;background:#ece6ff}
-@media(max-width:560px){.grid3{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.grid3,.grid4{grid-template-columns:1fr 1fr}}
 
 .history-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .history-row button:disabled{opacity:.38;filter:grayscale(.25)}
@@ -48,11 +49,11 @@ input[type=range]{width:100%}
 </head>
 <body>
 <div class="wrap">
-<h1>🌞 おはよう画像メーカー v7.3</h1>
+<h1>🌞 おはよう画像メーカー v7.5</h1>
 <div class="lead">
   透過の手直し機能はそのまま。今回はデザインをさらに盛りました。
   <b>大きい絵文字＋小さい絵文字＋太めのかわいいフレーム</b>をランダム配置。
-  「全部ランダム」で毎朝ガチャできます。今回は<strong>輪郭アシスト付きの透過手直し</strong>はそのままに、<strong>目・鼻・口だけを重点保護</strong>する方式に変更しました。女の子全体や透過された空白は避けず、髪・頬の外側・肩・服まわりにも飾りを置けますが、<strong>目・鼻・口には重ならない</strong>ように調整しています。女の子はランダムで勝手に左右反転しません。
+  「全部ランダム」で毎朝ガチャできます。今回は<strong>輪郭アシスト付きの透過手直し</strong>はそのままに、<strong>目・鼻・口を画像から自動検出して保護</strong>する方式に変更しました。女の子全体や透過された空白は避けず、髪・頬の外側・肩・服まわりにも飾りを置けます。自動認識がずれた時は<strong>4点タップ補正</strong>で左右の目・鼻・口を直接指定できます。女の子はランダムで勝手に左右反転しません。
 </div>
 
 <div class="card">
@@ -70,8 +71,9 @@ input[type=range]{width:100%}
   </div>
 
   <div class="section-title" style="margin-top:16px">② 透過を手直しする</div>
-  <div class="grid3">
-    <button id="restoreMode" class="mode soft">🩷 消えた部分を戻す</button>
+  <div class="grid4">
+    <button id="restoreMode" class="mode soft">🩷 なぞって戻す</button>
+    <button id="smartRestoreMode" class="mode soft">✨ タップで輪郭まで戻す</button>
     <button id="eraseMode" class="mode soft">🧽 背景ゴミを消す</button>
     <button id="moveMode" class="mode soft active">✋ 女の子を動かす</button>
   </div>
@@ -87,13 +89,26 @@ input[type=range]{width:100%}
   </div>
   <label class="slider"><span>ブラシ硬さ</span><input id="hardness" type="range" min="0" max="100" value="96"><output id="hardnesso">96</output></label>
   <div class="tip">
-    白い服・羽・髪が消えたら「消えた部分を戻す」でなぞってください。
+    白い服・羽・髪が消えたら、まず「✨ タップで輪郭まで戻す」を選んで、消えた部分の内側を1回タップしてください。AI切り抜き前の元画像からアウトラインを自動検出し、線を越えない範囲だけまとめて戻します。うまく戻らない細部だけ「🩷 なぞって戻す」で補修してください。
     今回は<strong>輪郭アシスト付き</strong>なので、線画や輪郭の近くをなぞると、そのアウトラインに寄せて戻し・消しをしやすくしています。細部は「✏️ 細かく 10」がおすすめ。消しすぎ・戻しすぎは上の<strong>透過をひとつ戻す / 進む</strong>でやり直せます。<span class="pill">精密ブラシ v3</span>
+  </div>
+
+  <div class="section-title" style="margin-top:16px">③ 顔パーツ保護</div>
+  <div class="grid3">
+    <button id="autoFace" class="soft">👁️ 顔を自動認識</button>
+    <button id="manualFace" class="soft">👉 4点タップ補正</button>
+    <button id="toggleFaceGuide" class="soft">👀 保護位置を表示</button>
+  </div>
+  <div id="faceStatus" class="status" style="margin-top:8px">画像を入れると、左右の目・鼻・口を自動で探します。</div>
+  <div class="tip">
+    REALITYのようなアバター顔向けに、<strong>顔の肌領域 → 大きな左右の目 → 鼻 → 口</strong>の順で位置を推定します。
+    自動認識がずれたら「👉 4点タップ補正」を押して、<strong>左目 → 右目 → 鼻 → 口</strong>の順にタップしてください。
+    この4点だけを絵文字の禁止エリアとして使うので、髪・頬の外側・服・透過部分は飾れます。
   </div>
 </div>
 
 <div class="card">
-  <div class="section-title">③ 文字</div>
+  <div class="section-title">④ 文字</div>
   <div class="tip">文字は<strong>丸ゴシック系</strong>を優先して表示。濃いめパステル＋白ふちで、ぷっくり可愛い見た目にしています。</div>
   <div class="tip">文字色は<strong>濃いめパステル＋白ふち</strong>で自動統一。暗い色にはならず、背景が明るくても読みやすい設定です。</div>
   <input id="titleText" type="text" value="おはよう！">
@@ -112,8 +127,8 @@ input[type=range]{width:100%}
 </div>
 
 <div class="card">
-  <div class="section-title">④ デザインを作る</div>
-  <div class="tip"><strong>顔パーツ保護 v7.2</strong>：女の子全体や透過部分を禁止エリアにせず、<strong>左右の目・鼻・口だけ</strong>を保護します。髪・頬の外側・肩・服・透過された空白には飾りを置けるので、画面をしっかり盛れます。文字ブロックへの重なり防止はそのままです。</div>
+  <div class="section-title">⑤ デザインを作る</div>
+  <div class="tip"><strong>顔パーツ保護 v7.5</strong>：女の子全体や透過部分を禁止エリアにせず、<strong>左右の目・鼻・口だけ</strong>を保護します。髪・頬の外側・肩・服・透過された空白には飾りを置けるので、画面をしっかり盛れます。文字ブロックへの重なり防止はそのままです。</div>
   <div class="tip"><strong>センス重視モード</strong>：<strong>四隅すべてに大きい飾り</strong>を必ず置き、<strong>アバター側上＋文字側下</strong>をメイン、<strong>文字側上＋アバター側下</strong>をサブとして<strong>対角に固定</strong>します。さらに<strong>上下左右と文字の下</strong>へ、<strong>四隅より少し小さめ</strong>と<strong>小さめ</strong>の2段階絵文字をもっと多く散らし、<strong>目・鼻・口だけ避けて、上下左右と文字下の空白をしっかり埋めます</strong>。文字は常に最前面に表示します。</div>
   <div class="tip">飾りは<strong>空白を埋めるようにバラけて配置</strong>。四隅の大きい飾りはアバターより前に出し、中〜小飾りは目・鼻・口・文字ブロックを避けながら、<strong>上下左右と文字下の余白</strong>を優先的に埋めます。今回は<strong>iPhone絵文字っぽい表示</strong>に寄せ、外周だけでなく内側の空白にも散らします。</div>
   <div class="tip">重なり順：<strong>背景 → フレーム → 女の子 → 絵文字（飾り） → おはようメッセージ</strong></div>
@@ -155,7 +170,7 @@ input[type=range]{width:100%}
 </div>
 
 <div class="card">
-  <div class="section-title">⑤ 女の子を微調整</div>
+  <div class="section-title">⑥ 女の子を微調整</div>
   <label class="slider"><span>左右</span><input id="x" type="range" min="-500" max="500" value="-250"><output id="xo">-250</output></label>
   <label class="slider"><span>上下</span><input id="y" type="range" min="-300" max="300" value="25"><output id="yo">25</output></label>
   <label class="slider"><span>大きさ</span><input id="scale" type="range" min="60" max="280" value="172"><output id="so">172%</output></label>
@@ -163,7 +178,7 @@ input[type=range]{width:100%}
 </div>
 
 <div class="card">
-  <div class="section-title">⑥ 保存</div>
+  <div class="section-title">⑦ 保存</div>
   <div class="tip">iPhoneでは<strong>共有メニュー</strong>を開きます。「画像を保存」または「ファイルに保存」を選んでください。</div>
   <div class="grid2">
     <button id="save" class="primary">📲 画像を保存</button>
@@ -171,7 +186,7 @@ input[type=range]{width:100%}
   </div>
 </div>
 
-<div class="footer">おはよう画像メーカー v7.3</div>
+<div class="footer">おはよう画像メーカー v7.5</div>
 </div>
 
 <script>
@@ -182,7 +197,8 @@ const state={
   charImg:null, x:-250,y:18,scale:1.72,flip:false,
   bg:0,deco:0,frame:0,frameWidth:4,layout:0,density:5,designMood:'pop',
   mode:'move',drag:false,lastX:0,lastY:0,lastPaint:null,rebuildTimer:null,
-  edgeGuide:null
+  edgeGuide:null,
+  faceFeatures:null, faceGuide:false, faceCalib:null
 };
 
 const messages={
@@ -304,6 +320,61 @@ function snapToOutline(ix,iy,r){
     }
   }
   return best;
+}
+
+
+function smartRestoreAt(ix,iy){
+  if(!state.mask||!state.sourceImg||!state.edgeGuide)return false;
+  const iw=state.sourceImg.naturalWidth, ih=state.sourceImg.naturalHeight;
+  const sx=Math.max(0,Math.min(iw-1,Math.round(ix))), sy=Math.max(0,Math.min(ih-1,Math.round(iy)));
+  const edge=state.edgeGuide.edge;
+
+  // Original RGB is used only as a weak guard. The detected outline is the main wall.
+  const off=document.createElement('canvas'); off.width=iw; off.height=ih;
+  const oc=off.getContext('2d',{willReadFrequently:true}); oc.drawImage(state.sourceImg,0,0,iw,ih);
+  const src=oc.getImageData(0,0,iw,ih).data;
+  const seed=(sy*iw+sx)*4;
+  const sr=src[seed], sg=src[seed+1], sb=src[seed+2];
+  const maxRadius=Math.max(28,Math.round(Math.min(iw,ih)*0.22));
+  const edgeWall=74;
+  const softWall=48;
+  const colorLimit=125;
+  const qx=new Int32Array((maxRadius*2+3)*(maxRadius*2+3));
+  const qy=new Int32Array(qx.length);
+  const minX=Math.max(0,sx-maxRadius), maxX=Math.min(iw-1,sx+maxRadius);
+  const minY=Math.max(0,sy-maxRadius), maxY=Math.min(ih-1,sy+maxRadius);
+  const bw=maxX-minX+1, bh=maxY-minY+1;
+  const seen=new Uint8Array(bw*bh);
+  let head=0,tail=0,restored=0;
+  qx[tail]=sx; qy[tail]=sy; tail++;
+
+  function localIndex(x,y){return (y-minY)*bw+(x-minX)}
+  function colorDist(x,y){
+    const i=(y*iw+x)*4;
+    return Math.hypot(src[i]-sr,src[i+1]-sg,src[i+2]-sb);
+  }
+  while(head<tail){
+    const x=qx[head], y=qy[head]; head++;
+    if(x<minX||x>maxX||y<minY||y>maxY)continue;
+    const li=localIndex(x,y); if(seen[li])continue; seen[li]=1;
+    const dist=Math.hypot(x-sx,y-sy); if(dist>maxRadius)continue;
+    const pi=y*iw+x;
+    const e=edge[pi]||0;
+    // Strong outline = hard stop. Softer edges are crossed only when color remains close.
+    if(!(x===sx&&y===sy)){
+      if(e>=edgeWall)continue;
+      if(e>=softWall && colorDist(x,y)>70)continue;
+      if(colorDist(x,y)>colorLimit && dist>8)continue;
+    }
+    const ai=pi*4+3;
+    if(state.mask.data[ai]<245){state.mask.data[ai]=255;restored++;}
+    if(tail+4>=qx.length)continue;
+    qx[tail]=x+1;qy[tail]=y;tail++;
+    qx[tail]=x-1;qy[tail]=y;tail++;
+    qx[tail]=x;qy[tail]=y+1;tail++;
+    qx[tail]=x;qy[tail]=y-1;tail++;
+  }
+  return restored>0;
 }
 
 function rr(x,y,w,h,r,fill){ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fillStyle=fill;ctx.fill();}
@@ -693,6 +764,78 @@ function drawBg(){
 
 
 
+
+function setFaceStatus(t){ const el=document.getElementById('faceStatus'); if(el) el.textContent=t; }
+function imagePointToCanvas(pt){
+  if(!pt||!state.sourceImg) return null;
+  const img=state.charImg||state.sourceImg;
+  const h=790*state.scale,w=h*(img.naturalWidth/img.naturalHeight),cx=W/2+state.x,bottom=H/2+195+state.y;
+  let nx=(pt.x/state.sourceImg.naturalWidth)-.5;
+  if(state.flip) nx=-nx;
+  return {x:cx+nx*w, y:(bottom-h)+(pt.y/state.sourceImg.naturalHeight)*h};
+}
+function detectFaceFeatures(){
+  if(!state.sourceImg){setFaceStatus('先に画像を選んでください。');return false;}
+  const img=state.sourceImg, iw=img.naturalWidth, ih=img.naturalHeight;
+  const off=document.createElement('canvas');off.width=iw;off.height=ih;
+  const o=off.getContext('2d',{willReadFrequently:true});o.drawImage(img,0,0,iw,ih);
+  const id=o.getImageData(0,0,iw,ih),d=id.data;
+  // キャラクターの上半身中央を探索。REALITYアバター向けの肌色判定。
+  let xs=[],ys=[];
+  const x1=Math.floor(iw*.12),x2=Math.floor(iw*.88),y1=Math.floor(ih*.08),y2=Math.floor(ih*.70);
+  for(let y=y1;y<y2;y+=2){
+    for(let x=x1;x<x2;x+=2){
+      const i=(y*iw+x)*4,r=d[i],g=d[i+1],b=d[i+2];
+      const mx=Math.max(r,g,b),mn=Math.min(r,g,b);
+      const skin=r>150&&g>105&&b>105&&(r-g)>-6&&(r-b)>-10&&(r-g)<95&&(r-b)<105&&(mx-mn)<125;
+      if(skin){xs.push(x);ys.push(y)}
+    }
+  }
+  if(xs.length<150){
+    setFaceStatus('自動認識が難しかったので、4点タップ補正を使ってください。');
+    return false;
+  }
+  xs.sort((a,b)=>a-b);ys.sort((a,b)=>a-b);
+  const q=(a,p)=>a[Math.max(0,Math.min(a.length-1,Math.floor((a.length-1)*p)))];
+  let fx1=q(xs,.15),fx2=q(xs,.85),fy1=q(ys,.10),fy2=q(ys,.72);
+  const fw=Math.max(80,fx2-fx1),fh=Math.max(90,fy2-fy1);
+  // 顔の肌領域に対するアバター用ランドマーク。目は少し大きめに保護。
+  const le={x:fx1+fw*.34,y:fy1+fh*.39};
+  const re={x:fx1+fw*.66,y:fy1+fh*.39};
+  const no={x:fx1+fw*.50,y:fy1+fh*.56};
+  const mo={x:fx1+fw*.50,y:fy1+fh*.72};
+  state.faceFeatures={leftEye:le,rightEye:re,nose:no,mouth:mo,eyeR:fw*.11,noseR:fw*.055,mouthR:fw*.085,source:'auto'};
+  setFaceStatus('✨ 顔を自動認識しました。目・鼻・口だけを保護します。ずれていたら4点タップ補正で直せます。');
+  draw();return true;
+}
+function startManualFaceCalibration(){
+  if(!state.sourceImg){setFaceStatus('先に画像を選んでください。');return;}
+  state.faceCalib={step:0,pts:[]};
+  setMode('faceCalib');
+  setFaceStatus('① 左目の中心をタップしてください。');
+}
+function handleFaceCalibrationTap(p){
+  if(!state.faceCalib) return;
+  const m=charImagePoint(p); if(!m) return;
+  state.faceCalib.pts.push({x:m.ix,y:m.iy});
+  state.faceCalib.step++;
+  const labels=['② 右目の中心','③ 鼻','④ 口'];
+  if(state.faceCalib.step<4){setFaceStatus(labels[state.faceCalib.step-1]+'をタップしてください。');return;}
+  const [le,re,no,mo]=state.faceCalib.pts;
+  const eyeDist=Math.max(30,Math.hypot(re.x-le.x,re.y-le.y));
+  state.faceFeatures={leftEye:le,rightEye:re,nose:no,mouth:mo,eyeR:eyeDist*.18,noseR:eyeDist*.09,mouthR:eyeDist*.14,source:'manual'};
+  state.faceCalib=null;setMode('move');
+  setFaceStatus('✅ 4点補正完了。今指定した左右の目・鼻・口を保護します。');draw();
+}
+function drawFaceGuide(){
+  if(!state.faceGuide||!state.faceFeatures) return;
+  const f=state.faceFeatures;
+  const pts=[['L',f.leftEye,f.eyeR],['R',f.rightEye,f.eyeR],['N',f.nose,f.noseR],['M',f.mouth,f.mouthR]];
+  ctx.save();ctx.strokeStyle='rgba(255,0,120,.9)';ctx.fillStyle='rgba(255,255,255,.9)';ctx.lineWidth=4;ctx.font='700 18px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+  for(const [label,p,r0] of pts){const c=imagePointToCanvas(p);if(!c)continue;const rr=r0/state.sourceImg.naturalWidth*((state.charImg||state.sourceImg).naturalWidth? (790*state.scale*((state.charImg||state.sourceImg).naturalWidth/(state.charImg||state.sourceImg).naturalHeight)):790*state.scale);ctx.beginPath();ctx.arc(c.x,c.y,Math.max(18,rr),0,Math.PI*2);ctx.stroke();ctx.fillText(label,c.x,c.y);}
+  ctx.restore();
+}
+
 function drawEmojiLayer(front=false){
   if(!front) return;
 
@@ -708,10 +851,13 @@ function drawEmojiLayer(front=false){
   const faceCy=top+h*.27;
   const faceRx=200*state.scale, faceRy=220*state.scale;
   const featureCx=cx;
-  const leftEye={x:featureCx-faceRx*0.24,y:faceCy-faceRy*0.02,r:38*state.scale};
-  const rightEye={x:featureCx+faceRx*0.24,y:faceCy-faceRy*0.02,r:38*state.scale};
-  const nose={x:featureCx,y:faceCy+faceRy*0.14,r:26*state.scale};
-  const mouth={x:featureCx,y:faceCy+faceRy*0.32,r:34*state.scale};
+  const sf=state.faceFeatures;
+  const sc=(790*state.scale*((state.charImg||state.sourceImg)?.naturalWidth||1)/((state.charImg||state.sourceImg)?.naturalHeight||1))/((state.sourceImg?.naturalWidth)||1);
+  const lc=sf?imagePointToCanvas(sf.leftEye):null, rc=sf?imagePointToCanvas(sf.rightEye):null, nc=sf?imagePointToCanvas(sf.nose):null, mc=sf?imagePointToCanvas(sf.mouth):null;
+  const leftEye=sf?{x:lc.x,y:lc.y,r:Math.max(20,sf.eyeR*sc)}:{x:featureCx-faceRx*0.24,y:faceCy-faceRy*0.02,r:38*state.scale};
+  const rightEye=sf?{x:rc.x,y:rc.y,r:Math.max(20,sf.eyeR*sc)}:{x:featureCx+faceRx*0.24,y:faceCy-faceRy*0.02,r:38*state.scale};
+  const nose=sf?{x:nc.x,y:nc.y,r:Math.max(14,sf.noseR*sc)}:{x:featureCx,y:faceCy+faceRy*0.14,r:26*state.scale};
+  const mouth=sf?{x:mc.x,y:mc.y,r:Math.max(16,sf.mouthR*sc)}:{x:featureCx,y:faceCy+faceRy*0.32,r:34*state.scale};
 
   function circleHitsRect(x,y,r,rect,pad=0){
     if(!rect) return false;
@@ -742,10 +888,10 @@ function drawEmojiLayer(front=false){
 
     // 眉間から鼻・口にかけて大きな飾りが横切るのを防ぐ細い保護帯。
     const bridge={
-      x1:featureCx-faceRx*.14,
-      x2:featureCx+faceRx*.14,
-      y1:faceCy-faceRy*.10,
-      y2:faceCy+faceRy*.38
+      x1:Math.min(leftEye.x,rightEye.x)+Math.abs(rightEye.x-leftEye.x)*.36,
+      x2:Math.max(leftEye.x,rightEye.x)-Math.abs(rightEye.x-leftEye.x)*.36,
+      y1:Math.min(leftEye.y,rightEye.y)-Math.max(8,leftEye.r*.25),
+      y2:mouth.y+mouth.r*.55
     };
     if(circleHitsRect(x,y,r,bridge,pad*.4)) return true;
 
@@ -1085,6 +1231,7 @@ function draw(){
  drawBackDeco();
  drawFrontDeco();
  drawText();
+ drawFaceGuide();
 }
 
 function canvasPoint(ev){
@@ -1163,30 +1310,41 @@ function paintMask(ev){
  scheduleCharRebuild();
 }
 function start(ev){
+ if(state.mode==='faceCalib'){ const p=canvasPoint(ev); handleFaceCalibrationTap(p); ev.preventDefault(); return; }
  if(state.mode==='move'){
    state.drag=true;let p=canvasPoint(ev);state.lastX=p.x;state.lastY=p.y;
+ }else if(state.mode==='smartRestore'){
+   state.drag=false;
+   const p=canvasPoint(ev),m=charImagePoint(p);
+   if(m && state.mask){
+     rememberMaskBeforeStroke();
+     const ok=smartRestoreAt(m.ix,m.iy);
+     if(ok){rebuildChar();status('✨ タップした場所を、AIが検出したアウトラインの内側まで戻しました。はみ出した場合は「背景ゴミを消す」、足りない部分はもう一度タップしてください。');}
+     else {undoStack.pop();updateHistoryButtons();status('この場所は戻す範囲を見つけられませんでした。少し内側をタップするか「なぞって戻す」を使ってください。');}
+   }
  }else{
    state.drag=true;state.lastPaint=null;rememberMaskBeforeStroke();paintMask(ev);
  }
  ev.preventDefault();
 }
 function move(ev){
+ if(state.mode==='smartRestore')return;
  if(!state.drag)return;
  if(state.mode==='move'){
    let p=canvasPoint(ev);state.x+=p.x-state.lastX;state.y+=p.y-state.lastY;state.lastX=p.x;state.lastY=p.y;sync();draw();
  }else paintMask(ev);
  ev.preventDefault();
 }
-function end(){state.drag=false;state.lastPaint=null;if(state.mode!=='move')rebuildChar()}
+function end(){state.drag=false;state.lastPaint=null;if(state.mode!=='move'&&state.mode!=='smartRestore')rebuildChar()}
 cv.addEventListener('mousedown',start);window.addEventListener('mousemove',move);window.addEventListener('mouseup',end);
 cv.addEventListener('touchstart',start,{passive:false});cv.addEventListener('touchmove',move,{passive:false});cv.addEventListener('touchend',end);
 
 function setMode(m){
  state.mode=m;
- ['restoreMode','eraseMode','moveMode'].forEach(id=>document.getElementById(id).classList.remove('active'));
- document.getElementById(m==='restore'?'restoreMode':m==='erase'?'eraseMode':'moveMode').classList.add('active');
+ ['restoreMode','smartRestoreMode','eraseMode','moveMode'].forEach(id=>document.getElementById(id).classList.remove('active'));
+ if(m!=='faceCalib') document.getElementById(m==='restore'?'restoreMode':m==='smartRestore'?'smartRestoreMode':m==='erase'?'eraseMode':'moveMode').classList.add('active');
 }
-restoreMode.onclick=()=>setMode('restore');eraseMode.onclick=()=>setMode('erase');moveMode.onclick=()=>setMode('move');
+restoreMode.onclick=()=>setMode('restore');smartRestoreMode.onclick=()=>setMode('smartRestore');eraseMode.onclick=()=>setMode('erase');moveMode.onclick=()=>setMode('move');
 const hardnessEl=document.getElementById('hardness');
 brush.oninput=e=>brusho.value=e.target.value;
 hardnessEl.oninput=e=>hardnesso.value=e.target.value;
@@ -1194,7 +1352,11 @@ brushFine.onclick=()=>{brush.value=10;brusho.value=10};
 brushMid.onclick=()=>{brush.value=24;brusho.value=24};
 brushWide.onclick=()=>{brush.value=52;brusho.value=52};
 
-file.onchange=e=>{const f=e.target.files?.[0];if(!f)return;const url=URL.createObjectURL(f),img=new Image();img.onload=()=>{state.sourceImg=img;buildEdgeGuide(img);state.cutoutImg=null;state.mask=null;state.charImg=img;draw();status('画像を読み込みました。次にAI切り抜きを押してください。')};img.src=url};
+autoFace.onclick=()=>detectFaceFeatures();
+manualFace.onclick=()=>startManualFaceCalibration();
+toggleFaceGuide.onclick=()=>{state.faceGuide=!state.faceGuide;toggleFaceGuide.textContent=state.faceGuide?'🙈 保護位置を隠す':'👀 保護位置を表示';draw();};
+
+file.onchange=e=>{const f=e.target.files?.[0];if(!f)return;const url=URL.createObjectURL(f),img=new Image();img.onload=()=>{state.sourceImg=img;buildEdgeGuide(img);state.cutoutImg=null;state.mask=null;state.charImg=img;state.faceFeatures=null;draw();detectFaceFeatures();status('画像を読み込みました。顔パーツを自動認識しました。次にAI切り抜きを押してください。')};img.src=url};
 
 removeBg.onclick=async()=>{
  const f=file.files?.[0];if(!f){status('先に画像を選んでください。');return}
@@ -1211,8 +1373,8 @@ removeBg.onclick=async()=>{
      normalizeMaskAlpha(id);
      state.mask=id;
      clearMaskHistory();
-     state.charImg=img;draw();
-     status('✨ AI切り抜き完了。白い服が欠けたら「戻す」＋細かく10＋硬さ96で輪郭をなぞると、線画寄りに精密に戻しやすくなっています。飾りは四隅に大きく置き、アバター側上 / 文字側下をメイン、文字側上 / アバター側下をサブとして対角に固定。さらに上下左右と文字下の空白を、四隅より少し小さめと小さめの2段階絵文字でしっかり埋め、顔周辺だけ避けて散らしやすくしています。');
+     state.charImg=img;detectFaceFeatures();draw();
+     status('✨ AI切り抜き完了。できるだけ綺麗に自動透過しています。白い服・羽・髪などが欠けた場合は「✨ タップで輪郭まで戻す」を選び、欠けた部分の内側をタップしてください。元画像のアウトラインを自動検出して、その内側をまとめて復元します。細部だけ「🩷 なぞって戻す」で調整できます。飾りは四隅に大きく置き、アバター側上 / 文字側下をメイン、文字側上 / アバター側下をサブとして対角に固定。さらに上下左右と文字下の空白を、四隅より少し小さめと小さめの2段階絵文字でしっかり埋め、顔周辺だけ避けて散らしやすくしています。');
      removeBg.disabled=false;removeBg.textContent='✂️ AIで女の子を切り抜く';
    };
    img.src=url;
@@ -1317,10 +1479,11 @@ function sync(){x.value=Math.round(state.x);y.value=Math.round(state.y);scale.va
 ['x','y','scale'].forEach(id=>document.getElementById(id).addEventListener('input',e=>{if(id==='scale')state.scale=+e.target.value/100;else state[id]=+e.target.value;sync();draw()}));
 save.onclick=async()=>{
   try{
-    draw();
+    const guideWas=state.faceGuide; state.faceGuide=false; draw();
     const blob=await new Promise((resolve,reject)=>{
       cv.toBlob(b=>b?resolve(b):reject(new Error('PNG変換に失敗しました')),'image/png',1);
     });
+    state.faceGuide=guideWas; draw();
     const file=new File([blob],'ohayou.png',{type:'image/png'});
 
     // iPhone/Safari: share sheet is the most reliable way to save to Photos/Files.
@@ -1364,7 +1527,7 @@ save.onclick=async()=>{
     }
   }
 };
-reset.onclick=()=>{clearMaskHistory();brush.value=22;brusho.value=22;hardnessEl.value=96;hardnesso.value=96;document.getElementById('decoTheme').value='mixed';document.getElementById('designMood').value='pop';state.designMood='pop';state.bg=0;state.deco=0;state.frame=0;state.frameWidth=4;state.layout=0;state.density=5;state.x=-250;state.y=18;state.scale=1.72;state.flip=false;titleText.value='おはよう！';subText.value='素敵を集めに\\n行ってみよー！';density.value=5;densityo.value=5;frameWidth.value=4;frameWidtho.value=4;sync();draw()};
+reset.onclick=()=>{clearMaskHistory();brush.value=22;brusho.value=22;hardnessEl.value=96;hardnesso.value=96;document.getElementById('decoTheme').value='mixed';document.getElementById('designMood').value='pop';state.designMood='pop';state.bg=0;state.deco=0;state.frame=0;state.frameWidth=4;state.layout=0;state.density=5;state.x=-250;state.y=18;state.scale=1.72;state.flip=false;state.faceFeatures=null;state.faceGuide=false;state.faceCalib=null;titleText.value='おはよう！';subText.value='素敵を集めに\\n行ってみよー！';density.value=5;densityo.value=5;frameWidth.value=4;frameWidtho.value=4;sync();draw()};
 sync();draw();updateHistoryButtons();
 </script>
 </body></html>
