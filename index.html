@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おはよう画像メーカー v8.0</title>
+<title>おはよう画像メーカー v8.1</title>
 <style>
 :root{
   --ink:#352f44; --muted:#81798e; --line:#ece7f4; --panel:#fff;
@@ -49,11 +49,11 @@ input[type=range]{width:100%}
 </head>
 <body>
 <div class="wrap">
-<h1>🌞 おはよう画像メーカー v8.0</h1>
+<h1>🌞 おはよう画像メーカー v8.1</h1>
 <div class="lead">
   透過の手直し機能はそのまま。今回はデザインをさらに盛りました。
   <b>大きい絵文字＋小さい絵文字＋太めのかわいいフレーム</b>をランダム配置。
-  v8.0は内部設計を整理して作り直した版です。<strong>AI切り抜き → 輪郭復元 → 顔パーツ保護 → 構図決定 → 大中小の飾り配置 → 最終バランス補正</strong>の順で処理します。目・鼻・口は画像から自動推定し、確信度が低い時は安全な中央保護へ切り替えます。必要なら<strong>4点タップ補正</strong>で左右の目・鼻・口を直接指定できます。女の子全体や透過された空白は避けず、髪・頬の外側・肩・服まわりにも飾りを置きます。女の子はランダムで勝手に左右反転しません。
+  v8.0は内部設計を整理して作り直した版です。<strong>AI切り抜き → 輪郭復元 → 顔パーツ保護 → 構図決定 → 大中小の飾り配置 → 最終バランス補正</strong>の順で処理します。目・鼻・口は画像から自動推定し、確信度が低い時は安全な中央保護へ切り替えます。必要なら<strong>4点タップ補正</strong>で左右の目・鼻・口を直接指定できます。女の子全体や透過された空白は避けず、髪・頬の外側・肩・服まわりにも飾りを置きます。女の子はランダムで勝手に左右反転しません。v8.1では<strong>目の二重保護</strong>と<strong>右上・上辺の最終バランス補正</strong>を強化しました。
 </div>
 
 <div class="card">
@@ -186,7 +186,7 @@ input[type=range]{width:100%}
   </div>
 </div>
 
-<div class="footer">おはよう画像メーカー v8.0</div>
+<div class="footer">おはよう画像メーカー v8.1</div>
 </div>
 
 <script>
@@ -853,7 +853,7 @@ function detectFaceFeatures(){
   const centralOk=Math.abs(no.x-midX)<fw*.18 && Math.abs(mo.x-midX)<fw*.22 && no.y>eyeY && mo.y>no.y;
   const confidence=eyeConfidence && centralOk ? .92 : .48;
   const eyeR=Math.max(fw*.105,eyeDist*.18);
-  const feature={leftEye:le,rightEye:re,nose:no,mouth:mo,eyeR,noseR:eyeDist*.09,mouthR:eyeDist*.15,source:confidence>.7?'auto':'fallback',confidence};
+  const feature={leftEye:le,rightEye:re,nose:no,mouth:mo,eyeR,noseR:eyeDist*.09,mouthR:eyeDist*.15,source:confidence>.7?'auto':'fallback',confidence,faceBox:{x1:fx1,y1:fy1,x2:fx2,y2:fy2,w:fw,h:fh}};
 
   // 4) 確信度が低い場合は、誤認した点を信じ切らず中央安全帯を強める。
   if(confidence<=.7){
@@ -948,6 +948,23 @@ function drawEmojiLayer(front=false){
     if(circleHitsCircle(x,y,r,nose.x,nose.y,nose.r,nosePad+pad)) return true;
     if(circleHitsCircle(x,y,r,mouth.x,mouth.y,mouth.r,mouthPad+pad)) return true;
 
+    // v8.1: 自動認識が少しズレても目だけは絶対に守る二重保険。
+    // 肌領域から得た顔ボックスを使い、REALITY系アバターの標準的な左右目位置にも保護楕円を置く。
+    // 顔全体を禁止するのではなく、両目周辺だけを広めに保護する。
+    if(sf?.faceBox){
+      const fb=sf.faceBox;
+      const fl=imagePointToCanvas({x:fb.x1+fb.w*.33,y:fb.y1+fb.h*.40});
+      const fr=imagePointToCanvas({x:fb.x1+fb.w*.67,y:fb.y1+fb.h*.40});
+      const fxr=Math.max(34,fb.w*.145*sc), fyr=Math.max(28,fb.h*.105*sc);
+      function hitsEyeEllipse(c){
+        if(!c) return false;
+        const rx=fxr+r+pad*.7, ry=fyr+r+pad*.7;
+        const dx=(x-c.x)/rx, dy=(y-c.y)/ry;
+        return dx*dx+dy*dy<1;
+      }
+      if(hitsEyeEllipse(fl)||hitsEyeEllipse(fr)) return true;
+    }
+
     // 眉間から鼻・口にかけて大きな飾りが横切るのを防ぐ細い保護帯。
     const bridge={
       x1:Math.min(leftEye.x,rightEye.x)+Math.abs(rightEye.x-leftEye.x)*.36,
@@ -975,9 +992,12 @@ function drawEmojiLayer(front=false){
 
     return false;
   }
-  function insideText(x,y,size){
-    const r=size*.46;
-    return circleHitsRect(x,y,r,textInfo.titleBox,26) || circleHitsRect(x,y,r,textInfo.subBox,24);
+  function insideText(x,y,size,kind){
+    // フレーム沿いの中大飾りは文字の『隣』まで寄せてよい。ただし文字そのものには重ねない。
+    const r=size*(kind==='edgeAccent'?.38:.46);
+    const titlePad=kind==='edgeAccent'?8:24;
+    const subPad=kind==='edgeAccent'?6:22;
+    return circleHitsRect(x,y,r,textInfo.titleBox,titlePad) || circleHitsRect(x,y,r,textInfo.subBox,subPad);
   }
   function clashes(x,y,size,kind){
     for(const p of placed){
@@ -999,7 +1019,7 @@ function drawEmojiLayer(front=false){
     const m=size*.45+8;
     if(x<m||x>W-m||y<m||y>H-m) return false;
     if(insideProtectedFeatures(x,y,size)) return false;
-    if(insideText(x,y,size)) return false;
+    if(insideText(x,y,size,kind)) return false;
     if(clashes(x,y,size,kind)) return false;
     return true;
   }
@@ -1074,13 +1094,14 @@ function drawEmojiLayer(front=false){
   // 上辺・左右辺・下辺の空白を先に埋めてから、中小サイズで隙間を整える。
   const edgeAccentPool=[...recipe.mainPair,...recipe.subPair,...recipe.fill,...set];
   const topAccentPts=[
-    {x:W*.28,y:112},{x:W*.50,y:108},{x:W*.72,y:112}
+    {x:W*.20,y:112},{x:W*.38,y:108},{x:W*.56,y:110},{x:W*.74,y:108},{x:W*.88,y:126},
+    {x:W*.32,y:158},{x:W*.68,y:154},{x:W*.86,y:178}
   ];
   const leftAccentPts=[
     {x:108,y:H*.34},{x:112,y:H*.55},{x:108,y:H*.72}
   ];
   const rightAccentPts=[
-    {x:W-108,y:H*.34},{x:W-112,y:H*.55},{x:W-108,y:H*.72}
+    {x:W-108,y:H*.25},{x:W-118,y:H*.38},{x:W-108,y:H*.53},{x:W-116,y:H*.68},{x:W-108,y:H*.80}
   ];
   const bottomAccentPts=[
     {x:W*.28,y:H-108},{x:W*.50,y:H-105},{x:W*.72,y:H-108}
@@ -1145,14 +1166,30 @@ function drawEmojiLayer(front=false){
   }
   function fillZone(z){
     const pts=[];
-    for(let i=0;i<18;i++){
+    // まず区画中央とフレーム寄りを候補に入れてからランダム候補を足す。
+    pts.push({x:(z.x1+z.x2)/2,y:(z.y1+z.y2)/2});
+    pts.push({x:z.x2-(z.x2-z.x1)*.18,y:z.y1+(z.y2-z.y1)*.32});
+    pts.push({x:z.x1+(z.x2-z.x1)*.22,y:z.y2-(z.y2-z.y1)*.28});
+    for(let i=0;i<28;i++){
       pts.push({x:z.x1+seeded()*(z.x2-z.x1),y:z.y1+seeded()*(z.y2-z.y1)});
     }
     let w=zoneWeight(z);
-    if(w<1.35){ tryPlaceFromPoints(pts,'edgeAccent',1,118,148,edgeAccentPool); w=zoneWeight(z); }
-    if(w<1.9){ tryPlaceFromPoints(pts,'medium',1,96,122,mediumPool); }
+    const important=/topR|rightU/.test(z.name);
+    if(w<(important?1.85:1.35)){ tryPlaceFromPoints(pts,'edgeAccent',1,important?126:118,important?154:148,edgeAccentPool); w=zoneWeight(z); }
+    if(w<(important?2.45:1.9)){ tryPlaceFromPoints(pts,'medium',1,important?102:96,important?128:122,mediumPool); w=zoneWeight(z); }
+    if(important && w<2.8){ tryPlaceFromPoints(pts,'small',1,80,96,smallPool); }
   }
   balanceZones.forEach(fillZone);
+
+  // v8.1 最終レスキュー: 右上がまだ寂しい時は、文字の外側に必ず追加を試す。
+  const topRightRescue=[
+    {x:W-125,y:150},{x:W-190,y:118},{x:W-135,y:235},{x:W-255,y:115},{x:W-100,y:300}
+  ];
+  const trZone={x1:W*.70,x2:W-70,y1:70,y2:H*.42};
+  let trw=zoneWeight(trZone);
+  if(trw<2.15) tryPlaceFromPoints(topRightRescue,'edgeAccent',1,126,150,edgeAccentPool);
+  trw=zoneWeight(trZone);
+  if(trw<2.7) tryPlaceFromPoints(topRightRescue,'medium',1,96,118,mediumPool);
 }
 
 function drawBackDeco(){}
