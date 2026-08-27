@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おはよう画像メーカー v7.5</title>
+<title>おはよう画像メーカー v8.0</title>
 <style>
 :root{
   --ink:#352f44; --muted:#81798e; --line:#ece7f4; --panel:#fff;
@@ -49,11 +49,11 @@ input[type=range]{width:100%}
 </head>
 <body>
 <div class="wrap">
-<h1>🌞 おはよう画像メーカー v7.5</h1>
+<h1>🌞 おはよう画像メーカー v8.0</h1>
 <div class="lead">
   透過の手直し機能はそのまま。今回はデザインをさらに盛りました。
   <b>大きい絵文字＋小さい絵文字＋太めのかわいいフレーム</b>をランダム配置。
-  「全部ランダム」で毎朝ガチャできます。今回は<strong>輪郭アシスト付きの透過手直し</strong>はそのままに、<strong>目・鼻・口を画像から自動検出して保護</strong>する方式に変更しました。女の子全体や透過された空白は避けず、髪・頬の外側・肩・服まわりにも飾りを置けます。自動認識がずれた時は<strong>4点タップ補正</strong>で左右の目・鼻・口を直接指定できます。女の子はランダムで勝手に左右反転しません。
+  v8.0は内部設計を整理して作り直した版です。<strong>AI切り抜き → 輪郭復元 → 顔パーツ保護 → 構図決定 → 大中小の飾り配置 → 最終バランス補正</strong>の順で処理します。目・鼻・口は画像から自動推定し、確信度が低い時は安全な中央保護へ切り替えます。必要なら<strong>4点タップ補正</strong>で左右の目・鼻・口を直接指定できます。女の子全体や透過された空白は避けず、髪・頬の外側・肩・服まわりにも飾りを置きます。女の子はランダムで勝手に左右反転しません。
 </div>
 
 <div class="card">
@@ -128,7 +128,7 @@ input[type=range]{width:100%}
 
 <div class="card">
   <div class="section-title">⑤ デザインを作る</div>
-  <div class="tip"><strong>顔パーツ保護 v7.5</strong>：女の子全体や透過部分を禁止エリアにせず、<strong>左右の目・鼻・口だけ</strong>を保護します。髪・頬の外側・肩・服・透過された空白には飾りを置けるので、画面をしっかり盛れます。文字ブロックへの重なり防止はそのままです。</div>
+  <div class="tip"><strong>顔パーツ保護 v8.0</strong>：REALITY系アバター向けに、肌領域→左右の目→鼻→口の順で推定します。飾りの中心ではなく<strong>飾り全体の大きさ</strong>で衝突判定し、左右の目を結ぶ帯と鼻〜口の中央帯も保護します。確信度が低い場合は安全な中央保護へ切り替え、必要なら4点タップで補正できます。</div>
   <div class="tip"><strong>センス重視モード</strong>：<strong>四隅すべてに大きい飾り</strong>を必ず置き、<strong>アバター側上＋文字側下</strong>をメイン、<strong>文字側上＋アバター側下</strong>をサブとして<strong>対角に固定</strong>します。さらに<strong>上下左右と文字の下</strong>へ、<strong>四隅より少し小さめ</strong>と<strong>小さめ</strong>の2段階絵文字をもっと多く散らし、<strong>目・鼻・口だけ避けて、上下左右と文字下の空白をしっかり埋めます</strong>。文字は常に最前面に表示します。</div>
   <div class="tip">飾りは<strong>空白を埋めるようにバラけて配置</strong>。四隅の大きい飾りはアバターより前に出し、中〜小飾りは目・鼻・口・文字ブロックを避けながら、<strong>上下左右と文字下の余白</strong>を優先的に埋めます。今回は<strong>iPhone絵文字っぽい表示</strong>に寄せ、外周だけでなく内側の空白にも散らします。</div>
   <div class="tip">重なり順：<strong>背景 → フレーム → 女の子 → 絵文字（飾り） → おはようメッセージ</strong></div>
@@ -186,7 +186,7 @@ input[type=range]{width:100%}
   </div>
 </div>
 
-<div class="footer">おはよう画像メーカー v7.5</div>
+<div class="footer">おはよう画像メーカー v8.0</div>
 </div>
 
 <script>
@@ -780,33 +780,94 @@ function detectFaceFeatures(){
   const off=document.createElement('canvas');off.width=iw;off.height=ih;
   const o=off.getContext('2d',{willReadFrequently:true});o.drawImage(img,0,0,iw,ih);
   const id=o.getImageData(0,0,iw,ih),d=id.data;
-  // キャラクターの上半身中央を探索。REALITYアバター向けの肌色判定。
-  let xs=[],ys=[];
-  const x1=Math.floor(iw*.12),x2=Math.floor(iw*.88),y1=Math.floor(ih*.08),y2=Math.floor(ih*.70);
-  for(let y=y1;y<y2;y+=2){
-    for(let x=x1;x<x2;x+=2){
+
+  // 1) REALITY系アバター向けに肌色領域から顔候補を作る。
+  const skinPts=[];
+  const sx1=Math.floor(iw*.08),sx2=Math.floor(iw*.92),sy1=Math.floor(ih*.06),sy2=Math.floor(ih*.72);
+  for(let y=sy1;y<sy2;y+=2){
+    for(let x=sx1;x<sx2;x+=2){
       const i=(y*iw+x)*4,r=d[i],g=d[i+1],b=d[i+2];
       const mx=Math.max(r,g,b),mn=Math.min(r,g,b);
-      const skin=r>150&&g>105&&b>105&&(r-g)>-6&&(r-b)>-10&&(r-g)<95&&(r-b)<105&&(mx-mn)<125;
-      if(skin){xs.push(x);ys.push(y)}
+      const skin=r>145&&g>95&&b>95&&(r-g)>-8&&(r-b)>-12&&(r-g)<100&&(r-b)<115&&(mx-mn)<135;
+      if(skin) skinPts.push({x,y});
     }
   }
-  if(xs.length<150){
-    setFaceStatus('自動認識が難しかったので、4点タップ補正を使ってください。');
-    return false;
+  if(skinPts.length<180){
+    state.faceFeatures=null;
+    setFaceStatus('顔の自動認識の確信度が低いです。👉 4点タップ補正を使ってください。');
+    draw(); return false;
   }
-  xs.sort((a,b)=>a-b);ys.sort((a,b)=>a-b);
+  const xs=skinPts.map(p=>p.x).sort((a,b)=>a-b), ys=skinPts.map(p=>p.y).sort((a,b)=>a-b);
   const q=(a,p)=>a[Math.max(0,Math.min(a.length-1,Math.floor((a.length-1)*p)))];
-  let fx1=q(xs,.15),fx2=q(xs,.85),fy1=q(ys,.10),fy2=q(ys,.72);
-  const fw=Math.max(80,fx2-fx1),fh=Math.max(90,fy2-fy1);
-  // 顔の肌領域に対するアバター用ランドマーク。目は少し大きめに保護。
-  const le={x:fx1+fw*.34,y:fy1+fh*.39};
-  const re={x:fx1+fw*.66,y:fy1+fh*.39};
-  const no={x:fx1+fw*.50,y:fy1+fh*.56};
-  const mo={x:fx1+fw*.50,y:fy1+fh*.72};
-  state.faceFeatures={leftEye:le,rightEye:re,nose:no,mouth:mo,eyeR:fw*.11,noseR:fw*.055,mouthR:fw*.085,source:'auto'};
-  setFaceStatus('✨ 顔を自動認識しました。目・鼻・口だけを保護します。ずれていたら4点タップ補正で直せます。');
-  draw();return true;
+  const fx1=q(xs,.18), fx2=q(xs,.82), fy1=q(ys,.10), fy2=q(ys,.78);
+  const fw=Math.max(90,fx2-fx1), fh=Math.max(110,fy2-fy1);
+
+  // 2) 顔上半分の左右それぞれで「暗く、周囲よりコントラストが強い」目候補を探す。
+  function eyeCenter(xa,xb){
+    let sw=0,sx=0,sy=0;
+    const ya=Math.floor(fy1+fh*.20), yb=Math.floor(fy1+fh*.58);
+    for(let y=ya;y<yb;y+=2){
+      for(let x=Math.floor(xa);x<Math.floor(xb);x+=2){
+        const i=(y*iw+x)*4,r=d[i],g=d[i+1],b=d[i+2];
+        const lum=.299*r+.587*g+.114*b;
+        const darkness=Math.max(0,150-lum);
+        const neutral=255-(Math.max(r,g,b)-Math.min(r,g,b));
+        const w=darkness*darkness*(.65+.35*neutral/255);
+        if(w>100){sw+=w;sx+=x*w;sy+=y*w;}
+      }
+    }
+    return sw>0?{x:sx/sw,y:sy/sw,weight:sw}:null;
+  }
+  let le=eyeCenter(fx1+fw*.06, fx1+fw*.48);
+  let re=eyeCenter(fx1+fw*.52, fx2-fw*.06);
+
+  // フォールバックのアバター比率
+  if(!le) le={x:fx1+fw*.34,y:fy1+fh*.40,weight:0};
+  if(!re) re={x:fx1+fw*.66,y:fy1+fh*.40,weight:0};
+
+  const eyeDist=Math.hypot(re.x-le.x,re.y-le.y);
+  const eyeLevelDiff=Math.abs(re.y-le.y);
+  const eyeConfidence=(eyeDist>fw*.22 && eyeDist<fw*.62 && eyeLevelDiff<fh*.16) ? 1 : 0;
+
+  // 3) 鼻・口は目の中点を軸に探索。鼻は小さな暗点、口は赤み＋暗さを重視。
+  const midX=(le.x+re.x)/2, eyeY=(le.y+re.y)/2;
+  function weightedCenter(xa,xb,ya,yb,mode){
+    let sw=0,sx=0,sy=0;
+    for(let y=Math.floor(ya);y<Math.floor(yb);y+=2){
+      for(let x=Math.floor(xa);x<Math.floor(xb);x+=2){
+        const i=(y*iw+x)*4,r=d[i],g=d[i+1],b=d[i+2];
+        const lum=.299*r+.587*g+.114*b;
+        let w=0;
+        if(mode==='nose') w=Math.max(0,155-lum)*(1-Math.min(1,Math.abs(x-midX)/(fw*.18)));
+        else w=Math.max(0,r-g*.78)*Math.max(0,170-lum+45);
+        if(w>20){sw+=w;sx+=x*w;sy+=y*w;}
+      }
+    }
+    return sw>0?{x:sx/sw,y:sy/sw}:null;
+  }
+  let no=weightedCenter(midX-fw*.12,midX+fw*.12,eyeY+fh*.08,eyeY+fh*.35,'nose');
+  let mo=weightedCenter(midX-fw*.22,midX+fw*.22,eyeY+fh*.28,eyeY+fh*.62,'mouth');
+  if(!no) no={x:midX,y:eyeY+fh*.23};
+  if(!mo) mo={x:midX,y:eyeY+fh*.46};
+
+  const centralOk=Math.abs(no.x-midX)<fw*.18 && Math.abs(mo.x-midX)<fw*.22 && no.y>eyeY && mo.y>no.y;
+  const confidence=eyeConfidence && centralOk ? .92 : .48;
+  const eyeR=Math.max(fw*.105,eyeDist*.18);
+  const feature={leftEye:le,rightEye:re,nose:no,mouth:mo,eyeR,noseR:eyeDist*.09,mouthR:eyeDist*.15,source:confidence>.7?'auto':'fallback',confidence};
+
+  // 4) 確信度が低い場合は、誤認した点を信じ切らず中央安全帯を強める。
+  if(confidence<=.7){
+    feature.leftEye={x:fx1+fw*.34,y:fy1+fh*.40};
+    feature.rightEye={x:fx1+fw*.66,y:fy1+fh*.40};
+    feature.nose={x:fx1+fw*.50,y:fy1+fh*.57};
+    feature.mouth={x:fx1+fw*.50,y:fy1+fh*.72};
+    feature.eyeR=fw*.13; feature.noseR=fw*.07; feature.mouthR=fw*.11;
+  }
+  state.faceFeatures=feature;
+  setFaceStatus(confidence>.7
+    ? '✨ 顔を高確信度で認識しました。左右の目・鼻・口＋中央安全帯を保護します。'
+    : '⚠️ 顔認識の確信度が低いため、安全な中央保護に切り替えました。必要なら👉 4点タップ補正で合わせてください。');
+  draw();return confidence>.7;
 }
 function startManualFaceCalibration(){
   if(!state.sourceImg){setFaceStatus('先に画像を選んでください。');return;}
@@ -874,8 +935,9 @@ function drawEmojiLayer(front=false){
 
     // v7.2: 女の子全体や透過領域は避けない。
     // 表情に必要な「左右の目・鼻・口」だけを禁止エリアにする。
-    const r=size*.30;
-    const pad=Math.max(12,size*.09);
+    // 飾りの中心ではなく「飾り全体」が顔パーツへ入らないよう、実サイズ込みで判定する。
+    const r=size*.40;
+    const pad=Math.max(16,size*.12);
 
     const eyePad=Math.max(18,24*state.scale);
     const nosePad=Math.max(12,16*state.scale);
@@ -893,7 +955,23 @@ function drawEmojiLayer(front=false){
       y1:Math.min(leftEye.y,rightEye.y)-Math.max(8,leftEye.r*.25),
       y2:mouth.y+mouth.r*.55
     };
-    if(circleHitsRect(x,y,r,bridge,pad*.4)) return true;
+    if(circleHitsRect(x,y,r,bridge,pad*.55)) return true;
+
+    // 両目を横切る大型飾りと、鼻〜口を縦断する飾りを防ぐ。
+    const eyeBand={
+      x1:Math.min(leftEye.x,rightEye.x)-leftEye.r*.75,
+      x2:Math.max(leftEye.x,rightEye.x)+rightEye.r*.75,
+      y1:Math.min(leftEye.y,rightEye.y)-Math.max(leftEye.r,rightEye.r)*.72,
+      y2:Math.max(leftEye.y,rightEye.y)+Math.max(leftEye.r,rightEye.r)*.72
+    };
+    if(circleHitsRect(x,y,r,eyeBand,pad*.35)) return true;
+    const centerBand={
+      x1:featureCx-Math.max(18,Math.abs(rightEye.x-leftEye.x)*.13),
+      x2:featureCx+Math.max(18,Math.abs(rightEye.x-leftEye.x)*.13),
+      y1:Math.min(leftEye.y,rightEye.y),
+      y2:mouth.y+mouth.r*.9
+    };
+    if(circleHitsRect(x,y,r,centerBand,pad*.3)) return true;
 
     return false;
   }
@@ -1042,6 +1120,39 @@ function drawEmojiLayer(front=false){
     [topPts,7+densityBoost],[bottomPts,7+densityBoost],[leftPts,6+densityBoost],[rightPts,6+densityBoost],[underTextPts,5+densityBoost],[centerPts,8+densityBoost],[faceAroundPts,4+densityBoost]
   ];
   smallPlan.forEach(([pts,count])=>tryPlaceFromPoints(pts,'small',count,76,98,smallPool));
+
+  // v8.0 最終バランス補正：四隅だけ豪華で、辺の途中が空く事故を最後に埋める。
+  const balanceZones=[
+    {name:'topL',x1:180,x2:W*.42,y1:74,y2:190},
+    {name:'topC',x1:W*.38,x2:W*.62,y1:74,y2:185},
+    {name:'topR',x1:W*.58,x2:W-180,y1:74,y2:190},
+    {name:'rightU',x1:W-245,x2:W-72,y1:150,y2:H*.45},
+    {name:'rightD',x1:W-245,x2:W-72,y1:H*.48,y2:H-150},
+    {name:'bottomR',x1:W*.58,x2:W-180,y1:H-180,y2:H-72},
+    {name:'bottomC',x1:W*.38,x2:W*.62,y1:H-180,y2:H-72},
+    {name:'bottomL',x1:180,x2:W*.42,y1:H-180,y2:H-72},
+    {name:'leftD',x1:72,x2:245,y1:H*.48,y2:H-150},
+    {name:'leftU',x1:72,x2:245,y1:150,y2:H*.45}
+  ];
+  function zoneWeight(z){
+    let w=0;
+    for(const p of placed){
+      if(p.x>=z.x1&&p.x<=z.x2&&p.y>=z.y1&&p.y<=z.y2){
+        w += p.kind==='corner'?2.0:p.kind==='edgeAccent'?1.6:p.kind==='medium'?1.1:.65;
+      }
+    }
+    return w;
+  }
+  function fillZone(z){
+    const pts=[];
+    for(let i=0;i<18;i++){
+      pts.push({x:z.x1+seeded()*(z.x2-z.x1),y:z.y1+seeded()*(z.y2-z.y1)});
+    }
+    let w=zoneWeight(z);
+    if(w<1.35){ tryPlaceFromPoints(pts,'edgeAccent',1,118,148,edgeAccentPool); w=zoneWeight(z); }
+    if(w<1.9){ tryPlaceFromPoints(pts,'medium',1,96,122,mediumPool); }
+  }
+  balanceZones.forEach(fillZone);
 }
 
 function drawBackDeco(){}
