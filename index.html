@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おはよう画像メーカー v7.2</title>
+<title>おはよう画像メーカー v7.3</title>
 <style>
 :root{
   --ink:#352f44; --muted:#81798e; --line:#ece7f4; --panel:#fff;
@@ -48,7 +48,7 @@ input[type=range]{width:100%}
 </head>
 <body>
 <div class="wrap">
-<h1>🌞 おはよう画像メーカー v7.2</h1>
+<h1>🌞 おはよう画像メーカー v7.3</h1>
 <div class="lead">
   透過の手直し機能はそのまま。今回はデザインをさらに盛りました。
   <b>大きい絵文字＋小さい絵文字＋太めのかわいいフレーム</b>をランダム配置。
@@ -171,7 +171,7 @@ input[type=range]{width:100%}
   </div>
 </div>
 
-<div class="footer">おはよう画像メーカー v7.2</div>
+<div class="footer">おはよう画像メーカー v7.3</div>
 </div>
 
 <script>
@@ -757,8 +757,16 @@ function drawEmojiLayer(front=false){
   }
   function clashes(x,y,size,kind){
     for(const p of placed){
-      const factor = kind==='corner' || p.kind==='corner' ? 0.58 : kind==='medium' || p.kind==='medium' ? 0.48 : 0.42;
-      const gap = kind==='corner' || p.kind==='corner' ? 14 : 8;
+      let factor;
+      let gap;
+      if(kind==='edgeAccent' || p.kind==='edgeAccent'){
+        // フレーム沿いの中大飾りは四隅と少し近くてもOK。
+        factor = (p.kind==='corner' || kind==='corner') ? 0.43 : 0.46;
+        gap = 5;
+      }else{
+        factor = kind==='corner' || p.kind==='corner' ? 0.58 : kind==='medium' || p.kind==='medium' ? 0.48 : 0.42;
+        gap = kind==='corner' || p.kind==='corner' ? 14 : 8;
+      }
       if(Math.hypot(x-p.x,y-p.y) < (p.size+size)*factor + gap) return true;
     }
     return false;
@@ -773,7 +781,7 @@ function drawEmojiLayer(front=false){
   }
   function stamp(sym,x,y,size,kind,alpha=.98){
     placed.push({x,y,size,kind});
-    emoji(sym,x,y,size,(seeded()-.5)*(kind==='small'?0.15:0.08),alpha);
+    emoji(sym,x,y,size,(seeded()-.5)*(kind==='small'?0.15:kind==='edgeAccent'?0.10:0.08),alpha);
   }
 
   const corners={
@@ -838,6 +846,29 @@ function drawEmojiLayer(front=false){
   const mediumPool=[...recipe.fill,...set,...recipe.fill];
   const smallPool=[...recipe.fill,...set,...recipe.fill,...recipe.fill];
 
+  // v7.3: 四隅の大飾りだけで終わらず、フレーム沿いに「少し小さい主役飾り」を置く。
+  // 上辺・左右辺・下辺の空白を先に埋めてから、中小サイズで隙間を整える。
+  const edgeAccentPool=[...recipe.mainPair,...recipe.subPair,...recipe.fill,...set];
+  const topAccentPts=[
+    {x:W*.28,y:112},{x:W*.50,y:108},{x:W*.72,y:112}
+  ];
+  const leftAccentPts=[
+    {x:108,y:H*.34},{x:112,y:H*.55},{x:108,y:H*.72}
+  ];
+  const rightAccentPts=[
+    {x:W-108,y:H*.34},{x:W-112,y:H*.55},{x:W-108,y:H*.72}
+  ];
+  const bottomAccentPts=[
+    {x:W*.28,y:H-108},{x:W*.50,y:H-105},{x:W*.72,y:H-108}
+  ];
+  const accentGroups=[topAccentPts,rightAccentPts,bottomAccentPts,leftAccentPts];
+  const accentBase = state.density>=5 ? 3 : state.density>=3 ? 2 : 1;
+  accentGroups.forEach((pts,idx)=>{
+    // 文字側は少し控えめ、空白側はしっかり。左右どちらに女の子がいても全辺に最低1個は狙う。
+    const want = accentBase + ((idx===1 || idx===3) && state.density>=4 ? 1 : 0);
+    tryPlaceFromPoints(pts,'edgeAccent',want,122,154,edgeAccentPool);
+  });
+
   const topPts = makeGrid(220,W-220,102,160,8,2,24,18);
   const bottomPts = makeGrid(220,W-220,H-150,H-98,8,2,24,18);
   const leftPts = makeGrid(98,318,196,H-178,3,5,18,18);
@@ -857,12 +888,12 @@ function drawEmojiLayer(front=false){
 
   const densityBoost=Math.max(0,state.density-3);
   const mediumPlan = [
-    [topPts,4+densityBoost],[bottomPts,4+densityBoost],[leftPts,3+densityBoost],[rightPts,3+densityBoost],[underTextPts,3],[centerPts,4+densityBoost],[faceAroundPts,3+densityBoost]
+    [topPts,5+densityBoost],[bottomPts,5+densityBoost],[leftPts,4+densityBoost],[rightPts,4+densityBoost],[underTextPts,3],[centerPts,4+densityBoost],[faceAroundPts,3+densityBoost]
   ];
   mediumPlan.forEach(([pts,count])=>tryPlaceFromPoints(pts,'medium',count,108,136,mediumPool));
 
   const smallPlan = [
-    [topPts,6+densityBoost],[bottomPts,6+densityBoost],[leftPts,5+densityBoost],[rightPts,5+densityBoost],[underTextPts,5+densityBoost],[centerPts,8+densityBoost],[faceAroundPts,4+densityBoost]
+    [topPts,7+densityBoost],[bottomPts,7+densityBoost],[leftPts,6+densityBoost],[rightPts,6+densityBoost],[underTextPts,5+densityBoost],[centerPts,8+densityBoost],[faceAroundPts,4+densityBoost]
   ];
   smallPlan.forEach(([pts,count])=>tryPlaceFromPoints(pts,'small',count,76,98,smallPool));
 }
