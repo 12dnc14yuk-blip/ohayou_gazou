@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おはよう画像メーカー v8.3</title>
+<title>おはよう画像メーカー v8.5</title>
 <style>
 :root{
   --ink:#352f44; --muted:#81798e; --line:#ece7f4; --panel:#fff;
@@ -45,19 +45,86 @@ input[type=range]{width:100%}
 
 .history-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .history-row button:disabled{opacity:.38;filter:grayscale(.25)}
+
+/* v8.4 quick editor */
+.preview-card{position:sticky;top:max(6px,env(safe-area-inset-top));z-index:30;padding:8px;background:rgba(255,255,255,.97);backdrop-filter:blur(12px)}
+.preview-card .status{margin-top:6px;padding:6px 8px;max-height:46px;overflow:auto}
+.quickbar{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-top:7px}
+.quickbar button{padding:8px 3px;border-radius:11px;font-size:12px;background:#f3eff9;color:#554b6b}
+.quickbar button.active{background:#e9e1ff;outline:2px solid #9b86ef;color:#5844ae}
+.quick-panel{display:none;margin-top:7px;padding:8px;border-radius:12px;background:#faf8ff;border:1px solid #eee8f7}
+.quick-panel.active{display:block}
+.quick-panel .compact-row{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.quick-panel label.slider{grid-template-columns:58px 1fr 44px;margin:5px 0;font-size:11px}
+.quick-panel select,.quick-panel input[type=text]{padding:8px;font-size:12px}
+.quick-panel button{padding:9px 6px;font-size:12px}
+.color-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.color-chip{width:30px;height:30px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 1px #ddd;cursor:pointer;padding:0}
+.color-chip.active{box-shadow:0 0 0 3px #8b74eb}
+@media(max-width:560px){
+  .wrap{padding-top:6px}
+  .preview-card{margin-top:4px}
+  .preview-card .preview-shell{border-radius:12px}
+  .preview-card .status{font-size:10px;line-height:1.35}
+}
+
+/* v8.5 collapsible help */
+.helpbox{margin:6px 0 10px;border:1px solid var(--line);border-radius:13px;background:#fbf9ff;overflow:hidden}
+.helpbox>summary{list-style:none;cursor:pointer;padding:9px 11px;font-size:12px;font-weight:850;color:#665c79;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.helpbox>summary::-webkit-details-marker{display:none}
+.helpbox>summary::after{content:'＋';font-size:16px;line-height:1;color:#8b74eb;font-weight:900}
+.helpbox[open]>summary::after{content:'−'}
+.helpbox .helpbody{padding:0 11px 10px;font-size:12px;color:var(--muted);line-height:1.65}
+.helpbox .helpbody .tip{margin:0 0 7px}
+.lead-summary{margin:0 0 10px}
+.lead-summary .helpbody{font-size:12px}
+.compact-help-toggle{margin-top:8px}
+@media(max-width:560px){
+  .helpbox>summary{padding:8px 10px;font-size:11px}
+  .helpbox .helpbody{padding:0 10px 9px;font-size:11px}
+  .section-title{margin-top:2px}
+}
 </style>
 </head>
 <body>
 <div class="wrap">
-<h1>🌞 おはよう画像メーカー v8.3</h1>
-<div class="lead">
-  透過の手直し機能はそのまま。今回はデザインをさらに盛りました。
+<h1>🌞 おはよう画像メーカー v8.5</h1>
+<details class="helpbox lead-summary">
+  <summary>ℹ️ このメーカーの説明を見る</summary>
+  <div class="helpbody">透過の手直し機能はそのまま。今回はデザインをさらに盛りました。
   <b>大きい絵文字＋小さい絵文字＋太めのかわいいフレーム</b>をランダム配置。
-  v8.0は内部設計を整理して作り直した版です。<strong>AI切り抜き → 輪郭復元 → 顔パーツ保護 → 構図決定 → 大中小の飾り配置 → 最終バランス補正</strong>の順で処理します。目・鼻・口は画像から自動推定し、確信度が低い時は安全な中央保護へ切り替えます。必要なら<strong>4点タップ補正</strong>で左右の目・鼻・口を直接指定できます。女の子全体や透過された空白は避けず、髪・頬の外側・肩・服まわりにも飾りを置きます。女の子はランダムで勝手に左右反転しません。v8.1では<strong>目の二重保護</strong>と<strong>右上・上辺の最終バランス補正</strong>を強化しました。v8.2では<strong>目の安全マージンをさらに約18%拡張</strong>し、背景に<strong>淡い模様 / テキスト後ろの色面 / 両方</strong>をランダムで加える背景アレンジを追加しました。
-</div>
+  v8.0は内部設計を整理して作り直した版です。<strong>AI切り抜き → 輪郭復元 → 顔パーツ保護 → 構図決定 → 大中小の飾り配置 → 最終バランス補正</strong>の順で処理します。目・鼻・口は画像から自動推定し、確信度が低い時は安全な中央保護へ切り替えます。必要なら<strong>4点タップ補正</strong>で左右の目・鼻・口を直接指定できます。女の子全体や透過された空白は避けず、髪・頬の外側・肩・服まわりにも飾りを置きます。女の子はランダムで勝手に左右反転しません。v8.1では<strong>目の二重保護</strong>と<strong>右上・上辺の最終バランス補正</strong>を強化しました。v8.2では<strong>目の安全マージンをさらに約18%拡張</strong>し、背景に<strong>淡い模様 / テキスト後ろの色面 / 両方</strong>をランダムで加える背景アレンジを追加しました。</div>
+</details>
 
-<div class="card">
+<div class="card preview-card">
   <div class="preview-shell"><canvas id="cv" width="1200" height="675"></canvas></div>
+  <div class="quickbar">
+    <button type="button" data-qtab="text">✏️ 文字</button>
+    <button type="button" data-qtab="deco">💖 飾り</button>
+    <button type="button" data-qtab="bg">🎨 背景</button>
+    <button type="button" data-qtab="girl">🐰 女の子</button>
+    <button type="button" data-qtab="save">📲 保存</button>
+  </div>
+  <div id="q-text" class="quick-panel">
+    <div class="compact-row"><button id="qRandomTitle" class="soft">🎲 おはよう文</button><button id="qRandomMsg" class="soft">🎲 下の文</button></div>
+    <select id="qTone" style="margin-top:6px"></select>
+  </div>
+  <div id="q-deco" class="quick-panel">
+    <div class="compact-row"><select id="qDecoStyle"></select><button id="qRandomDeco" class="soft">🎲 飾りガチャ</button></div>
+    <label class="slider"><span>量</span><input id="qDensity" type="range" min="1" max="5" value="5"><output id="qDensityO">5</output></label>
+  </div>
+  <div id="q-bg" class="quick-panel">
+    <div class="compact-row"><select id="qBgColor"></select><button id="qRandomBg" class="soft">🎲 背景ガチャ</button></div>
+    <div id="qColorChips" class="color-chips"></div>
+  </div>
+  <div id="q-girl" class="quick-panel">
+    <label class="slider"><span>左右</span><input id="qX" type="range" min="-500" max="500" value="-250"><output id="qXO">-250</output></label>
+    <label class="slider"><span>上下</span><input id="qY" type="range" min="-300" max="300" value="25"><output id="qYO">25</output></label>
+    <label class="slider"><span>大きさ</span><input id="qScale" type="range" min="60" max="280" value="172"><output id="qScaleO">172%</output></label>
+  </div>
+  <div id="q-save" class="quick-panel">
+    <div class="compact-row"><button id="qRandomAll" class="primary">✨ 全部ランダム</button><button id="qSave" class="primary">📲 画像を保存</button></div>
+  </div>
   <div id="status" class="status">① 今日の配信スクショを選んでください。</div>
 </div>
 
@@ -88,10 +155,13 @@ input[type=range]{width:100%}
     <button id="brushWide" class="soft">🧹 広め 52</button>
   </div>
   <label class="slider"><span>ブラシ硬さ</span><input id="hardness" type="range" min="0" max="100" value="96"><output id="hardnesso">96</output></label>
-  <div class="tip">
-    白い服・羽・髪が消えたら、まず「✨ タップで輪郭まで戻す」を選んで、消えた部分の内側を1回タップしてください。AI切り抜き前の元画像からアウトラインを自動検出し、線を越えない範囲だけまとめて戻します。うまく戻らない細部だけ「🩷 なぞって戻す」で補修してください。
-    今回は<strong>輪郭アシスト付き</strong>なので、線画や輪郭の近くをなぞると、そのアウトラインに寄せて戻し・消しをしやすくしています。細部は「✏️ 細かく 10」がおすすめ。消しすぎ・戻しすぎは上の<strong>透過をひとつ戻す / 進む</strong>でやり直せます。<span class="pill">精密ブラシ v3</span>
-  </div>
+  <details class="helpbox compact-help-toggle">
+    <summary>💡 透過の直し方・詳しい説明</summary>
+    <div class="helpbody">
+      白い服・羽・髪が消えたら、まず「✨ タップで輪郭まで戻す」を選んで、消えた部分の内側を1回タップしてください。AI切り抜き前の元画像からアウトラインを自動検出し、線を越えない範囲だけまとめて戻します。うまく戻らない細部だけ「🩷 なぞって戻す」で補修してください。<br><br>
+      <strong>輪郭アシスト付き</strong>なので、線画や輪郭の近くをなぞると、そのアウトラインに寄せて戻し・消しをしやすくしています。細部は「✏️ 細かく 10」がおすすめ。消しすぎ・戻しすぎは上の<strong>透過をひとつ戻す / 進む</strong>でやり直せます。 <span class="pill">精密ブラシ v3</span>
+    </div>
+  </details>
 
   <div class="section-title" style="margin-top:16px">③ 顔パーツ保護</div>
   <div class="grid3">
@@ -100,17 +170,25 @@ input[type=range]{width:100%}
     <button id="toggleFaceGuide" class="soft">👀 保護位置を表示</button>
   </div>
   <div id="faceStatus" class="status" style="margin-top:8px">画像を入れると、左右の目・鼻・口を自動で探します。</div>
-  <div class="tip">
-    REALITYのようなアバター顔向けに、<strong>顔の肌領域 → 大きな左右の目 → 鼻 → 口</strong>の順で位置を推定します。
-    自動認識がずれたら「👉 4点タップ補正」を押して、<strong>左目 → 右目 → 鼻 → 口</strong>の順にタップしてください。
-    この4点だけを絵文字の禁止エリアとして使うので、髪・頬の外側・服・透過部分は飾れます。
-  </div>
+  <details class="helpbox compact-help-toggle">
+    <summary>💡 顔パーツ保護の使い方</summary>
+    <div class="helpbody">
+      REALITYのようなアバター顔向けに、<strong>顔の肌領域 → 大きな左右の目 → 鼻 → 口</strong>の順で位置を推定します。<br>
+      自動認識がずれたら「👉 4点タップ補正」を押して、<strong>左目 → 右目 → 鼻 → 口</strong>の順にタップしてください。<br>
+      この4点だけを絵文字の禁止エリアとして使うので、髪・頬の外側・服・透過部分は飾れます。
+    </div>
+  </details>
 </div>
 
 <div class="card">
   <div class="section-title">④ 文字</div>
-  <div class="tip">文字は<strong>丸ゴシック系</strong>を優先して表示。濃いめパステル＋白ふちで、ぷっくり可愛い見た目にしています。</div>
-  <div class="tip">文字色は<strong>濃いめパステル＋白ふち</strong>で自動統一。暗い色にはならず、背景が明るくても読みやすい設定です。</div>
+  <details class="helpbox compact-help-toggle">
+    <summary>💡 文字デザインについて</summary>
+    <div class="helpbody">
+      文字は<strong>丸ゴシック系</strong>を優先して表示。濃いめパステル＋白ふちで、ぷっくり可愛い見た目にしています。<br>
+      文字色は<strong>濃いめパステル＋白ふち</strong>で自動統一。暗い色にはならず、背景が明るくても読みやすい設定です。
+    </div>
+  </details>
   <input id="titleText" type="text" value="おはよう！">
   <textarea id="subText">素敵を集めに
 行ってみよー！</textarea>
@@ -121,17 +199,43 @@ input[type=range]{width:100%}
       <option value="gentle">やさしい</option>
       <option value="yurui">ゆるい</option>
       <option value="ouen">応援</option>
+      <option value="happy">ハッピー</option>
+      <option value="healing">癒し</option>
+      <option value="myself">自分らしく</option>
+      <option value="morning">朝っぽい</option>
     </select>
-    <button id="randomMsg" class="soft">🎲 文だけランダム</button>
+    <button id="randomMsg" class="soft">🎲 下の文</button>
   </div>
+  <div class="grid2" style="margin-top:8px"><button id="randomTitle" class="soft">🌞 おはよう文ランダム</button><button id="randomTextAll" class="soft">🎰 文字ぜんぶランダム</button></div>
 </div>
 
 <div class="card">
   <div class="section-title">⑤ デザインを作る</div>
-  <div class="tip"><strong>顔パーツ保護 v8.0</strong>：REALITY系アバター向けに、肌領域→左右の目→鼻→口の順で推定します。飾りの中心ではなく<strong>飾り全体の大きさ</strong>で衝突判定し、左右の目を結ぶ帯と鼻〜口の中央帯も保護します。確信度が低い場合は安全な中央保護へ切り替え、必要なら4点タップで補正できます。</div>
-  <div class="tip"><strong>センス重視モード</strong>：<strong>四隅すべてに大きい飾り</strong>を必ず置き、<strong>アバター側上＋文字側下</strong>をメイン、<strong>文字側上＋アバター側下</strong>をサブとして<strong>対角に固定</strong>します。さらに<strong>上下左右と文字の下</strong>へ、<strong>四隅より少し小さめ</strong>と<strong>小さめ</strong>の2段階絵文字をもっと多く散らし、<strong>目・鼻・口だけ避けて、上下左右と文字下の空白をしっかり埋めます</strong>。文字は常に最前面に表示します。</div>
-  <div class="tip">飾りは<strong>空白を埋めるようにバラけて配置</strong>。四隅の大きい飾りはアバターより前に出し、中〜小飾りは目・鼻・口・文字ブロックを避けながら、<strong>上下左右と文字下の余白</strong>を優先的に埋めます。今回は<strong>iPhone絵文字っぽい表示</strong>に寄せ、外周だけでなく内側の空白にも散らします。</div>
-  <div class="tip">重なり順：<strong>背景 → フレーム → 女の子 → 絵文字（飾り） → おはようメッセージ</strong></div>
+  <details class="helpbox compact-help-toggle">
+    <summary>💡 デザイン配置の詳しいルール</summary>
+    <div class="helpbody"><strong>顔パーツ保護 v8.0</strong>：REALITY系アバター向けに、肌領域→左右の目→鼻→口の順で推定します。飾りの中心ではなく<strong>飾り全体の大きさ</strong>で衝突判定し、左右の目を結ぶ帯と鼻〜口の中央帯も保護します。確信度が低い場合は安全な中央保護へ切り替え、必要なら4点タップで補正できます。<br><br><strong>センス重視モード</strong>：<strong>四隅すべてに大きい飾り</strong>を必ず置き、<strong>アバター側上＋文字側下</strong>をメイン、<strong>文字側上＋アバター側下</strong>をサブとして<strong>対角に固定</strong>します。さらに<strong>上下左右と文字の下</strong>へ、<strong>四隅より少し小さめ</strong>と<strong>小さめ</strong>の2段階絵文字をもっと多く散らし、<strong>目・鼻・口だけ避けて、上下左右と文字下の空白をしっかり埋めます</strong>。文字は常に最前面に表示します。<br><br>飾りは<strong>空白を埋めるようにバラけて配置</strong>。四隅の大きい飾りはアバターより前に出し、中〜小飾りは目・鼻・口・文字ブロックを避けながら、<strong>上下左右と文字下の余白</strong>を優先的に埋めます。今回は<strong>iPhone絵文字っぽい表示</strong>に寄せ、外周だけでなく内側の空白にも散らします。<br><br>重なり順：<strong>背景 → フレーム → 女の子 → 絵文字（飾り） → おはようメッセージ</strong></div>
+  </details>
+  <label class="field" style="margin-bottom:10px">
+    <span>飾りの見た目</span>
+    <select id="decoStyle">
+      <option value="mix">🎲 3種類ミックス</option>
+      <option value="current">🎀 現在のパターン</option>
+      <option value="iphone">📱 iPhone絵文字風</option>
+      <option value="gpt">✨ ChatGPT記号</option>
+    </select>
+  </label>
+  <label class="field" style="margin-bottom:10px">
+    <span>背景色</span>
+    <select id="bgColorPreset">
+      <option value="auto">🎲 おまかせ</option>
+      <option value="blue">水色</option>
+      <option value="pink">ピンク</option>
+      <option value="yellow">クリーム</option>
+      <option value="lavender">ラベンダー</option>
+      <option value="mint">ミント</option>
+      <option value="white">ホワイト</option>
+    </select>
+  </label>
   <label class="field" style="margin-bottom:10px">
     <span>デザインの雰囲気</span>
     <select id="designMood">
@@ -197,7 +301,7 @@ input[type=range]{width:100%}
   </div>
 </div>
 
-<div class="footer">おはよう画像メーカー v8.3</div>
+<div class="footer">おはよう画像メーカー v8.5</div>
 </div>
 
 <script>
@@ -206,7 +310,7 @@ const cv=document.getElementById('cv'),ctx=cv.getContext('2d'),W=cv.width,H=cv.h
 const state={
   sourceImg:null, cutoutImg:null, mask:null,
   charImg:null, x:-250,y:18,scale:1.72,flip:false,
-  bg:0,deco:0,frame:0,frameWidth:4,layout:0,density:5,designMood:'pop',bgEffect:'pattern',
+  bg:0,deco:0,frame:0,frameWidth:4,layout:0,density:5,designMood:'pop',bgEffect:'pattern',decoStyle:'mix',bgColorPreset:'auto',
   mode:'move',drag:false,lastX:0,lastY:0,lastPaint:null,rebuildTimer:null,
   edgeGuide:null,
   faceFeatures:null, faceGuide:false, faceCalib:null
@@ -235,8 +339,20 @@ ouen:[
 '大丈夫、ひとつずついこ〜！','今日もあなたらしくいけますように！','できるところからで大丈夫！','今日も応援してるよっ！',
 '小さな一歩でもすごいよ〜！','きっといい流れになりますように！','今日も前向きにいけますように！','いい一日になる予感〜！',
 '今日も一歩ずつ進んでこ〜！','少しでも前に進めたら花丸！','今日も自分を信じていこ〜！','焦らず進めば大丈夫！'
-]
+],
+happy:[
+'ハッピー集めに\nいこっ！','今日はどんないいこと\nあるかな〜！','小さなしあわせ\n見つけよ〜！','今日もラッキー\n拾ってこ〜！','いい予感だけ\n持っていこっ！','ごきげんな一日に\nしちゃお〜！','うれしいこと\nひとつ増やそ〜！','今日もにこにこ\n増やしてこ〜！','すてき回収に\nしゅっぱーつ！','今日も幸せセンサー\nONでいこ〜！','楽しいことから\n見つけてこっ！','今日もいいこと\n待ってる気がする〜！'],
+healing:[
+'ほっとできる一日に\nなりますように','今日も心ふわっと\nいこ〜！','深呼吸ひとつで\nゆるっとスタート','やわらかい時間が\nありますように','今日も自分に\nやさしくね','心がちょっと\n軽くなりますように','のんびりできる瞬間も\n忘れずに〜','今日は肩の力を\nすこし抜いてこ〜','ほわっと笑える日で\nありますように','疲れたらちゃんと\n休憩しよ〜ね','自分の機嫌も\n大切にいこ〜！','今日も心に\n余白をひとつ〜'],
+myself:[
+'今日も自分らしく\nいこっ！','あなたのペースが\nいちばん〜！','今日も自分の色で\nいこ〜！','比べずのびのび\nいってらっしゃい！','自分の好きに\n素直でいこ〜！','今日もあなたらしく\n進んでこっ！','自分に似合う一日を\nつくってこ〜！','マイペース最強で\nいこっ！','今日も自分を\n大事にしよ〜！','ちょっとわがままに\n自分優先〜！','自分らしい笑顔で\nいってらっしゃい！','今日も自分の味方で\nいようね'],
+morning:[
+'朝のいい空気\nもらってこ〜！','今日の朝も\nゆるっと起動〜！','朝いちばんの\nいい予感〜！','今日もお日さまと\nスタートしよ〜！','眠気ごと連れて\nいってらっしゃい！','朝からひとつ\nいいこと探そ〜！','今日も新しい一日\nはじまりはじまり〜','朝のHP\nちょっと回復〜！','今日のぶんの元気\nチャージしよ〜！','お布団の余韻と\nいってらっしゃい〜','朝の一歩から\nゆっくりいこ〜！','今日も一日\nよろしくね〜！']
 };
+const titleMessages=[
+ 'おはよう！','おはよ〜！','おはよっ！','おっはよ〜！','今日もおはよう！','ぐっもーにん！','おはようございます！','朝だよ〜！','おきた〜？','今日もおはよっ！','おはよーっ！','おはようっ☀️'
+];
+
 const moods=[
  {bg:'#bfe8fb',a:'#ff4f9f',b:'#ffd45c',stroke:'#ef3145',sub:'#7bcbd2'},
  {bg:'#f7c3db',a:'#a98bf2',b:'#ffffff',stroke:'#ff4f9f',sub:'#8a75e8'},
@@ -246,6 +362,10 @@ const moods=[
  {bg:'#c7d7ff',a:'#ff5f98',b:'#ffd95c',stroke:'#6f73e8',sub:'#ffffff'}
 ];
 
+
+const bgColorPresets={
+ auto:null, blue:'#cfefff', pink:'#ffd8e9', yellow:'#fff0b8', lavender:'#eadcff', mint:'#d8f7ec', white:'#f8f7fb'
+};
 const curatedLooks={
  pop:{
   bg:['#bfe8fb','#ffd1e4','#fff0ae','#d7c3f5'],
@@ -591,7 +711,7 @@ function pickDecoIndex(){
 let decoSeed=12345;
 function seeded(){decoSeed=(decoSeed*1664525+1013904223)>>>0;return decoSeed/4294967296}
 
-function stickerSymbol(e,x,y,size,rot=0,alpha=1){
+function currentStickerSymbol(e,x,y,size,rot=0,alpha=1){
   ctx.save();
   ctx.globalAlpha=alpha;
   ctx.translate(x,y);
@@ -727,7 +847,56 @@ function stickerSymbol(e,x,y,size,rot=0,alpha=1){
   (draw[e]||(()=>heart(pink2)))();
   ctx.restore();
 }
-function emoji(e,x,y,size,rot=0,a=1){ stickerSymbol(e,x,y,size,rot,a); }
+const nativeEmojiCache=new Map();
+function nativeEmojiSymbol(e,x,y,size,rot=0,alpha=1){
+  const key=e;
+  const cached=nativeEmojiCache.get(key);
+  if(cached?.complete){
+    ctx.save();ctx.globalAlpha=alpha;ctx.translate(x,y);ctx.rotate(rot);ctx.drawImage(cached,-size*.55,-size*.55,size*1.1,size*1.1);ctx.restore();return;
+  }
+  if(!cached){
+    const img=new Image();
+    nativeEmojiCache.set(key,img);
+    const safe=String(e).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160"><foreignObject width="160" height="160"><div xmlns="http://www.w3.org/1999/xhtml" style="width:160px;height:160px;display:flex;align-items:center;justify-content:center;font-size:118px;line-height:1;font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif">${safe}</div></foreignObject></svg>`;
+    img.onload=()=>draw();
+    img.onerror=()=>nativeEmojiCache.set(key,{complete:false,failed:true});
+    img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+  }
+  currentStickerSymbol(e,x,y,size,rot,alpha);
+}
+function gptStickerSymbol(e,x,y,size,rot=0,alpha=1){
+  ctx.save();ctx.globalAlpha=alpha;ctx.translate(x,y);ctx.rotate(rot);const u=size/100;ctx.lineJoin='round';ctx.lineCap='round';
+  const pal=['#ff79b6','#ffd75f','#7bdbea','#b99af6','#87dfbd'];
+  const h=[...String(e)].reduce((a,c)=>a+c.codePointAt(0),0);const c=pal[h%pal.length],c2=pal[(h+2)%pal.length];
+  ctx.shadowColor='rgba(92,62,130,.14)';ctx.shadowBlur=8*u;
+  function outline(){ctx.strokeStyle='#fff';ctx.lineWidth=7*u;ctx.stroke();}
+  function blobHeart(){ctx.beginPath();ctx.moveTo(0,34*u);ctx.bezierCurveTo(-46*u,5*u,-43*u,-39*u,-12*u,-31*u);ctx.bezierCurveTo(0,-28*u,8*u,-18*u,12*u,-31*u);ctx.bezierCurveTo(43*u,-39*u,46*u,5*u,0,34*u);ctx.fillStyle=c;ctx.fill();outline();ctx.beginPath();ctx.ellipse(-10*u,-13*u,9*u,5*u,-.5,0,Math.PI*2);ctx.fillStyle='rgba(255,255,255,.55)';ctx.fill();}
+  function puffyStar(){ctx.beginPath();for(let i=0;i<10;i++){const r=(i%2?19:43)*u,a=-Math.PI/2+i*Math.PI/5;const px=Math.cos(a)*r,py=Math.sin(a)*r;i?ctx.lineTo(px,py):ctx.moveTo(px,py)}ctx.closePath();ctx.fillStyle=c;ctx.fill();outline();}
+  function twinkle(){ctx.beginPath();ctx.moveTo(0,-44*u);ctx.quadraticCurveTo(8*u,-8*u,42*u,0);ctx.quadraticCurveTo(8*u,8*u,0,44*u);ctx.quadraticCurveTo(-8*u,8*u,-42*u,0);ctx.quadraticCurveTo(-8*u,-8*u,0,-44*u);ctx.closePath();ctx.fillStyle=c;ctx.fill();outline();}
+  function puffyBow(){ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(-5*u,0);ctx.bezierCurveTo(-25*u,-35*u,-55*u,-34*u,-49*u,4*u);ctx.bezierCurveTo(-43*u,28*u,-20*u,24*u,-6*u,8*u);ctx.fill();outline();ctx.beginPath();ctx.moveTo(5*u,0);ctx.bezierCurveTo(25*u,-35*u,55*u,-34*u,49*u,4*u);ctx.bezierCurveTo(43*u,28*u,20*u,24*u,6*u,8*u);ctx.fill();outline();ctx.beginPath();ctx.arc(0,4*u,13*u,0,Math.PI*2);ctx.fill();outline();}
+  function flower(){for(let i=0;i<5;i++){ctx.save();ctx.rotate(i*Math.PI*2/5);ctx.beginPath();ctx.ellipse(0,-27*u,15*u,24*u,0,0,Math.PI*2);ctx.fillStyle=i%2?c:c2;ctx.fill();outline();ctx.restore()}ctx.beginPath();ctx.arc(0,0,12*u,0,Math.PI*2);ctx.fillStyle='#ffe47a';ctx.fill();outline();}
+  function cloud(){ctx.beginPath();ctx.arc(-22*u,5*u,21*u,Math.PI,0);ctx.arc(0,-9*u,27*u,Math.PI,0);ctx.arc(27*u,5*u,20*u,Math.PI,0);ctx.lineTo(46*u,25*u);ctx.lineTo(-44*u,25*u);ctx.closePath();ctx.fillStyle='rgba(255,255,255,.92)';ctx.fill();ctx.strokeStyle=c;ctx.lineWidth=6*u;ctx.stroke();}
+  function rainbow(){[c,'#ffd75f','#7bdbaa',c2].forEach((cc,i)=>{ctx.beginPath();ctx.arc(0,20*u,(44-i*9)*u,Math.PI,Math.PI*2);ctx.strokeStyle=cc;ctx.lineWidth=9*u;ctx.stroke()});}
+  const s=String(e);
+  if(/[💗💖💕🩷💞💓💘💝]/u.test(s))blobHeart();
+  else if(/[⭐🌟💫🌠]/u.test(s))puffyStar();
+  else if(/[✨💎]/u.test(s))twinkle();
+  else if(/[🎀🎁🦋]/u.test(s))puffyBow();
+  else if(/[🌸🌷🌼💐🌺🌹🪻🌻]/u.test(s))flower();
+  else if(/[☁️🫧❄️]/u.test(s))cloud();
+  else if(/[🌈🌊]/u.test(s))rainbow();
+  else currentStickerSymbol(e,0,0,size,0,1);
+  ctx.restore();
+}
+function stableStyleFor(e,x,y){
+  let h=Math.floor(x*7+y*11);for(const ch of String(e))h=(h*31+ch.codePointAt(0))>>>0;return h%3;
+}
+function emoji(e,x,y,size,rot=0,a=1){
+  const style=document.getElementById('decoStyle')?.value||state.decoStyle||'mix';state.decoStyle=style;
+  let use=style;if(style==='mix')use=['current','iphone','gpt'][stableStyleFor(e,x,y)];
+  if(use==='iphone')nativeEmojiSymbol(e,x,y,size,rot,a);else if(use==='gpt')gptStickerSymbol(e,x,y,size,rot,a);else currentStickerSymbol(e,x,y,size,rot,a);
+}
 function resolvedBgEffect(){
  const sel=document.getElementById('bgEffect')?.value||'auto';
  if(sel!=='auto') return sel;
@@ -769,7 +938,9 @@ function drawBg(){
  const mode=(document.getElementById('designMood')?.value)||state.designMood||'pop';
  state.designMood=mode;
  const look=curatedLooks[mode]||curatedLooks.pop;
- const base=look.bg[state.bg%look.bg.length];
+ const preset=document.getElementById('bgColorPreset')?.value||state.bgColorPreset||'auto';
+ state.bgColorPreset=preset;
+ const base=(preset!=='auto'&&bgColorPresets[preset])?bgColorPresets[preset]:look.bg[state.bg%look.bg.length];
  ctx.fillStyle=base;ctx.fillRect(0,0,W,H);
 
  // もともとの薄い光・質感
@@ -1649,11 +1820,14 @@ redoBtn.onclick=()=>{
 };
 
 function setRandomMessage(){
- let tone=document.getElementById('tone').value;if(tone==='auto')tone=pick(['genki','genki','gentle','yurui','ouen']);
+ let tone=document.getElementById('tone').value;if(tone==='auto')tone=pick(['genki','genki','gentle','yurui','ouen','happy','healing','myself','morning']);
  subText.value=pick(messages[tone]);draw();
 }
+function setRandomTitle(){ titleText.value=pick(titleMessages);draw(); }
 function randomMsg(){ setRandomMessage(); }
 randomMsg.onclick=randomMsg;
+randomTitle.onclick=()=>setRandomTitle();
+randomTextAll.onclick=()=>{setRandomTitle();setRandomMessage();};
 titleText.oninput=draw;subText.oninput=draw;
 randomAll.onclick=()=>{
   state.designMood=designMood.value;
@@ -1666,6 +1840,8 @@ randomAll.onclick=()=>{
   density.value=state.density;densityo.value=state.density;
   frameWidth.value=state.frameWidth;frameWidtho.value=state.frameWidth;
   setRandomMessage();
+  if(Math.random()<.36)setRandomTitle();
+  if(document.getElementById('decoStyle').value==='mix')state.decoStyle='mix';
   randomComposition();
   sync();draw();
 };
@@ -1687,6 +1863,8 @@ decoTheme.onchange=()=>{
 };
 designMood.onchange=()=>{state.designMood=designMood.value;state.bg=rand(4);state.frame=rand(5);if(bgEffect.value==='auto')state.bgEffect=pick(['pattern','text','both','pattern']);draw();};
 bgEffect.onchange=()=>{state.bgEffect=bgEffect.value==='auto'?pick(['pattern','text','both','pattern']):bgEffect.value;draw();};
+decoStyle.onchange=()=>{state.decoStyle=decoStyle.value;syncQuick();draw();};
+bgColorPreset.onchange=()=>{state.bgColorPreset=bgColorPreset.value;syncQuick();draw();};
 
 
 
@@ -1748,7 +1926,32 @@ save.onclick=async()=>{
     }
   }
 };
-reset.onclick=()=>{clearMaskHistory();brush.value=22;brusho.value=22;hardnessEl.value=96;hardnesso.value=96;document.getElementById('decoTheme').value='mixed';document.getElementById('designMood').value='pop';document.getElementById('bgEffect').value='auto';state.designMood='pop';state.bgEffect='pattern';state.bg=0;state.deco=0;state.frame=0;state.frameWidth=4;state.layout=0;state.density=5;state.x=-250;state.y=18;state.scale=1.72;state.flip=false;state.faceFeatures=null;state.faceGuide=false;state.faceCalib=null;titleText.value='おはよう！';subText.value='素敵を集めに\\n行ってみよー！';density.value=5;densityo.value=5;frameWidth.value=4;frameWidtho.value=4;sync();draw()};
+reset.onclick=()=>{clearMaskHistory();brush.value=22;brusho.value=22;hardnessEl.value=96;hardnesso.value=96;document.getElementById('decoTheme').value='mixed';document.getElementById('designMood').value='pop';document.getElementById('bgEffect').value='auto';document.getElementById('decoStyle').value='mix';document.getElementById('bgColorPreset').value='auto';state.designMood='pop';state.bgEffect='pattern';state.decoStyle='mix';state.bgColorPreset='auto';state.bg=0;state.deco=0;state.frame=0;state.frameWidth=4;state.layout=0;state.density=5;state.x=-250;state.y=18;state.scale=1.72;state.flip=false;state.faceFeatures=null;state.faceGuide=false;state.faceCalib=null;titleText.value='おはよう！';subText.value='素敵を集めに\\n行ってみよー！';density.value=5;densityo.value=5;frameWidth.value=4;frameWidtho.value=4;sync();draw()};
+
+const quickTabs=[...document.querySelectorAll('[data-qtab]')];
+quickTabs.forEach(btn=>btn.onclick=()=>{
+  const name=btn.dataset.qtab, panel=document.getElementById('q-'+name),was=panel.classList.contains('active');
+  document.querySelectorAll('.quick-panel').forEach(p=>p.classList.remove('active'));quickTabs.forEach(b=>b.classList.remove('active'));
+  if(!was){panel.classList.add('active');btn.classList.add('active');}
+});
+const toneOptions=[...tone.options].map(o=>`<option value="${o.value}">${o.textContent}</option>`).join('');qTone.innerHTML=toneOptions;
+const decoStyleOptions=[...decoStyle.options].map(o=>`<option value="${o.value}">${o.textContent}</option>`).join('');qDecoStyle.innerHTML=decoStyleOptions;
+const bgColorOptions=[...bgColorPreset.options].map(o=>`<option value="${o.value}">${o.textContent}</option>`).join('');qBgColor.innerHTML=bgColorOptions;
+const chipDefs=[['blue','#cfefff'],['pink','#ffd8e9'],['yellow','#fff0b8'],['lavender','#eadcff'],['mint','#d8f7ec'],['white','#f8f7fb']];
+chipDefs.forEach(([v,c])=>{const b=document.createElement('button');b.type='button';b.className='color-chip';b.style.background=c;b.title=v;b.onclick=()=>{bgColorPreset.value=v;state.bgColorPreset=v;syncQuick();draw();};qColorChips.appendChild(b);});
+function syncQuick(){
+  qTone.value=tone.value;qDecoStyle.value=decoStyle.value;qBgColor.value=bgColorPreset.value;qDensity.value=state.density;qDensityO.value=state.density;
+  qX.value=Math.round(state.x);qXO.value=Math.round(state.x);qY.value=Math.round(state.y);qYO.value=Math.round(state.y);qScale.value=Math.round(state.scale*100);qScaleO.value=Math.round(state.scale*100)+'%';
+  [...qColorChips.children].forEach((b,i)=>b.classList.toggle('active',chipDefs[i][0]===bgColorPreset.value));
+}
+qRandomTitle.onclick=()=>setRandomTitle();qRandomMsg.onclick=()=>setRandomMessage();qTone.onchange=()=>{tone.value=qTone.value;setRandomMessage();};
+qDecoStyle.onchange=()=>{decoStyle.value=qDecoStyle.value;state.decoStyle=qDecoStyle.value;draw();};qRandomDeco.onclick=()=>randomDeco.click();
+qDensity.oninput=()=>{state.density=+qDensity.value;density.value=state.density;densityo.value=state.density;qDensityO.value=state.density;draw();};
+qBgColor.onchange=()=>{bgColorPreset.value=qBgColor.value;state.bgColorPreset=qBgColor.value;syncQuick();draw();};qRandomBg.onclick=()=>randomBg.click();
+qX.oninput=()=>{state.x=+qX.value;sync();syncQuick();draw();};qY.oninput=()=>{state.y=+qY.value;sync();syncQuick();draw();};qScale.oninput=()=>{state.scale=+qScale.value/100;sync();syncQuick();draw();};
+qRandomAll.onclick=()=>randomAll.click();qSave.onclick=()=>save.click();
+const oldSync=sync;sync=function(){oldSync();if(typeof syncQuick==='function')syncQuick();};
+
 sync();draw();updateHistoryButtons();
 </script>
 </body></html>
