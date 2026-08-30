@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おはよう画像メーカー v8.7</title>
+<title>おはよう画像メーカー v8.8</title>
 <style>
 :root{
   --ink:#352f44; --muted:#81798e; --line:#ece7f4; --panel:#fff;
@@ -90,12 +90,12 @@ input[type=range]{width:100%}
 </head>
 <body>
 <div class="wrap">
-<h1>🌞 おはよう画像メーカー v8.7</h1>
+<h1>🌞 おはよう画像メーカー v8.8</h1>
 <details class="helpbox lead-summary">
   <summary>ℹ️ このメーカーの説明を見る</summary>
   <div class="helpbody">透過の手直し機能はそのまま。今回はデザインをさらに盛りました。
   <b>大きい絵文字＋小さい絵文字＋太めのかわいいフレーム</b>をランダム配置。
-  v8.0は内部設計を整理して作り直した版です。<strong>AI切り抜き → 輪郭復元 → 顔パーツ保護 → 構図決定 → 大中小の飾り配置 → 最終バランス補正</strong>の順で処理します。目・鼻・口は画像から自動推定し、確信度が低い時は安全な中央保護へ切り替えます。必要なら<strong>4点タップ補正</strong>で左右の目・鼻・口を直接指定できます。女の子全体や透過された空白は避けず、髪・頬の外側・肩・服まわりにも飾りを置きます。女の子はランダムで勝手に左右反転しません。v8.1では<strong>目の二重保護</strong>と<strong>右上・上辺の最終バランス補正</strong>を強化しました。v8.2では<strong>目の安全マージンをさらに約18%拡張</strong>し、背景に<strong>淡い模様 / テキスト後ろの色面 / 両方</strong>をランダムで加える背景アレンジを追加しました。</div>
+  v8.0は内部設計を整理して作り直した版です。<strong>AI切り抜き → 輪郭復元 → 顔パーツ保護 → 構図決定 → 大中小の飾り配置 → 最終バランス補正</strong>の順で処理します。目・鼻・口は画像から自動推定し、確信度が低い時は安全な中央保護へ切り替えます。必要なら<strong>4点タップ補正</strong>で左右の目・鼻・口を直接指定できます。女の子全体や透過された空白は避けず、髪・頬の外側・肩・服まわりにも飾りを置きます。女の子はランダムで勝手に左右反転しません。v8.1では<strong>目の二重保護</strong>と<strong>右上・上辺の最終バランス補正</strong>を強化しました。v8.2では<strong>目の安全マージンをさらに約18%拡張</strong>し、背景に<strong>淡い模様 / テキスト後ろの色面 / 両方</strong>をランダムで加える背景アレンジを追加しました。v8.8では<strong>ハートの色バリエーション</strong>を増やし、<strong>下の文章の見た目の中央</strong>がより揃うように調整しました。</div>
 </details>
 
 <div class="card preview-card">
@@ -310,7 +310,7 @@ input[type=range]{width:100%}
   </div>
 </div>
 
-<div class="footer">おはよう画像メーカー v8.7</div>
+<div class="footer">おはよう画像メーカー v8.8</div>
 </div>
 
 <script>
@@ -580,10 +580,10 @@ function confetti(){
 
 const emojiSets=[
  // mixed core
- ['💗','🎀','✨','⭐','🌸','🫧','💎','☁️','🌈','🍬','🐰','👑','💕','🌟'],
- ['💖','🩷','🎀','🌷','🍓','🧁','🍬','✨','☁️','🌈','🫧','🐰','💐','💎'],
- ['⭐','🌟','✨','🌙','☁️','🫧','💜','🩵','🎀','💎','🦄','🌈','🍭','💫'],
- ['🌼','🌸','🌷','💛','🩷','🫧','✨','🍓','🐰','🎀','☁️','🍬','🌈','💖'],
+ ['💗','🩵','🤍','🎀','✨','⭐','🌸','🫧','💎','☁️','🌈','🍬','🐰','👑','💕','🌟'],
+ ['💖','🩷','🧡','🤍','🎀','🌷','🍓','🧁','🍬','✨','☁️','🌈','🫧','🐰','💐','💎'],
+ ['⭐','🌟','✨','🌙','☁️','🫧','💜','🩵','🤍','🎀','💎','🦄','🌈','🍭','💫'],
+ ['🌼','🌸','🌷','💛','🩷','🧡','🤍','🫧','✨','🍓','🐰','🎀','☁️','🍬','🌈','💖'],
 
  // spring
  ['🌸','🌷','🌼','🩷','💗','✨','🫧','🎀','🐝','🦋','🌱','💐'],
@@ -611,9 +611,9 @@ const emojiSets=[
  ['🪻','🌺','🌹','🌸','🌼','💐','💖','✨','☁️','🎀','🌿','🍓'],
 
  // heart
- ['💗','💖','🩷','💕','💞','💓','🎀','✨','☁️','🌈','🫧','⭐'],
- ['🩷','💗','💖','💘','💓','💝','✨','🎀','🌸','☁️','🫧','🌟'],
- ['💕','💞','💗','🩷','💖','💘','🎀','✨','🌈','🫧','☁️','🌸'],
+ ['💗','💖','🩷','💕','💞','💓','🤍','🩵','🧡','🎀','✨','☁️','🌈','🫧','⭐'],
+ ['🩷','💗','💖','💘','💓','💝','🤍','🩵','🧡','✨','🎀','🌸','☁️','🫧','🌟'],
+ ['💕','💞','💗','🩷','💖','💘','🤍','🩵','🧡','🎀','✨','🌈','🫧','☁️','🌸'],
 
  // star
  ['⭐','🌟','✨','💫','🌙','☁️','🩵','💜','🎀','🌈','🫧','💎'],
@@ -648,9 +648,9 @@ function currentTheme(){
 
 const decorRecipes={
   mixed:{
-    mainPairs:[['💗','🌸'],['☁️','🫧'],['⭐','✨'],['🎀','🍬'],['🌈','☁️']],
-    subPairs:[['✨','⭐'],['💎','🎀'],['☁️','🫧'],['💕','🌸'],['🍬','💗']],
-    fill:['💗','💕','🎀','✨','⭐','🌸','🫧','☁️','🌈','🍬','💎']
+    mainPairs:[['💗','🌸'],['🩵','🤍'],['⭐','✨'],['🎀','🍬'],['🌈','☁️']],
+    subPairs:[['✨','⭐'],['💎','🎀'],['☁️','🫧'],['💕','🌸'],['🧡','💗']],
+    fill:['💗','💕','🩵','🤍','🧡','🎀','✨','⭐','🌸','🫧','☁️','🌈','🍬','💎']
   },
   spring:{
     mainPairs:[['🌸','🌷'],['🌼','💐'],['🌸','🩷']],
@@ -678,9 +678,9 @@ const decorRecipes={
     fill:['🌸','🌷','🌼','💐','🌺','🌹','🪻','💗','✨','🫧','☁️','🎀','⭐']
   },
   heart:{
-    mainPairs:[['💗','💖'],['🩷','💕'],['💗','🌸']],
-    subPairs:[['✨','⭐'],['🎀','☁️'],['🫧','🌈']],
-    fill:['💗','💖','🩷','💕','💞','✨','⭐','🎀','☁️','🫧','🌈','🌸']
+    mainPairs:[['💗','💖'],['🩵','🤍'],['🩷','🧡'],['💗','🌸']],
+    subPairs:[['✨','⭐'],['🎀','☁️'],['🫧','🌈'],['🤍','🩵']],
+    fill:['💗','💖','🩷','💕','💞','🤍','🩵','🧡','💛','✨','⭐','🎀','☁️','🫧','🌈','🌸']
   },
   star:{
     mainPairs:[['⭐','✨'],['🌟','💫'],['⭐','💎']],
@@ -866,6 +866,7 @@ function currentStickerSymbol(e,x,y,size,rot=0,alpha=1){
   const draw={
     '💗':()=>heart(pink),'💖':()=>heart('#ff4f95'),'💕':()=>heart('#ff7fb8'),'🩷':()=>heart('#ff9ac8'),
     '💞':()=>heart('#ff7eb5'),'💓':()=>heart('#ff67aa'),'💘':()=>heart('#ff73ae'),'💝':()=>heart('#ff6aaa'),
+    '🤍':()=>heart('#ffffff'),'🧡':()=>heart('#ffb166'),'💛':()=>heart('#ffd95a'),'💚':()=>heart('#84dc99'),'🩵':()=>heart('#90ddf7'),'💙':()=>heart('#74bbff'),'💜':()=>heart('#b89dff'),'🖤':()=>heart('#55525f'),'🤎':()=>heart('#b98659'),
     '⭐':()=>star(yellow),'🌟':()=>star('#ffe66a'),'✨':()=>sparkle('#ffd45d'),'💫':()=>sparkle('#ffd45d'),'🌠':()=>sparkle('#ffd45d'),
     '🎀':()=>bow(pink2),
     '🌸':flower,'🌷':flower,'🌼':flower,'💐':flower,'🌺':flower,'🌹':flower,'🪻':flower,'🌻':flower,
@@ -930,6 +931,36 @@ const gptStickerGroups={
   butterfly:['光沢パステルのキュートな蝶ステッカー.png'],
   moon:['つやつや三日月ときらめき星ステッカー.png']
 };
+function makeGlossyHeartStickerData(top,bottom,shine='#ffffff'){
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="g" x1="128" y1="96" x2="384" y2="416" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="${top}"/>
+      <stop offset="1" stop-color="${bottom}"/>
+    </linearGradient>
+    <filter id="s" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="rgba(255,180,220,.35)"/>
+    </filter>
+  </defs>
+  <g filter="url(#s)">
+    <path d="M256 426c-17 0-31-12-61-37C120 330 76 289 76 215c0-51 39-91 90-91 33 0 53 17 71 40 18-23 38-40 71-40 51 0 90 40 90 91 0 74-44 115-119 174-30 25-44 37-61 37z" fill="url(#g)" stroke="#fff" stroke-width="22" stroke-linejoin="round"/>
+    <ellipse cx="198" cy="188" rx="62" ry="42" fill="rgba(255,255,255,.40)" transform="rotate(-24 198 188)"/>
+    <ellipse cx="160" cy="152" rx="22" ry="14" fill="rgba(255,255,255,.82)" transform="rotate(-24 160 152)"/>
+    <path d="M300 344c36-12 61-34 89-63" fill="none" stroke="rgba(255,255,255,.30)" stroke-width="16" stroke-linecap="round"/>
+    <path d="M380 152l14 30 30 14-30 14-14 30-14-30-30-14 30-14z" fill="${shine}" opacity=".95"/>
+    <path d="M124 244l9 18 18 9-18 9-9 18-9-18-18-9 18-9z" fill="#fff4ff" opacity=".85"/>
+  </g>
+</svg>`;
+  return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+}
+const generatedGptHeartAssets={
+  'つやつやピンクハートステッカー.generated.svg': makeGlossyHeartStickerData('#ff96c9','#ff5ea8','#ffe9f6'),
+  'つやつや水色ハートステッカー.generated.svg': makeGlossyHeartStickerData('#b9f2ff','#77d7f6','#f4ffff'),
+  'つやつやオレンジハートステッカー.generated.svg': makeGlossyHeartStickerData('#ffd0a0','#ffab5f','#fff1de'),
+  'つやつや白ハートステッカー.generated.svg': makeGlossyHeartStickerData('#ffffff','#e7eef9','#ffffff')
+};
+Object.assign(GPT_STICKER_ASSET_DATA, generatedGptHeartAssets);
+gptStickerGroups.heart.push(...Object.keys(generatedGptHeartAssets));
 function stableIndexFrom(key, len){
   let h=2166136261>>>0;
   for(const ch of String(key)) h=Math.imul(h ^ ch.codePointAt(0), 16777619)>>>0;
@@ -1642,23 +1673,35 @@ function fitBalancedText(text,maxWidth,start,min=28,maxLines=3){
   }
   return {size,lines:lines.slice(0,maxLines)};
 }
-function outlined(text,x,y,size,fill,stroke,glow=null){
+function textVisualMetrics(text,size){
+ ctx.font=font(size);
+ const m=ctx.measureText(text||'');
+ const left=Number.isFinite(m.actualBoundingBoxLeft)?m.actualBoundingBoxLeft:0;
+ const right=Number.isFinite(m.actualBoundingBoxRight)?m.actualBoundingBoxRight:m.width;
+ const ascent=Number.isFinite(m.actualBoundingBoxAscent)?m.actualBoundingBoxAscent:size*.82;
+ const descent=Number.isFinite(m.actualBoundingBoxDescent)?m.actualBoundingBoxDescent:size*.22;
+ return {advance:m.width,left,right,visualWidth:Math.max(1,left+right),ascent,descent};
+}
+function outlined(text,x,y,size,fill,stroke,glow=null,visualCenter=true){
  ctx.save();
- ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';ctx.lineCap='round';ctx.font=font(size);
+ ctx.textBaseline='middle';ctx.lineJoin='round';ctx.lineCap='round';ctx.font=font(size);
  const main=fill || '#ff4f86';
+ const tm=textVisualMetrics(text,size);
+ const drawX=visualCenter ? (x - (tm.right-tm.left)/2) : x;
+ ctx.textAlign=visualCenter ? 'left' : 'center';
  // Soft white halo for readability.
  ctx.shadowColor='rgba(255,255,255,.95)';
  ctx.shadowBlur=Math.max(8,size*.10);
  ctx.lineWidth=Math.max(10,size*.18);
  ctx.strokeStyle='#ffffff';
- ctx.strokeText(text,x,y);
+ ctx.strokeText(text,drawX,y);
  ctx.shadowColor='transparent';
  // Thin colored edge inside the white border.
  ctx.lineWidth=Math.max(3,size*.045);
  ctx.strokeStyle=main;
- ctx.strokeText(text,x,y);
+ ctx.strokeText(text,drawX,y);
  ctx.fillStyle=main;
- ctx.fillText(text,x,y);
+ ctx.fillText(text,drawX,y);
  ctx.restore();
 }
 function getTextLayoutInfo(){
@@ -1669,15 +1712,18 @@ function getTextLayoutInfo(){
  const zone=leftChar?{cx:830,w:520}:{cx:370,w:520};
  const info={zone,title:null,sub:null,titleBox:null,subBox:null};
  function makeTitle(x,y,size){
-   const w=measure(title,size), h=size*1.25;
-   info.title={x,y,size,text:title};
+   const tm=textVisualMetrics(title,size), w=tm.visualWidth, h=tm.ascent+tm.descent;
+   info.title={x,y,size,text:title,metrics:tm};
    info.titleBox={x1:x-w/2-34,x2:x+w/2+34,y1:y-h/2-18,y2:y+h/2+18};
  }
  function makeSub(x,startY,size,lines,gap){
-   const widths=lines.map(v=>measure(v,size));
-   const w=Math.max(...widths,0), h=(lines.length-1)*gap + size*1.15;
+   const metrics=lines.map(v=>textVisualMetrics(v,size));
+   const widths=metrics.map(v=>v.visualWidth);
+   const w=Math.max(...widths,0);
+   const textH=Math.max(size*1.08,...metrics.map(v=>v.ascent+v.descent));
+   const h=(lines.length-1)*gap + textH;
    const midY=startY + (lines.length-1)*gap/2;
-   info.sub={x,startY,size,lines,gap};
+   info.sub={x,startY,size,lines,gap,metrics};
    info.subBox={x1:x-w/2-28,x2:x+w/2+28,y1:midY-h/2-18,y2:midY+h/2+18};
  }
  if(L===0){
@@ -1730,8 +1776,8 @@ function drawText(){
    const z=info.zone;
    rr(z.cx-z.w/2,138,z.w,364,38,'rgba(255,255,255,.18)');
  }
- outlined(info.title.text,info.title.x,info.title.y,info.title.size,titleColor);
- info.sub.lines.forEach((v,i)=>outlined(v,info.sub.x,info.sub.startY+i*info.sub.gap,info.sub.size,subColor));
+ outlined(info.title.text,info.title.x,info.title.y,info.title.size,titleColor,null,null,true);
+ info.sub.lines.forEach((v,i)=>outlined(v,info.sub.x,info.sub.startY+i*info.sub.gap,info.sub.size,subColor,null,null,true));
 }
 function draw(){
  state._decoPlaced=[];
