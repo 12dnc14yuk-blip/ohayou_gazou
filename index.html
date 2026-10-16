@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おはよう画像メーカー v8.8</title>
+<title>おはよう画像メーカー v8.9</title>
 <style>
 :root{
   --ink:#352f44; --muted:#81798e; --line:#ece7f4; --panel:#fff;
@@ -90,12 +90,12 @@ input[type=range]{width:100%}
 </head>
 <body>
 <div class="wrap">
-<h1>🌞 おはよう画像メーカー v8.8</h1>
+<h1>🌞 おはよう画像メーカー v8.9</h1>
 <details class="helpbox lead-summary">
   <summary>ℹ️ このメーカーの説明を見る</summary>
   <div class="helpbody">透過の手直し機能はそのまま。今回はデザインをさらに盛りました。
   <b>大きい絵文字＋小さい絵文字＋太めのかわいいフレーム</b>をランダム配置。
-  v8.0は内部設計を整理して作り直した版です。<strong>AI切り抜き → 輪郭復元 → 顔パーツ保護 → 構図決定 → 大中小の飾り配置 → 最終バランス補正</strong>の順で処理します。目・鼻・口は画像から自動推定し、確信度が低い時は安全な中央保護へ切り替えます。必要なら<strong>4点タップ補正</strong>で左右の目・鼻・口を直接指定できます。女の子全体や透過された空白は避けず、髪・頬の外側・肩・服まわりにも飾りを置きます。女の子はランダムで勝手に左右反転しません。v8.1では<strong>目の二重保護</strong>と<strong>右上・上辺の最終バランス補正</strong>を強化しました。v8.2では<strong>目の安全マージンをさらに約18%拡張</strong>し、背景に<strong>淡い模様 / テキスト後ろの色面 / 両方</strong>をランダムで加える背景アレンジを追加しました。v8.8では<strong>ハートの色バリエーション</strong>を増やし、<strong>下の文章の見た目の中央</strong>がより揃うように調整しました。</div>
+  v8.0は内部設計を整理して作り直した版です。<strong>AI切り抜き → 輪郭復元 → 顔パーツ保護 → 構図決定 → 大中小の飾り配置 → 最終バランス補正</strong>の順で処理します。目・鼻・口は画像から自動推定し、確信度が低い時は安全な中央保護へ切り替えます。必要なら<strong>4点タップ補正</strong>で左右の目・鼻・口を直接指定できます。女の子全体や透過された空白は避けず、髪・頬の外側・肩・服まわりにも飾りを置きます。女の子はランダムで勝手に左右反転しません。v8.1では<strong>目の二重保護</strong>と<strong>右上・上辺の最終バランス補正</strong>を強化しました。v8.2では<strong>目の安全マージンをさらに約18%拡張</strong>し、背景に<strong>淡い模様 / テキスト後ろの色面 / 両方</strong>をランダムで加える背景アレンジを追加しました。v8.8では<strong>ハートの色バリエーション</strong>を増やし、<strong>下の文章の見た目の中央</strong>がより揃うように調整しました。v8.9では<strong>最近出た文章を15件避ける履歴</strong>と、<strong>新しい言い回しを組み立てるフレッシュ生成</strong>を追加しました。</div>
 </details>
 
 <div class="card preview-card">
@@ -210,6 +210,8 @@ input[type=range]{width:100%}
     <button id="randomMsg" class="soft">🎲 下の文</button>
   </div>
   <div style="margin-top:8px"><button id="randomTextAll" class="soft" style="width:100%">🎰 下の文をランダム</button></div>
+  <div style="margin-top:6px"><button id="resetMsgHistory" class="ghost" style="width:100%;font-size:12px">🧹 最近の文の履歴をリセット</button></div>
+  <div class="tip" style="margin-top:7px">直近15件はなるべく再登場しません。さらに、固定文だけでなく新しい組み合わせ文も混ざります。</div>
 </div>
 
 <div class="card">
@@ -310,7 +312,7 @@ input[type=range]{width:100%}
   </div>
 </div>
 
-<div class="footer">おはよう画像メーカー v8.8</div>
+<div class="footer">おはよう画像メーカー v8.9</div>
 </div>
 
 <script>
@@ -357,6 +359,76 @@ myself:[
 '今日も自分らしく\nいこっ！','あなたのペースが\nいちばん〜！','今日も自分の色で\nいこ〜！','比べずのびのび\nいってらっしゃい！','自分の好きに\n素直でいこ〜！','今日もあなたらしく\n進んでこっ！','自分に似合う一日を\nつくってこ〜！','マイペース最強で\nいこっ！','今日も自分を\n大事にしよ〜！','ちょっとわがままに\n自分優先〜！','自分らしい笑顔で\nいってらっしゃい！','今日も自分の味方で\nいようね'],
 morning:[
 '朝のいい空気\nもらってこ〜！','今日の朝も\nゆるっと起動〜！','朝いちばんの\nいい予感〜！','今日もお日さまと\nスタートしよ〜！','眠気ごと連れて\nいってらっしゃい！','朝からひとつ\nいいこと探そ〜！','今日も新しい一日\nはじまりはじまり〜','朝のHP\nちょっと回復〜！','今日のぶんの元気\nチャージしよ〜！','お布団の余韻と\nいってらっしゃい〜','朝の一歩から\nゆっくりいこ〜！','今日も一日\nよろしくね〜！']
+};
+
+// v8.9 追加文。以前より少し会話っぽく、日常の小さいハッピーを拾う方向を増量。
+messages.genki.push(
+ '朝きたー！\n今日もいい感じでいこっ！','とりあえず起きた！\nもう一勝してる✊','今日の楽しいこと\n先取りしにいこ〜！','朝からごきげん\n育ててこーっ！','いいことひとつ\n見つけたら勝ち〜！','今日も笑えること\n探しにいこっ！','なんかいい日な予感！\nそのままいこ〜！','今日の自分に\n期待しとこー！','朝の勢いそのまま\nしゅっぱーつ！','今日は何して\n楽しくなろっかな〜！'
+);
+messages.gentle.push(
+ '今日は急がず\nいい感じにいこ〜','うまくいかない時は\n一回のんびり〜','自分にやさしい選択\nひとつしよ〜','今日のペースは\n今日決めればいい〜','できたことだけでも\nちゃんと拾ってこ〜','ちょっと休みながら\nいい日にしよ〜','今日は心地いい方へ\n進んでこっ','のんびりでも\nちゃんと前進〜','朝から完璧じゃなくて\nぜんぜんよし！','今日も自分の機嫌\nちょっと守ろ〜'
+);
+messages.yurui.push(
+ '起きた時点で\n今日はもうえらい！','やる気はあとから\n来てもらお〜','今日はぼちぼち\nいい感じで〜','全部やらんでも\nなんとかなるなる〜','省エネ運転でも\n前には進む〜','まずはひとつ！\nあとはそのあと〜','今日はゆるめに\n機嫌よくいこっ','眠いけどまあ\nなんとかしよ〜！','ちょっとずつなら\nいけるっしょ〜','無理なく楽しく\n今日をやろ〜！'
+);
+messages.ouen.push(
+ '今日の自分に\nできるぶんでいこ！','ちょっと進めたら\nそれでナイス〜！','ひとつできたら\nちゃんと拍手〜👏','今日のチャレンジ\n応援してるぞー！','迷ったらまず一歩！\nそこからでよし〜','今日も自分の味方で\nいこーっ！','できることから\n軽くいってみよ〜','がんばる日も休む日も\nどっちも大事〜','今日の一歩が\nいい方へ行きますように','小さい前進も\nしっかりカウント〜！'
+);
+messages.happy.push(
+ '今日のHP\nどこで増えるかな〜！','小さいラッキー\n見逃さずいこっ！','おいしい！たのしい！\nいっぱい回収〜！','今日のハッピー\nひとつ予約しとこ〜','なんでもない幸せ\n拾ってこーっ！','いいことあったら\nHP＋1でいこ✨','今日の好き！を\nいっぱい集めよ〜','笑えたらそれで\nHP回復〜！','ごきげんポイント\n増やしてこっ！','今日もハッピーの種\n探しにいこ〜！'
+);
+messages.healing.push(
+ '今日はちょっと\nほっとする方へ〜','自分の呼吸で\nゆっくりスタート','朝の空気吸って\nふわっといこ〜','疲れたら小休憩！\nそれも予定のうち〜','心の余白\nちょっと残しとこ〜','今日はやさしいもの\nいっぱい見つけよ〜','焦らずゆるっと\n朝をはじめよ〜','自分が落ち着くもの\nひとつ持ってこ〜','のび〜っとしてから\n今日を始めよっ','心地よく過ごせたら\nそれで満点〜'
+);
+messages.myself.push(
+ '今日も好きな自分で\nいってみよー！','自分のテンポで\n今日を作ろ〜','人と違っても\nそれがいいじゃん！','今日も自分の好きに\n正直でいこっ','似合う一日を\n自分で選んでこ〜','自分の気分も\nちゃんと聞いてこ〜','今日は自分基準で\nいい感じに〜','好き！を大事に\n今日もいこっ','自分のペースで\n楽しくやろ〜','今日も自分らしさ\n持ってしゅっぱーつ！'
+);
+messages.morning.push(
+ '朝だぞー！\nゆるっと起動〜！','お布団から出たら\nまず優勝〜！','朝の一口で\n元気チャージ〜','今日の朝も\nいい感じにはじめよ！','眠気と一緒に\nしゅっぱーつ！','朝のHP\nちょっとずつ回復〜','今日の一日\nここからスタート！','朝から好きなこと\nひとつ入れよ〜','まずは目覚めた！\nそれでよし〜！','今日も朝がきた！\n楽しくいこーっ！'
+);
+
+// 固定文だけでなく、その場で新しい感じに組み立てるためのパーツ。
+const freshMessageParts={
+ genki:{
+  a:['今日も楽しいこと','朝からいいこと','ちっちゃいハッピー','今日のわくわく','ごきげんポイント','笑えること'],
+  b:['ひとつ見つけに','いっぱい拾いに','先取りしに','ゆるっと探しに','回収しに'],
+  c:['いこーっ！','しゅっぱーつ！','いってみよ〜！','いこいこ〜！']
+ },
+ gentle:{
+  a:['今日は焦らず','今日のペースで','自分にやさしく','肩の力ぬいて','ちょっと余白残して'],
+  b:['のんびり','ゆっくり','ふわっと','いい感じに'],
+  c:['進んでこ〜','いってみよ〜','過ごそ〜','やってこ〜']
+ },
+ yurui:{
+  a:['今日はぼちぼち','やる気はあとから','とりあえずひとつ','省エネでも','眠くてもまあ'],
+  b:['なんとか','ゆるっと','マイペースに','気楽に'],
+  c:['いこ〜！','やろ〜！','進んどこ〜！','いけるいける〜！']
+ },
+ ouen:{
+  a:['今日のできるぶん','小さい一歩','ひとつできたら','自分のペース','今日のチャレンジ'],
+  b:['ちゃんと大事に','しっかり拾って','自分で褒めて','焦らず積んで'],
+  c:['いこーっ！','花丸にしよ〜！','進んでこ〜！','やってみよ〜！']
+ },
+ happy:{
+  a:['今日のHP','小さいラッキー','ごきげんポイント','なんでもない幸せ','今日の好き！'],
+  b:['ひとつでも','見つけたぶんだけ','いっぱい','こつこつ'],
+  c:['増やしてこ〜！','回収してこっ！','集めてこーっ！','拾ってこ〜！']
+ },
+ healing:{
+  a:['今日は心に','朝の自分に','今日の予定に','一日のどこかに'],
+  b:['ほっとする時間','ゆっくりする時間','好きな時間','ひと息つく時間'],
+  c:['ひとつ入れよ〜','残しとこ〜','作ってこ〜','忘れずに〜']
+ },
+ myself:{
+  a:['今日も自分の','今日は自分らしい','今日の自分の','人と比べず'],
+  b:['好きな方へ','心地いい方へ','楽しい方へ','いいと思う方へ'],
+  c:['いってみよ〜！','進んでこっ！','選んでこ〜！','いこーっ！']
+ },
+ morning:{
+  a:['朝のHP','今日の元気','朝いちばんの気分','お布団の余韻'],
+  b:['ちょっとずつ','ゆっくり','好きなもので','のんびり'],
+  c:['チャージしよ〜！','起動してこ〜！','整えてこ〜！','連れてこ〜！']
+ }
 };
 const titleMessages=['おはよう！'];
 
@@ -1986,13 +2058,58 @@ redoBtn.onclick=()=>{
  restoreMaskSnapshot(redoStack.pop());
 };
 
+const MSG_HISTORY_KEY='ohayou_recent_messages_v89';
+const MSG_PART_HISTORY_KEY='ohayou_recent_message_parts_v89';
+const RECENT_MSG_LIMIT=15;
+const RECENT_PART_LIMIT=20;
+function loadJsonList(key){
+ try{const v=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(v)?v:[]}catch(e){return []}
+}
+function saveJsonList(key,list){try{localStorage.setItem(key,JSON.stringify(list))}catch(e){}}
+function normalizeMessageKey(s){return String(s||'').replace(/\s+/g,'').replace(/[！!〜～ー♡♥✨👏✊]/g,'')}
+function getRecentMessages(){return loadJsonList(MSG_HISTORY_KEY)}
+function getRecentParts(){return loadJsonList(MSG_PART_HISTORY_KEY)}
+function rememberMessage(msg,parts=[]){
+ const key=normalizeMessageKey(msg);
+ let recent=getRecentMessages().filter(v=>v!==key);recent.unshift(key);recent=recent.slice(0,RECENT_MSG_LIMIT);saveJsonList(MSG_HISTORY_KEY,recent);
+ let rp=getRecentParts();for(const p of parts){rp=rp.filter(v=>v!==p);rp.unshift(p)}saveJsonList(MSG_PART_HISTORY_KEY,rp.slice(0,RECENT_PART_LIMIT));
+}
+function makeFreshMessage(tone){
+ const p=freshMessageParts[tone]||freshMessageParts.genki;
+ const recentParts=getRecentParts();
+ function chooseFresh(arr,prefix){
+   const preferred=arr.map((v,i)=>({v,id:prefix+i})).filter(o=>!recentParts.includes(o.id));
+   return pick(preferred.length?preferred:arr.map((v,i)=>({v,id:prefix+i})));
+ }
+ const A=chooseFresh(p.a,tone+'a'),B=chooseFresh(p.b,tone+'b'),C=chooseFresh(p.c,tone+'c');
+ let msg=A.v+'\n'+B.v+C.v;
+ return {msg,parts:[A.id,B.id,C.id]};
+}
+function pickFreshPreset(tone,recent){
+ const pool=(messages[tone]||[]).filter(v=>!recent.includes(normalizeMessageKey(v)));
+ if(pool.length)return {msg:pick(pool),parts:[]};
+ return null;
+}
 function setRandomMessage(){
- let tone=document.getElementById('tone').value;if(tone==='auto')tone=pick(['genki','genki','gentle','yurui','ouen','happy','healing','myself','morning']);
- subText.value=pick(messages[tone]);draw();
+ let tone=document.getElementById('tone').value;
+ if(tone==='auto')tone=pick(['genki','genki','gentle','yurui','ouen','happy','healing','myself','morning']);
+ const recent=getRecentMessages();
+ let chosen=null;
+ // 約55%は新しく組み立てる。最近の完成文・パーツの両方を避ける。
+ for(let tries=0;tries<18&&!chosen;tries++){
+   const useGenerated=Math.random()<.55;
+   const cand=useGenerated?makeFreshMessage(tone):pickFreshPreset(tone,recent);
+   if(cand && !recent.includes(normalizeMessageKey(cand.msg))) chosen=cand;
+ }
+ if(!chosen) chosen=pickFreshPreset(tone,[])||makeFreshMessage(tone);
+ subText.value=chosen.msg;
+ rememberMessage(chosen.msg,chosen.parts||[]);
+ draw();
 }
 function setRandomTitle(){ titleText.value='おはよう！'; draw(); }
 function randomMsg(){ setRandomMessage(); }
 randomMsg.onclick=randomMsg;
+resetMsgHistory.onclick=()=>{try{localStorage.removeItem(MSG_HISTORY_KEY);localStorage.removeItem(MSG_PART_HISTORY_KEY)}catch(e){} status('🧹 最近の文章履歴をリセットしました。次のガチャから全候補を使えます。');};
 randomTextAll.onclick=()=>{titleText.value='おはよう！';setRandomMessage();};
 titleText.oninput=()=>{titleText.value='おはよう！';draw();};subText.oninput=draw;
 randomAll.onclick=()=>{
