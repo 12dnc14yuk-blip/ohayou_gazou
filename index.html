@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おはよう画像メーカー v8.9</title>
+<title>おはよう画像メーカー v9.0</title>
 <style>
 :root{
   --ink:#352f44; --muted:#81798e; --line:#ece7f4; --panel:#fff;
@@ -90,12 +90,12 @@ input[type=range]{width:100%}
 </head>
 <body>
 <div class="wrap">
-<h1>🌞 おはよう画像メーカー v8.9</h1>
+<h1>🌞 おはよう画像メーカー v9.0</h1>
 <details class="helpbox lead-summary">
   <summary>ℹ️ このメーカーの説明を見る</summary>
   <div class="helpbody">透過の手直し機能はそのまま。今回はデザインをさらに盛りました。
   <b>大きい絵文字＋小さい絵文字＋太めのかわいいフレーム</b>をランダム配置。
-  v8.0は内部設計を整理して作り直した版です。<strong>AI切り抜き → 輪郭復元 → 顔パーツ保護 → 構図決定 → 大中小の飾り配置 → 最終バランス補正</strong>の順で処理します。目・鼻・口は画像から自動推定し、確信度が低い時は安全な中央保護へ切り替えます。必要なら<strong>4点タップ補正</strong>で左右の目・鼻・口を直接指定できます。女の子全体や透過された空白は避けず、髪・頬の外側・肩・服まわりにも飾りを置きます。女の子はランダムで勝手に左右反転しません。v8.1では<strong>目の二重保護</strong>と<strong>右上・上辺の最終バランス補正</strong>を強化しました。v8.2では<strong>目の安全マージンをさらに約18%拡張</strong>し、背景に<strong>淡い模様 / テキスト後ろの色面 / 両方</strong>をランダムで加える背景アレンジを追加しました。v8.8では<strong>ハートの色バリエーション</strong>を増やし、<strong>下の文章の見た目の中央</strong>がより揃うように調整しました。v8.9では<strong>最近出た文章を15件避ける履歴</strong>と、<strong>新しい言い回しを組み立てるフレッシュ生成</strong>を追加しました。</div>
+  v8.0は内部設計を整理して作り直した版です。<strong>AI切り抜き → 輪郭復元 → 顔パーツ保護 → 構図決定 → 大中小の飾り配置 → 最終バランス補正</strong>の順で処理します。目・鼻・口は画像から自動推定し、確信度が低い時は安全な中央保護へ切り替えます。必要なら<strong>4点タップ補正</strong>で左右の目・鼻・口を直接指定できます。女の子全体や透過された空白は避けず、髪・頬の外側・肩・服まわりにも飾りを置きます。女の子はランダムで勝手に左右反転しません。v8.1では<strong>目の二重保護</strong>と<strong>右上・上辺の最終バランス補正</strong>を強化しました。v8.2では<strong>目の安全マージンをさらに約18%拡張</strong>し、背景に<strong>淡い模様 / テキスト後ろの色面 / 両方</strong>をランダムで加える背景アレンジを追加しました。v8.8では<strong>ハートの色バリエーション</strong>を増やし、<strong>下の文章の見た目の中央</strong>がより揃うように調整しました。v8.9では<strong>最近出た文章を15件避ける履歴</strong>と、<strong>新しい言い回しを組み立てるフレッシュ生成</strong>を追加しました。v9.0では<strong>ChatGPT素材の新作追加</strong>と、<strong>背景カラー・背景の雰囲気の追加</strong>で見慣れ感を減らしています。</div>
 </details>
 
 <div class="card preview-card">
@@ -245,6 +245,10 @@ input[type=range]{width:100%}
       <option value="lavender">ラベンダー</option>
       <option value="mint">ミント</option>
       <option value="white">ホワイト</option>
+      <option value="peach">ピーチ</option>
+      <option value="sky">スカイ</option>
+      <option value="lilac">ライラック</option>
+      <option value="lemon">レモン</option>
     </select>
   </label>
   <label class="field" style="margin-bottom:10px">
@@ -254,6 +258,9 @@ input[type=range]{width:100%}
       <option value="sweet">甘めガーリー</option>
       <option value="airy">ふわっと爽やか</option>
       <option value="retro">レトロポップ</option>
+      <option value="dreamy">ゆめかわ</option>
+      <option value="candy">キャンディポップ</option>
+      <option value="sunny">サニーパステル</option>
     </select>
   </label>
   <label class="field" style="margin-bottom:10px">
@@ -312,7 +319,7 @@ input[type=range]{width:100%}
   </div>
 </div>
 
-<div class="footer">おはよう画像メーカー v8.9</div>
+<div class="footer">おはよう画像メーカー v9.0</div>
 </div>
 
 <script>
@@ -361,7 +368,7 @@ morning:[
 '朝のいい空気\nもらってこ〜！','今日の朝も\nゆるっと起動〜！','朝いちばんの\nいい予感〜！','今日もお日さまと\nスタートしよ〜！','眠気ごと連れて\nいってらっしゃい！','朝からひとつ\nいいこと探そ〜！','今日も新しい一日\nはじまりはじまり〜','朝のHP\nちょっと回復〜！','今日のぶんの元気\nチャージしよ〜！','お布団の余韻と\nいってらっしゃい〜','朝の一歩から\nゆっくりいこ〜！','今日も一日\nよろしくね〜！']
 };
 
-// v8.9 追加文。以前より少し会話っぽく、日常の小さいハッピーを拾う方向を増量。
+// v9.0 追加文。以前より少し会話っぽく、日常の小さいハッピーを拾う方向を増量。
 messages.genki.push(
  '朝きたー！\n今日もいい感じでいこっ！','とりあえず起きた！\nもう一勝してる✊','今日の楽しいこと\n先取りしにいこ〜！','朝からごきげん\n育ててこーっ！','いいことひとつ\n見つけたら勝ち〜！','今日も笑えること\n探しにいこっ！','なんかいい日な予感！\nそのままいこ〜！','今日の自分に\n期待しとこー！','朝の勢いそのまま\nしゅっぱーつ！','今日は何して\n楽しくなろっかな〜！'
 );
@@ -443,7 +450,9 @@ const moods=[
 
 
 const bgColorPresets={
- auto:null, blue:'#cfefff', pink:'#ffd8e9', yellow:'#fff0b8', lavender:'#eadcff', mint:'#d8f7ec', white:'#f8f7fb'
+ auto:null,
+ blue:'#cfefff', pink:'#ffd8e9', yellow:'#fff0b8', lavender:'#eadcff', mint:'#d8f7ec', white:'#f8f7fb',
+ peach:'#ffe0d2', sky:'#d8f3ff', lilac:'#efe3ff', lemon:'#fff5b2'
 };
 const curatedLooks={
  pop:{
@@ -469,6 +478,24 @@ const curatedLooks={
   title:['#e55d43','#6c7bc9','#d85b86'],
   sub:['#4e9a8a','#5b7fb8','#b57543'],
   frame:['#ef7b65','#f2c45a','#6db6a5']
+ },
+ dreamy:{
+  bg:['#f6d8ff','#dff2ff','#fff0fb','#ece3ff'],
+  title:['#a56cf2','#ff72c0','#6ea7ff'],
+  sub:['#8b7ae6','#69b6d8','#cc79c4'],
+  frame:['#c59cff','#ffffff','#96dfff']
+ },
+ candy:{
+  bg:['#ffd6ea','#ffe8b8','#d7f7ff','#e6dbff'],
+  title:['#ff5898','#ff8a4d','#6f87f5'],
+  sub:['#57b6d2','#b07dea','#61c494'],
+  frame:['#ff7fb8','#ffd75c','#8de5f2']
+ },
+ sunny:{
+  bg:['#fff6b8','#ffe3c9','#dff7d9','#d8f1ff'],
+  title:['#ff8c39','#ff5f87','#59a85f'],
+  sub:['#59b8d2','#8f79e8','#f0aa4a'],
+  frame:['#ffd85f','#ff9eb2','#8fdc93']
  }
 };
 const textColors=[
@@ -1033,6 +1060,44 @@ const generatedGptHeartAssets={
 };
 Object.assign(GPT_STICKER_ASSET_DATA, generatedGptHeartAssets);
 gptStickerGroups.heart.push(...Object.keys(generatedGptHeartAssets));
+
+function makeRibbonStickerData(top='#ff9fca',bottom='#ff77b5'){
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs><linearGradient id="g" x1="120" y1="120" x2="392" y2="392" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="${top}"/><stop offset="1" stop-color="${bottom}"/></linearGradient><filter id="s" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="rgba(255,170,205,.35)"/></filter></defs><g filter="url(#s)"><path d="M171 130c40 0 72 30 72 67 0 19-8 35-23 49l-70 60-42-85c-5-10-8-20-8-31 0-33 32-60 71-60z" fill="url(#g)" stroke="#fff" stroke-width="18" stroke-linejoin="round"/><path d="M341 130c-40 0-72 30-72 67 0 19 8 35 23 49l70 60 42-85c5-10 8-20 8-31 0-33-32-60-71-60z" fill="url(#g)" stroke="#fff" stroke-width="18" stroke-linejoin="round"/><path d="M215 231c12 10 26 16 41 16 15 0 29-6 41-16l35 54c8 13 4 30-9 38l-67 42-67-42c-13-8-17-25-9-38l35-54z" fill="url(#g)" stroke="#fff" stroke-width="18" stroke-linejoin="round"/><circle cx="256" cy="214" r="36" fill="#fff4fb" stroke="#fff" stroke-width="12"/><circle cx="242" cy="200" r="9" fill="rgba(255,255,255,.9)"/><path d="M152 317l-37 98 78-49zM360 317l37 98-78-49z" fill="url(#g)" stroke="#fff" stroke-width="18" stroke-linejoin="round"/></g></svg>`;
+  return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+}
+function makeFlowerStickerData(petals=['#ff8db7','#ffd369','#8de2ff','#bda3ff']){
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs><filter id="s" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="rgba(255,194,222,.36)"/></filter></defs><g filter="url(#s)">${petals.map((c,i)=>`<ellipse cx="256" cy="256" rx="52" ry="114" fill="${c}" stroke="#fff" stroke-width="16" transform="rotate(${i*45} 256 256)"/>`).join('')}<circle cx="256" cy="256" r="52" fill="#fff0a8" stroke="#fff" stroke-width="16"/><circle cx="236" cy="238" r="11" fill="rgba(255,255,255,.8)"/><path d="M356 138l10 22 22 10-22 10-10 22-10-22-22-10 22-10z" fill="#fff" opacity=".88"/></g></svg>`;
+  return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+}
+function makeCloudStickerData(top='#ffffff',bottom='#c8f0ff',star='#ffe27d'){
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs><linearGradient id="g" x1="120" y1="150" x2="360" y2="340" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="${top}"/><stop offset="1" stop-color="${bottom}"/></linearGradient><filter id="s" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="12" stdDeviation="13" flood-color="rgba(175,225,255,.35)"/></filter></defs><g filter="url(#s)"><path d="M171 344c-48 0-87-31-87-70 0-31 25-58 60-67 12-54 64-95 126-95 51 0 96 27 117 68 41 3 74 32 74 68 0 41-41 74-92 74H171z" fill="url(#g)" stroke="#fff" stroke-width="18" stroke-linejoin="round"/><ellipse cx="220" cy="204" rx="52" ry="24" fill="rgba(255,255,255,.55)" transform="rotate(-12 220 204)"/><path d="M129 155l12 25 25 12-25 12-12 25-12-25-25-12 25-12z" fill="${star}"/><path d="M388 120l10 20 20 10-20 10-10 20-10-20-20-10 20-10z" fill="#fff7d4"/></g></svg>`;
+  return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+}
+function makeCandyStickerData(a='#ff8dbc',b='#ffd56a',c='#8de1ff'){
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs><linearGradient id="g" x1="160" y1="170" x2="352" y2="342" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="${a}"/><stop offset="0.5" stop-color="${b}"/><stop offset="1" stop-color="${c}"/></linearGradient><filter id="s" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="rgba(255,195,214,.35)"/></filter></defs><g filter="url(#s)"><path d="M136 239l-53-47 13-30 72 14zM376 239l53-47-13-30-72 14zM136 273l-53 47 13 30 72-14zM376 273l53 47-13 30-72-14z" fill="#ffe9f3" stroke="#fff" stroke-width="16" stroke-linejoin="round"/><circle cx="256" cy="256" r="96" fill="url(#g)" stroke="#fff" stroke-width="18"/><path d="M191 203c45 28 86 69 130 107" stroke="rgba(255,255,255,.55)" stroke-width="18" stroke-linecap="round"/><path d="M201 176c17 6 29 13 42 25" stroke="rgba(255,255,255,.85)" stroke-width="12" stroke-linecap="round"/></g></svg>`;
+  return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+}
+function makeSparkleStickerData(main='#ffd36b',sub='#8fdcff'){
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs><filter id="s" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="rgba(255,216,120,.30)"/></filter></defs><g filter="url(#s)"><path d="M256 64l41 112 112 41-112 41-41 112-41-112-112-41 112-41z" fill="${main}" stroke="#fff" stroke-width="18" stroke-linejoin="round"/><path d="M368 314l22 49 49 22-49 22-22 49-22-49-49-22 49-22z" fill="${sub}" stroke="#fff" stroke-width="16" stroke-linejoin="round"/><path d="M133 131l14 31 31 14-31 14-14 31-14-31-31-14 31-14z" fill="#fff1b7" stroke="#fff" stroke-width="12" stroke-linejoin="round"/><path d="M230 170c18 14 34 20 55 23" stroke="rgba(255,255,255,.58)" stroke-width="12" stroke-linecap="round"/></g></svg>`;
+  return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+}
+const generatedGptExtraAssets={
+  'ふりふりピンクリボンステッカー.generated.svg': makeRibbonStickerData('#ffb3d8','#ff72b2'),
+  'ふりふりラベンダーリボンステッカー.generated.svg': makeRibbonStickerData('#d4beff','#ae8cff'),
+  'パステルミックスお花ステッカー.generated.svg': makeFlowerStickerData(['#ff9fc2','#ffd96b','#97e5ff','#c6adff']),
+  'やわふわチューリップステッカー.generated.svg': makeFlowerStickerData(['#ff8fad','#ffb3c8','#ffd973','#fff4a8']),
+  'ゆめかわ雲スターステッカー.generated.svg': makeCloudStickerData('#ffffff','#d8f1ff','#ffe57a'),
+  'もこもこミント雲ステッカー.generated.svg': makeCloudStickerData('#ffffff','#d6fff1','#ffe7ae'),
+  'くるくるキャンディステッカー.generated.svg': makeCandyStickerData('#ffa0cb','#ffd468','#92e5ff'),
+  'キラキラシャイニースター.generated.svg': makeSparkleStickerData('#ffd66e','#8bdfff'),
+  'きらめきオーロラスター.generated.svg': makeSparkleStickerData('#c8a9ff','#ff8fc4')
+};
+Object.assign(GPT_STICKER_ASSET_DATA, generatedGptExtraAssets);
+gptStickerGroups.bow.push('ふりふりピンクリボンステッカー.generated.svg','ふりふりラベンダーリボンステッカー.generated.svg');
+gptStickerGroups.flower.push('パステルミックスお花ステッカー.generated.svg','やわふわチューリップステッカー.generated.svg');
+gptStickerGroups.cloud.push('ゆめかわ雲スターステッカー.generated.svg','もこもこミント雲ステッカー.generated.svg');
+gptStickerGroups.candy.push('くるくるキャンディステッカー.generated.svg');
+gptStickerGroups.sparkle.push('キラキラシャイニースター.generated.svg','きらめきオーロラスター.generated.svg');
 function stableIndexFrom(key, len){
   let h=2166136261>>>0;
   for(const ch of String(key)) h=Math.imul(h ^ ch.codePointAt(0), 16777619)>>>0;
@@ -1126,7 +1191,7 @@ function resolvedBgEffect(){
  return state.bgEffect||'pattern';
 }
 function drawBgPattern(look){
- const style=(state.bg+state.layout+state.deco)%4;
+ const style=(state.bg+state.layout+state.deco)%7;
  ctx.save();
  if(style===0){
    // ふわっと大きめドット
@@ -1149,11 +1214,35 @@ function drawBgPattern(look){
      ctx.save();ctx.globalAlpha=.36; sparkle(x,y,.38,'#ffffff'); ctx.restore();
      circle(x+48,y+34,6,'rgba(255,255,255,.34)');
    }
- }else{
+ }else if(style===3){
    // やわらかチェック
    ctx.strokeStyle='rgba(255,255,255,.30)';ctx.lineWidth=4;
    for(let x=40;x<W;x+=92){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
    for(let y=40;y<H;y+=92){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+ }else if(style===4){
+   // 斜めストライプキャンディ
+   ctx.strokeStyle='rgba(255,255,255,.20)';ctx.lineWidth=18;
+   for(let x=-H;x<W+H;x+=80){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x+H,H);ctx.stroke();}
+   ctx.strokeStyle='rgba(255,255,255,.12)';ctx.lineWidth=8;
+   for(let x=-H+26;x<W+H;x+=80){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x+H,H);ctx.stroke();}
+ }else if(style===5){
+   // しゃぼん玉ふわふわ
+   for(let y=55;y<H;y+=108) for(let x=52;x<W;x+=118){
+     const dx=((Math.floor(y/108)%2)*38);
+     circle(x+dx,y,16,'rgba(255,255,255,.20)');
+     ctx.lineWidth=3; ctx.strokeStyle='rgba(255,255,255,.38)'; ctx.beginPath(); ctx.arc(x+dx,y,16,0,Math.PI*2); ctx.stroke();
+     circle(x+dx+24,y-18,5,'rgba(255,255,255,.30)');
+     circle(x+dx+48,y+22,9,'rgba(255,255,255,.16)');
+   }
+ }else{
+   // ミニハート＋きらめき
+   for(let y=62;y<H;y+=120) for(let x=60;x<W;x+=132){
+     ctx.save(); ctx.translate(x+((Math.floor(y/120)%2)*36),y); ctx.scale(.95,.95); ctx.globalAlpha=.32;
+     const p=new Path2D('M0 12 C0 -2 18 -8 28 4 C38 -8 56 -2 56 12 C56 25 44 34 28 47 C12 34 0 25 0 12 Z');
+     ctx.fillStyle='rgba(255,255,255,.55)'; ctx.fill(p);
+     ctx.restore();
+     ctx.save(); ctx.globalAlpha=.28; sparkle(x+44,y+28,.28,'#ffffff'); ctx.restore();
+   }
  }
  ctx.restore();
 }
@@ -2223,7 +2312,7 @@ quickTabs.forEach(btn=>btn.onclick=()=>{
 const toneOptions=[...tone.options].map(o=>`<option value="${o.value}">${o.textContent}</option>`).join('');qTone.innerHTML=toneOptions;
 const decoStyleOptions=[...decoStyle.options].map(o=>`<option value="${o.value}">${o.textContent}</option>`).join('');qDecoStyle.innerHTML=decoStyleOptions;
 const bgColorOptions=[...bgColorPreset.options].map(o=>`<option value="${o.value}">${o.textContent}</option>`).join('');qBgColor.innerHTML=bgColorOptions;
-const chipDefs=[['blue','#cfefff'],['pink','#ffd8e9'],['yellow','#fff0b8'],['lavender','#eadcff'],['mint','#d8f7ec'],['white','#f8f7fb']];
+const chipDefs=[['blue','#cfefff'],['pink','#ffd8e9'],['yellow','#fff0b8'],['lavender','#eadcff'],['mint','#d8f7ec'],['white','#f8f7fb'],['peach','#ffe0d2'],['sky','#d8f3ff'],['lilac','#efe3ff'],['lemon','#fff5b2']];
 chipDefs.forEach(([v,c])=>{const b=document.createElement('button');b.type='button';b.className='color-chip';b.style.background=c;b.title=v;b.onclick=()=>{bgColorPreset.value=v;state.bgColorPreset=v;syncQuick();draw();};qColorChips.appendChild(b);});
 function syncQuick(){
   qTone.value=tone.value;qDecoStyle.value=decoStyle.value;qBgColor.value=bgColorPreset.value;qDensity.value=state.density;qDensityO.value=state.density;
