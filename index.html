@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おはよう画像メーカー v9.0</title>
+<title>おはよう画像メーカー v9.1</title>
 <style>
 :root{
   --ink:#352f44; --muted:#81798e; --line:#ece7f4; --panel:#fff;
@@ -90,12 +90,12 @@ input[type=range]{width:100%}
 </head>
 <body>
 <div class="wrap">
-<h1>🌞 おはよう画像メーカー v9.0</h1>
+<h1>🌞 おはよう画像メーカー v9.1</h1>
 <details class="helpbox lead-summary">
   <summary>ℹ️ このメーカーの説明を見る</summary>
   <div class="helpbody">透過の手直し機能はそのまま。今回はデザインをさらに盛りました。
   <b>大きい絵文字＋小さい絵文字＋太めのかわいいフレーム</b>をランダム配置。
-  v8.0は内部設計を整理して作り直した版です。<strong>AI切り抜き → 輪郭復元 → 顔パーツ保護 → 構図決定 → 大中小の飾り配置 → 最終バランス補正</strong>の順で処理します。目・鼻・口は画像から自動推定し、確信度が低い時は安全な中央保護へ切り替えます。必要なら<strong>4点タップ補正</strong>で左右の目・鼻・口を直接指定できます。女の子全体や透過された空白は避けず、髪・頬の外側・肩・服まわりにも飾りを置きます。女の子はランダムで勝手に左右反転しません。v8.1では<strong>目の二重保護</strong>と<strong>右上・上辺の最終バランス補正</strong>を強化しました。v8.2では<strong>目の安全マージンをさらに約18%拡張</strong>し、背景に<strong>淡い模様 / テキスト後ろの色面 / 両方</strong>をランダムで加える背景アレンジを追加しました。v8.8では<strong>ハートの色バリエーション</strong>を増やし、<strong>下の文章の見た目の中央</strong>がより揃うように調整しました。v8.9では<strong>最近出た文章を15件避ける履歴</strong>と、<strong>新しい言い回しを組み立てるフレッシュ生成</strong>を追加しました。v9.0では<strong>ChatGPT素材の新作追加</strong>と、<strong>背景カラー・背景の雰囲気の追加</strong>で見慣れ感を減らしています。</div>
+  v8.0は内部設計を整理して作り直した版です。<strong>AI切り抜き → 輪郭復元 → 顔パーツ保護 → 構図決定 → 大中小の飾り配置 → 最終バランス補正</strong>の順で処理します。目・鼻・口は画像から自動推定し、確信度が低い時は安全な中央保護へ切り替えます。必要なら<strong>4点タップ補正</strong>で左右の目・鼻・口を直接指定できます。女の子全体や透過された空白は避けず、髪・頬の外側・肩・服まわりにも飾りを置きます。女の子はランダムで勝手に左右反転しません。v8.1では<strong>目の二重保護</strong>と<strong>右上・上辺の最終バランス補正</strong>を強化しました。v8.2では<strong>目の安全マージンをさらに約18%拡張</strong>し、背景に<strong>淡い模様 / テキスト後ろの色面 / 両方</strong>をランダムで加える背景アレンジを追加しました。v8.8では<strong>ハートの色バリエーション</strong>を増やし、<strong>下の文章の見た目の中央</strong>がより揃うように調整しました。v8.9では<strong>最近出た文章を15件避ける履歴</strong>と、<strong>新しい言い回しを組み立てるフレッシュ生成</strong>を追加しました。v9.0では<strong>ChatGPT素材の新作追加</strong>と、<strong>背景カラー・背景の雰囲気の追加</strong>で見慣れ感を減らしています。v9.1では<strong>その日初回に開いたとき、自動で今日用の新しいおはよう画像を作成</strong>し、<strong>昨日と同じ雰囲気になりにくい日替わり生成</strong>を追加しました。</div>
 </details>
 
 <div class="card preview-card">
@@ -319,7 +319,7 @@ input[type=range]{width:100%}
   </div>
 </div>
 
-<div class="footer">おはよう画像メーカー v9.0</div>
+<div class="footer">おはよう画像メーカー v9.1</div>
 </div>
 
 <script>
@@ -2201,21 +2201,7 @@ randomMsg.onclick=randomMsg;
 resetMsgHistory.onclick=()=>{try{localStorage.removeItem(MSG_HISTORY_KEY);localStorage.removeItem(MSG_PART_HISTORY_KEY)}catch(e){} status('🧹 最近の文章履歴をリセットしました。次のガチャから全候補を使えます。');};
 randomTextAll.onclick=()=>{titleText.value='おはよう！';setRandomMessage();};
 titleText.oninput=()=>{titleText.value='おはよう！';draw();};subText.oninput=draw;
-randomAll.onclick=()=>{
-  state.designMood=designMood.value;
-  state.bg=rand(4);
-  state.bgEffect=(document.getElementById('bgEffect')?.value==='auto')?pick(['pattern','text','both','pattern']):document.getElementById('bgEffect').value;
-  state.deco=pickDecoIndex();
-  state.frame=rand(5);
-  state.frameWidth=2+rand(3);
-  state.density=pick([2,3,5]);
-  density.value=state.density;densityo.value=state.density;
-  frameWidth.value=state.frameWidth;frameWidtho.value=state.frameWidth;
-  setRandomMessage();
-  if(document.getElementById('decoStyle').value==='mix')state.decoStyle='mix';
-  randomComposition();
-  sync();draw();
-};
+
 randomBg.onclick=()=>{state.bg=rand(moods.length);if(bgEffect.value==='auto')state.bgEffect=pick(['pattern','text','both','pattern']);draw()};randomDeco.onclick=()=>{
   state.deco=pickDecoIndex();
   state.density=3+rand(3);
@@ -2327,6 +2313,90 @@ qX.oninput=()=>{state.x=+qX.value;sync();syncQuick();draw();};qY.oninput=()=>{st
 qRandomAll.onclick=()=>randomAll.click();qSave.onclick=()=>save.click();
 const oldSync=sync;sync=function(){oldSync();if(typeof syncQuick==='function')syncQuick();};
 
+const DAILY_OPEN_STATE_KEY='ohayou_daily_open_state_v91';
+function todayKeyJST(){
+  const now=new Date();
+  const y=now.getFullYear();
+  const m=String(now.getMonth()+1).padStart(2,'0');
+  const d=String(now.getDate()).padStart(2,'0');
+  return `${y}-${m}-${d}`;
+}
+function getYesterdayKeyFrom(dateKey){
+  const [y,m,d]=String(dateKey).split('-').map(Number);
+  const dt=new Date(y,m-1,d);
+  dt.setDate(dt.getDate()-1);
+  const yy=dt.getFullYear();
+  const mm=String(dt.getMonth()+1).padStart(2,'0');
+  const dd=String(dt.getDate()).padStart(2,'0');
+  return `${yy}-${mm}-${dd}`;
+}
+function currentOhayouSignature(){
+  return JSON.stringify({
+    msg:(subText?.value||'').trim(),
+    tone:tone?.value||'',
+    mood:state.designMood||designMood?.value||'',
+    bgColor:state.bgColorPreset||bgColorPreset?.value||'auto',
+    bg:state.bg,
+    bgEffect:state.bgEffect||bgEffect?.value||'',
+    decoTheme:decoTheme?.value||'',
+    decoStyle:state.decoStyle||decoStyle?.value||'',
+    deco:state.deco,
+    frame:state.frame,
+    frameWidth:state.frameWidth,
+    layout:state.layout,
+    density:state.density
+  });
+}
+function storeDailySignature(){
+  try{
+    const day=todayKeyJST();
+    const all=JSON.parse(localStorage.getItem(DAILY_OPEN_STATE_KEY)||'{}');
+    all[day]=currentOhayouSignature();
+    const keys=Object.keys(all).sort();
+    while(keys.length>14){ delete all[keys.shift()]; }
+    localStorage.setItem(DAILY_OPEN_STATE_KEY, JSON.stringify(all));
+  }catch(e){}
+}
+function randomizeAllCore(){
+  state.designMood=designMood.value;
+  state.bg=rand((curatedLooks[state.designMood]?.bg||moods).length);
+  state.bgEffect=(document.getElementById('bgEffect')?.value==='auto')?pick(['pattern','text','both','pattern']):document.getElementById('bgEffect').value;
+  state.deco=pickDecoIndex();
+  state.frame=rand(5);
+  state.frameWidth=2+rand(3);
+  state.density=pick([2,3,5]);
+  density.value=state.density;densityo.value=state.density;
+  frameWidth.value=state.frameWidth;frameWidtho.value=state.frameWidth;
+  setRandomMessage();
+  if(document.getElementById('decoStyle').value==='mix')state.decoStyle='mix';
+  randomComposition();
+  sync();draw();
+}
+function autoGenerateTodayOhayou(){
+  const today=todayKeyJST();
+  const yesterday=getYesterdayKeyFrom(today);
+  let prevSig='';
+  let all={};
+  try{ all=JSON.parse(localStorage.getItem(DAILY_OPEN_STATE_KEY)||'{}')||{}; prevSig=all[yesterday]||''; }catch(e){}
+  if(all[today]) return false;
+  let tries=0;
+  let sig='';
+  do{
+    randomizeAllCore();
+    sig=currentOhayouSignature();
+    tries++;
+  }while(prevSig && sig===prevSig && tries<8);
+  storeDailySignature();
+  status('🌞 今日は昨日と少し違う雰囲気になるように、自動で日替わりおはようを作りました。');
+  return true;
+}
+
+randomAll.onclick=()=>{
+  randomizeAllCore();
+  storeDailySignature();
+};
+
 sync();draw();updateHistoryButtons();
+autoGenerateTodayOhayou();
 </script>
 </body></html>
