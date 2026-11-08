@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おはよう画像メーカー v9.1</title>
+<title>おはよう画像メーカー v9.2</title>
 <style>
 :root{
   --ink:#352f44; --muted:#81798e; --line:#ece7f4; --panel:#fff;
@@ -90,12 +90,12 @@ input[type=range]{width:100%}
 </head>
 <body>
 <div class="wrap">
-<h1>🌞 おはよう画像メーカー v9.1</h1>
+<h1>🌞 おはよう画像メーカー v9.2</h1>
 <details class="helpbox lead-summary">
   <summary>ℹ️ このメーカーの説明を見る</summary>
   <div class="helpbody">透過の手直し機能はそのまま。今回はデザインをさらに盛りました。
   <b>大きい絵文字＋小さい絵文字＋太めのかわいいフレーム</b>をランダム配置。
-  v8.0は内部設計を整理して作り直した版です。<strong>AI切り抜き → 輪郭復元 → 顔パーツ保護 → 構図決定 → 大中小の飾り配置 → 最終バランス補正</strong>の順で処理します。目・鼻・口は画像から自動推定し、確信度が低い時は安全な中央保護へ切り替えます。必要なら<strong>4点タップ補正</strong>で左右の目・鼻・口を直接指定できます。女の子全体や透過された空白は避けず、髪・頬の外側・肩・服まわりにも飾りを置きます。女の子はランダムで勝手に左右反転しません。v8.1では<strong>目の二重保護</strong>と<strong>右上・上辺の最終バランス補正</strong>を強化しました。v8.2では<strong>目の安全マージンをさらに約18%拡張</strong>し、背景に<strong>淡い模様 / テキスト後ろの色面 / 両方</strong>をランダムで加える背景アレンジを追加しました。v8.8では<strong>ハートの色バリエーション</strong>を増やし、<strong>下の文章の見た目の中央</strong>がより揃うように調整しました。v8.9では<strong>最近出た文章を15件避ける履歴</strong>と、<strong>新しい言い回しを組み立てるフレッシュ生成</strong>を追加しました。v9.0では<strong>ChatGPT素材の新作追加</strong>と、<strong>背景カラー・背景の雰囲気の追加</strong>で見慣れ感を減らしています。v9.1では<strong>その日初回に開いたとき、自動で今日用の新しいおはよう画像を作成</strong>し、<strong>昨日と同じ雰囲気になりにくい日替わり生成</strong>を追加しました。</div>
+  v8.0は内部設計を整理して作り直した版です。<strong>AI切り抜き → 輪郭復元 → 顔パーツ保護 → 構図決定 → 大中小の飾り配置 → 最終バランス補正</strong>の順で処理します。目・鼻・口は画像から自動推定し、確信度が低い時は安全な中央保護へ切り替えます。必要なら<strong>4点タップ補正</strong>で左右の目・鼻・口を直接指定できます。女の子全体や透過された空白は避けず、髪・頬の外側・肩・服まわりにも飾りを置きます。女の子はランダムで勝手に左右反転しません。v8.1では<strong>目の二重保護</strong>と<strong>右上・上辺の最終バランス補正</strong>を強化しました。v8.2では<strong>目の安全マージンをさらに約18%拡張</strong>し、背景に<strong>淡い模様 / テキスト後ろの色面 / 両方</strong>をランダムで加える背景アレンジを追加しました。v8.8では<strong>ハートの色バリエーション</strong>を増やし、<strong>下の文章の見た目の中央</strong>がより揃うように調整しました。v8.9では<strong>最近出た文章を15件避ける履歴</strong>と、<strong>新しい言い回しを組み立てるフレッシュ生成</strong>を追加しました。v9.2では<strong>長い文章の自動改行・自動縮小</strong>と、<strong>おはよう／下の文の文字サイズ調整</strong>を追加しました。</div>
 </details>
 
 <div class="card preview-card">
@@ -110,6 +110,8 @@ input[type=range]{width:100%}
   <div id="q-text" class="quick-panel">
     <div class="compact-row"><button id="qRandomMsg" class="soft">🎲 下の文</button><span class="soft" style="display:flex;align-items:center;justify-content:center;font-weight:900">🌞 おはよう！固定</span></div>
     <select id="qTone" style="margin-top:6px"></select>
+    <label class="slider"><span>おはよう</span><input id="qTitleSize" type="range" min="70" max="130" value="100"><output id="qTitleSizeO">100%</output></label>
+    <label class="slider"><span>下の文</span><input id="qSubSize" type="range" min="60" max="140" value="100"><output id="qSubSizeO">100%</output></label>
   </div>
   <div id="q-deco" class="quick-panel">
     <div class="compact-row"><select id="qDecoStyle"></select><button id="qRandomDeco" class="soft">🎲 飾りガチャ</button></div><div class="asset-row"><label class="mini-file">➕ ChatGPT素材<input id="qCustomAssetFiles" type="file" accept="image/png,image/webp" multiple></label><span id="qAssetCount" class="asset-count">追加素材 0個</span></div>
@@ -195,6 +197,13 @@ input[type=range]{width:100%}
   <input id="titleText" class="readonly-title" type="text" value="おはよう！" readonly aria-readonly="true">
   <textarea id="subText">素敵を集めに
 行ってみよー！</textarea>
+  <label class="slider"><span>おはようサイズ</span><input id="titleSize" type="range" min="70" max="130" value="100"><output id="titleSizeO">100%</output></label>
+  <label class="slider"><span>下の文サイズ</span><input id="subSize" type="range" min="60" max="140" value="100"><output id="subSizeO">100%</output></label>
+  <div class="row" style="margin-top:6px;align-items:center">
+    <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:800;flex:1"><input id="autoFitText" type="checkbox" checked> 長い文は自動で小さくする</label>
+    <select id="maxTextLines" style="max-width:140px"><option value="2">最大2行</option><option value="3" selected>最大3行</option><option value="4">最大4行</option></select>
+  </div>
+  <div class="tip" style="margin-top:6px">長い文章は自動改行し、入りきらない時は文字を縮めて最大行数の中に収めます。</div>
   <div class="row" style="margin-top:8px">
     <select id="tone">
       <option value="auto">ポジティブ文：おまかせ</option>
@@ -245,10 +254,6 @@ input[type=range]{width:100%}
       <option value="lavender">ラベンダー</option>
       <option value="mint">ミント</option>
       <option value="white">ホワイト</option>
-      <option value="peach">ピーチ</option>
-      <option value="sky">スカイ</option>
-      <option value="lilac">ライラック</option>
-      <option value="lemon">レモン</option>
     </select>
   </label>
   <label class="field" style="margin-bottom:10px">
@@ -258,9 +263,6 @@ input[type=range]{width:100%}
       <option value="sweet">甘めガーリー</option>
       <option value="airy">ふわっと爽やか</option>
       <option value="retro">レトロポップ</option>
-      <option value="dreamy">ゆめかわ</option>
-      <option value="candy">キャンディポップ</option>
-      <option value="sunny">サニーパステル</option>
     </select>
   </label>
   <label class="field" style="margin-bottom:10px">
@@ -319,7 +321,7 @@ input[type=range]{width:100%}
   </div>
 </div>
 
-<div class="footer">おはよう画像メーカー v9.1</div>
+<div class="footer">おはよう画像メーカー v9.2</div>
 </div>
 
 <script>
@@ -328,7 +330,7 @@ const cv=document.getElementById('cv'),ctx=cv.getContext('2d'),W=cv.width,H=cv.h
 const state={
   sourceImg:null, cutoutImg:null, mask:null,
   charImg:null, x:-250,y:18,scale:1.72,flip:false,
-  bg:0,deco:0,frame:0,frameWidth:4,layout:0,density:5,designMood:'pop',bgEffect:'pattern',decoStyle:'iphone',bgColorPreset:'auto',
+  bg:0,deco:0,frame:0,frameWidth:4,layout:0,density:5,designMood:'pop',bgEffect:'pattern',decoStyle:'iphone',bgColorPreset:'auto',titleScale:1,subScale:1,autoFitText:true,maxTextLines:3,
   mode:'move',drag:false,lastX:0,lastY:0,lastPaint:null,rebuildTimer:null,
   edgeGuide:null,
   faceFeatures:null, faceGuide:false, faceCalib:null
@@ -368,7 +370,7 @@ morning:[
 '朝のいい空気\nもらってこ〜！','今日の朝も\nゆるっと起動〜！','朝いちばんの\nいい予感〜！','今日もお日さまと\nスタートしよ〜！','眠気ごと連れて\nいってらっしゃい！','朝からひとつ\nいいこと探そ〜！','今日も新しい一日\nはじまりはじまり〜','朝のHP\nちょっと回復〜！','今日のぶんの元気\nチャージしよ〜！','お布団の余韻と\nいってらっしゃい〜','朝の一歩から\nゆっくりいこ〜！','今日も一日\nよろしくね〜！']
 };
 
-// v9.0 追加文。以前より少し会話っぽく、日常の小さいハッピーを拾う方向を増量。
+// v8.9 追加文。以前より少し会話っぽく、日常の小さいハッピーを拾う方向を増量。
 messages.genki.push(
  '朝きたー！\n今日もいい感じでいこっ！','とりあえず起きた！\nもう一勝してる✊','今日の楽しいこと\n先取りしにいこ〜！','朝からごきげん\n育ててこーっ！','いいことひとつ\n見つけたら勝ち〜！','今日も笑えること\n探しにいこっ！','なんかいい日な予感！\nそのままいこ〜！','今日の自分に\n期待しとこー！','朝の勢いそのまま\nしゅっぱーつ！','今日は何して\n楽しくなろっかな〜！'
 );
@@ -450,9 +452,7 @@ const moods=[
 
 
 const bgColorPresets={
- auto:null,
- blue:'#cfefff', pink:'#ffd8e9', yellow:'#fff0b8', lavender:'#eadcff', mint:'#d8f7ec', white:'#f8f7fb',
- peach:'#ffe0d2', sky:'#d8f3ff', lilac:'#efe3ff', lemon:'#fff5b2'
+ auto:null, blue:'#cfefff', pink:'#ffd8e9', yellow:'#fff0b8', lavender:'#eadcff', mint:'#d8f7ec', white:'#f8f7fb'
 };
 const curatedLooks={
  pop:{
@@ -478,24 +478,6 @@ const curatedLooks={
   title:['#e55d43','#6c7bc9','#d85b86'],
   sub:['#4e9a8a','#5b7fb8','#b57543'],
   frame:['#ef7b65','#f2c45a','#6db6a5']
- },
- dreamy:{
-  bg:['#f6d8ff','#dff2ff','#fff0fb','#ece3ff'],
-  title:['#a56cf2','#ff72c0','#6ea7ff'],
-  sub:['#8b7ae6','#69b6d8','#cc79c4'],
-  frame:['#c59cff','#ffffff','#96dfff']
- },
- candy:{
-  bg:['#ffd6ea','#ffe8b8','#d7f7ff','#e6dbff'],
-  title:['#ff5898','#ff8a4d','#6f87f5'],
-  sub:['#57b6d2','#b07dea','#61c494'],
-  frame:['#ff7fb8','#ffd75c','#8de5f2']
- },
- sunny:{
-  bg:['#fff6b8','#ffe3c9','#dff7d9','#d8f1ff'],
-  title:['#ff8c39','#ff5f87','#59a85f'],
-  sub:['#59b8d2','#8f79e8','#f0aa4a'],
-  frame:['#ffd85f','#ff9eb2','#8fdc93']
  }
 };
 const textColors=[
@@ -1060,44 +1042,6 @@ const generatedGptHeartAssets={
 };
 Object.assign(GPT_STICKER_ASSET_DATA, generatedGptHeartAssets);
 gptStickerGroups.heart.push(...Object.keys(generatedGptHeartAssets));
-
-function makeRibbonStickerData(top='#ff9fca',bottom='#ff77b5'){
-  const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs><linearGradient id="g" x1="120" y1="120" x2="392" y2="392" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="${top}"/><stop offset="1" stop-color="${bottom}"/></linearGradient><filter id="s" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="rgba(255,170,205,.35)"/></filter></defs><g filter="url(#s)"><path d="M171 130c40 0 72 30 72 67 0 19-8 35-23 49l-70 60-42-85c-5-10-8-20-8-31 0-33 32-60 71-60z" fill="url(#g)" stroke="#fff" stroke-width="18" stroke-linejoin="round"/><path d="M341 130c-40 0-72 30-72 67 0 19 8 35 23 49l70 60 42-85c5-10 8-20 8-31 0-33-32-60-71-60z" fill="url(#g)" stroke="#fff" stroke-width="18" stroke-linejoin="round"/><path d="M215 231c12 10 26 16 41 16 15 0 29-6 41-16l35 54c8 13 4 30-9 38l-67 42-67-42c-13-8-17-25-9-38l35-54z" fill="url(#g)" stroke="#fff" stroke-width="18" stroke-linejoin="round"/><circle cx="256" cy="214" r="36" fill="#fff4fb" stroke="#fff" stroke-width="12"/><circle cx="242" cy="200" r="9" fill="rgba(255,255,255,.9)"/><path d="M152 317l-37 98 78-49zM360 317l37 98-78-49z" fill="url(#g)" stroke="#fff" stroke-width="18" stroke-linejoin="round"/></g></svg>`;
-  return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
-}
-function makeFlowerStickerData(petals=['#ff8db7','#ffd369','#8de2ff','#bda3ff']){
-  const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs><filter id="s" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="rgba(255,194,222,.36)"/></filter></defs><g filter="url(#s)">${petals.map((c,i)=>`<ellipse cx="256" cy="256" rx="52" ry="114" fill="${c}" stroke="#fff" stroke-width="16" transform="rotate(${i*45} 256 256)"/>`).join('')}<circle cx="256" cy="256" r="52" fill="#fff0a8" stroke="#fff" stroke-width="16"/><circle cx="236" cy="238" r="11" fill="rgba(255,255,255,.8)"/><path d="M356 138l10 22 22 10-22 10-10 22-10-22-22-10 22-10z" fill="#fff" opacity=".88"/></g></svg>`;
-  return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
-}
-function makeCloudStickerData(top='#ffffff',bottom='#c8f0ff',star='#ffe27d'){
-  const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs><linearGradient id="g" x1="120" y1="150" x2="360" y2="340" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="${top}"/><stop offset="1" stop-color="${bottom}"/></linearGradient><filter id="s" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="12" stdDeviation="13" flood-color="rgba(175,225,255,.35)"/></filter></defs><g filter="url(#s)"><path d="M171 344c-48 0-87-31-87-70 0-31 25-58 60-67 12-54 64-95 126-95 51 0 96 27 117 68 41 3 74 32 74 68 0 41-41 74-92 74H171z" fill="url(#g)" stroke="#fff" stroke-width="18" stroke-linejoin="round"/><ellipse cx="220" cy="204" rx="52" ry="24" fill="rgba(255,255,255,.55)" transform="rotate(-12 220 204)"/><path d="M129 155l12 25 25 12-25 12-12 25-12-25-25-12 25-12z" fill="${star}"/><path d="M388 120l10 20 20 10-20 10-10 20-10-20-20-10 20-10z" fill="#fff7d4"/></g></svg>`;
-  return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
-}
-function makeCandyStickerData(a='#ff8dbc',b='#ffd56a',c='#8de1ff'){
-  const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs><linearGradient id="g" x1="160" y1="170" x2="352" y2="342" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="${a}"/><stop offset="0.5" stop-color="${b}"/><stop offset="1" stop-color="${c}"/></linearGradient><filter id="s" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="rgba(255,195,214,.35)"/></filter></defs><g filter="url(#s)"><path d="M136 239l-53-47 13-30 72 14zM376 239l53-47-13-30-72 14zM136 273l-53 47 13 30 72-14zM376 273l53 47-13 30-72-14z" fill="#ffe9f3" stroke="#fff" stroke-width="16" stroke-linejoin="round"/><circle cx="256" cy="256" r="96" fill="url(#g)" stroke="#fff" stroke-width="18"/><path d="M191 203c45 28 86 69 130 107" stroke="rgba(255,255,255,.55)" stroke-width="18" stroke-linecap="round"/><path d="M201 176c17 6 29 13 42 25" stroke="rgba(255,255,255,.85)" stroke-width="12" stroke-linecap="round"/></g></svg>`;
-  return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
-}
-function makeSparkleStickerData(main='#ffd36b',sub='#8fdcff'){
-  const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs><filter id="s" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="rgba(255,216,120,.30)"/></filter></defs><g filter="url(#s)"><path d="M256 64l41 112 112 41-112 41-41 112-41-112-112-41 112-41z" fill="${main}" stroke="#fff" stroke-width="18" stroke-linejoin="round"/><path d="M368 314l22 49 49 22-49 22-22 49-22-49-49-22 49-22z" fill="${sub}" stroke="#fff" stroke-width="16" stroke-linejoin="round"/><path d="M133 131l14 31 31 14-31 14-14 31-14-31-31-14 31-14z" fill="#fff1b7" stroke="#fff" stroke-width="12" stroke-linejoin="round"/><path d="M230 170c18 14 34 20 55 23" stroke="rgba(255,255,255,.58)" stroke-width="12" stroke-linecap="round"/></g></svg>`;
-  return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
-}
-const generatedGptExtraAssets={
-  'ふりふりピンクリボンステッカー.generated.svg': makeRibbonStickerData('#ffb3d8','#ff72b2'),
-  'ふりふりラベンダーリボンステッカー.generated.svg': makeRibbonStickerData('#d4beff','#ae8cff'),
-  'パステルミックスお花ステッカー.generated.svg': makeFlowerStickerData(['#ff9fc2','#ffd96b','#97e5ff','#c6adff']),
-  'やわふわチューリップステッカー.generated.svg': makeFlowerStickerData(['#ff8fad','#ffb3c8','#ffd973','#fff4a8']),
-  'ゆめかわ雲スターステッカー.generated.svg': makeCloudStickerData('#ffffff','#d8f1ff','#ffe57a'),
-  'もこもこミント雲ステッカー.generated.svg': makeCloudStickerData('#ffffff','#d6fff1','#ffe7ae'),
-  'くるくるキャンディステッカー.generated.svg': makeCandyStickerData('#ffa0cb','#ffd468','#92e5ff'),
-  'キラキラシャイニースター.generated.svg': makeSparkleStickerData('#ffd66e','#8bdfff'),
-  'きらめきオーロラスター.generated.svg': makeSparkleStickerData('#c8a9ff','#ff8fc4')
-};
-Object.assign(GPT_STICKER_ASSET_DATA, generatedGptExtraAssets);
-gptStickerGroups.bow.push('ふりふりピンクリボンステッカー.generated.svg','ふりふりラベンダーリボンステッカー.generated.svg');
-gptStickerGroups.flower.push('パステルミックスお花ステッカー.generated.svg','やわふわチューリップステッカー.generated.svg');
-gptStickerGroups.cloud.push('ゆめかわ雲スターステッカー.generated.svg','もこもこミント雲ステッカー.generated.svg');
-gptStickerGroups.candy.push('くるくるキャンディステッカー.generated.svg');
-gptStickerGroups.sparkle.push('キラキラシャイニースター.generated.svg','きらめきオーロラスター.generated.svg');
 function stableIndexFrom(key, len){
   let h=2166136261>>>0;
   for(const ch of String(key)) h=Math.imul(h ^ ch.codePointAt(0), 16777619)>>>0;
@@ -1191,7 +1135,7 @@ function resolvedBgEffect(){
  return state.bgEffect||'pattern';
 }
 function drawBgPattern(look){
- const style=(state.bg+state.layout+state.deco)%7;
+ const style=(state.bg+state.layout+state.deco)%4;
  ctx.save();
  if(style===0){
    // ふわっと大きめドット
@@ -1214,35 +1158,11 @@ function drawBgPattern(look){
      ctx.save();ctx.globalAlpha=.36; sparkle(x,y,.38,'#ffffff'); ctx.restore();
      circle(x+48,y+34,6,'rgba(255,255,255,.34)');
    }
- }else if(style===3){
+ }else{
    // やわらかチェック
    ctx.strokeStyle='rgba(255,255,255,.30)';ctx.lineWidth=4;
    for(let x=40;x<W;x+=92){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
    for(let y=40;y<H;y+=92){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
- }else if(style===4){
-   // 斜めストライプキャンディ
-   ctx.strokeStyle='rgba(255,255,255,.20)';ctx.lineWidth=18;
-   for(let x=-H;x<W+H;x+=80){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x+H,H);ctx.stroke();}
-   ctx.strokeStyle='rgba(255,255,255,.12)';ctx.lineWidth=8;
-   for(let x=-H+26;x<W+H;x+=80){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x+H,H);ctx.stroke();}
- }else if(style===5){
-   // しゃぼん玉ふわふわ
-   for(let y=55;y<H;y+=108) for(let x=52;x<W;x+=118){
-     const dx=((Math.floor(y/108)%2)*38);
-     circle(x+dx,y,16,'rgba(255,255,255,.20)');
-     ctx.lineWidth=3; ctx.strokeStyle='rgba(255,255,255,.38)'; ctx.beginPath(); ctx.arc(x+dx,y,16,0,Math.PI*2); ctx.stroke();
-     circle(x+dx+24,y-18,5,'rgba(255,255,255,.30)');
-     circle(x+dx+48,y+22,9,'rgba(255,255,255,.16)');
-   }
- }else{
-   // ミニハート＋きらめき
-   for(let y=62;y<H;y+=120) for(let x=60;x<W;x+=132){
-     ctx.save(); ctx.translate(x+((Math.floor(y/120)%2)*36),y); ctx.scale(.95,.95); ctx.globalAlpha=.32;
-     const p=new Path2D('M0 12 C0 -2 18 -8 28 4 C38 -8 56 -2 56 12 C56 25 44 34 28 47 C12 34 0 25 0 12 Z');
-     ctx.fillStyle='rgba(255,255,255,.55)'; ctx.fill(p);
-     ctx.restore();
-     ctx.save(); ctx.globalAlpha=.28; sparkle(x+44,y+28,.28,'#ffffff'); ctx.restore();
-   }
  }
  ctx.restore();
 }
@@ -1815,7 +1735,7 @@ function splitBalancedOne(part,maxWidth,size,maxLines=3){
   if(result.length>1 && result[result.length-1].length<=1) result[result.length-2]+=result.pop();
   return result.slice(0,maxLines);
 }
-function fitBalancedText(text,maxWidth,start,min=28,maxLines=3){
+function fitBalancedText(text,maxWidth,start,min=22,maxLines=4){
   const parts=(text||'').split(/\n/).map(v=>v.trim()).filter(Boolean);
   for(let size=start; size>=min; size-=2){
     let lines=[];
@@ -1869,6 +1789,9 @@ function getTextLayoutInfo(){
  const title='おはよう！'; if(document.getElementById('titleText'))document.getElementById('titleText').value=title;
  const sub=document.getElementById('subText').value||'';
  const L=state.layout%5;
+ const titleScale=state.titleScale||1, subScale=state.subScale||1;
+ const maxLines=state.maxTextLines||3;
+ const autoFit=state.autoFitText!==false;
  const leftChar=state.x<0;
  const zone=leftChar?{cx:830,w:520}:{cx:370,w:520};
  const info={zone,title:null,sub:null,titleBox:null,subBox:null};
@@ -1888,20 +1811,20 @@ function getTextLayoutInfo(){
    info.subBox={x1:x-w/2-28,x2:x+w/2+28,y1:midY-h/2-18,y2:midY+h/2+18};
  }
  if(L===0){
-   const ts=fitText(title,zone.w,128,86); makeTitle(zone.cx,238,ts);
-   const fit=fitBalancedText(sub,zone.w,62,46,2), gap=fit.size*1.05, startY=416-(fit.lines.length-1)*gap/2; makeSub(zone.cx,startY,fit.size,fit.lines,gap);
+   const titleStart=128*titleScale; const ts=autoFit?fitText(title,zone.w,titleStart,62):titleStart; makeTitle(zone.cx,238,ts);
+   const subStart=62*subScale; const fit=fitBalancedText(sub,zone.w,subStart,22,maxLines), gap=fit.size*1.05, startY=416-(fit.lines.length-1)*gap/2; makeSub(zone.cx,startY,fit.size,fit.lines,gap);
  }else if(L===1){
-   const ts=fitText(title,zone.w,122,84); makeTitle(zone.cx,204,ts);
-   const fit=fitBalancedText(sub,zone.w,58,44,2), gap=fit.size*1.04, startY=394-(fit.lines.length-1)*gap/2; makeSub(zone.cx,startY,fit.size,fit.lines,gap);
+   const titleStart=122*titleScale; const ts=autoFit?fitText(title,zone.w,titleStart,62):titleStart; makeTitle(zone.cx,204,ts);
+   const subStart=58*subScale; const fit=fitBalancedText(sub,zone.w,subStart,22,maxLines), gap=fit.size*1.04, startY=394-(fit.lines.length-1)*gap/2; makeSub(zone.cx,startY,fit.size,fit.lines,gap);
  }else if(L===2){
-   const ts=fitText(title,940,136,94); makeTitle(W/2,124,ts);
-   const fit=fitBalancedText(sub,930,60,46,2), gap=fit.size*1.02, startY=540-(fit.lines.length-1)*gap/2; makeSub(W/2,startY,fit.size,fit.lines,gap);
+   const titleStart=136*titleScale; const ts=autoFit?fitText(title,940,titleStart,68):titleStart; makeTitle(W/2,124,ts);
+   const subStart=60*subScale; const fit=fitBalancedText(sub,930,subStart,22,maxLines), gap=fit.size*1.02, startY=540-(fit.lines.length-1)*gap/2; makeSub(W/2,startY,fit.size,fit.lines,gap);
  }else if(L===3){
-   const ts=fitText(title,zone.w,116,82); makeTitle(zone.cx,178,ts);
-   const fit=fitBalancedText(sub,zone.w,56,42,2), gap=fit.size*1.03, startY=344-(fit.lines.length-1)*gap/2; makeSub(zone.cx,startY,fit.size,fit.lines,gap);
+   const titleStart=116*titleScale; const ts=autoFit?fitText(title,zone.w,titleStart,60):titleStart; makeTitle(zone.cx,178,ts);
+   const subStart=56*subScale; const fit=fitBalancedText(sub,zone.w,subStart,22,maxLines), gap=fit.size*1.03, startY=344-(fit.lines.length-1)*gap/2; makeSub(zone.cx,startY,fit.size,fit.lines,gap);
  }else{
-   const ts=fitText(title,zone.w-30,114,80); makeTitle(zone.cx,228,ts);
-   const fit=fitBalancedText(sub,zone.w-40,52,40,2), gap=fit.size*1.04, startY=368-(fit.lines.length-1)*gap/2; makeSub(zone.cx,startY,fit.size,fit.lines,gap);
+   const titleStart=114*titleScale; const ts=autoFit?fitText(title,zone.w-30,titleStart,58):titleStart; makeTitle(zone.cx,228,ts);
+   const subStart=52*subScale; const fit=fitBalancedText(sub,zone.w-40,subStart,22,maxLines), gap=fit.size*1.04, startY=368-(fit.lines.length-1)*gap/2; makeSub(zone.cx,startY,fit.size,fit.lines,gap);
  }
  return info;
 }
@@ -2201,7 +2124,31 @@ randomMsg.onclick=randomMsg;
 resetMsgHistory.onclick=()=>{try{localStorage.removeItem(MSG_HISTORY_KEY);localStorage.removeItem(MSG_PART_HISTORY_KEY)}catch(e){} status('🧹 最近の文章履歴をリセットしました。次のガチャから全候補を使えます。');};
 randomTextAll.onclick=()=>{titleText.value='おはよう！';setRandomMessage();};
 titleText.oninput=()=>{titleText.value='おはよう！';draw();};subText.oninput=draw;
-
+function syncTextControls(){
+  titleSize.value=Math.round((state.titleScale||1)*100); titleSizeO.value=titleSize.value+'%';
+  subSize.value=Math.round((state.subScale||1)*100); subSizeO.value=subSize.value+'%';
+  autoFitText.checked=state.autoFitText!==false; maxTextLines.value=String(state.maxTextLines||3);
+  if(typeof qTitleSize!=='undefined'){qTitleSize.value=titleSize.value;qTitleSizeO.value=titleSizeO.value;qSubSize.value=subSize.value;qSubSizeO.value=subSizeO.value;}
+}
+titleSize.oninput=()=>{state.titleScale=+titleSize.value/100;titleSizeO.value=titleSize.value+'%';syncTextControls();draw();};
+subSize.oninput=()=>{state.subScale=+subSize.value/100;subSizeO.value=subSize.value+'%';syncTextControls();draw();};
+autoFitText.onchange=()=>{state.autoFitText=autoFitText.checked;draw();};
+maxTextLines.onchange=()=>{state.maxTextLines=+maxTextLines.value;draw();};
+randomAll.onclick=()=>{
+  state.designMood=designMood.value;
+  state.bg=rand(4);
+  state.bgEffect=(document.getElementById('bgEffect')?.value==='auto')?pick(['pattern','text','both','pattern']):document.getElementById('bgEffect').value;
+  state.deco=pickDecoIndex();
+  state.frame=rand(5);
+  state.frameWidth=2+rand(3);
+  state.density=pick([2,3,5]);
+  density.value=state.density;densityo.value=state.density;
+  frameWidth.value=state.frameWidth;frameWidtho.value=state.frameWidth;
+  setRandomMessage();
+  if(document.getElementById('decoStyle').value==='mix')state.decoStyle='mix';
+  randomComposition();
+  sync();draw();
+};
 randomBg.onclick=()=>{state.bg=rand(moods.length);if(bgEffect.value==='auto')state.bgEffect=pick(['pattern','text','both','pattern']);draw()};randomDeco.onclick=()=>{
   state.deco=pickDecoIndex();
   state.density=3+rand(3);
@@ -2298,14 +2245,14 @@ quickTabs.forEach(btn=>btn.onclick=()=>{
 const toneOptions=[...tone.options].map(o=>`<option value="${o.value}">${o.textContent}</option>`).join('');qTone.innerHTML=toneOptions;
 const decoStyleOptions=[...decoStyle.options].map(o=>`<option value="${o.value}">${o.textContent}</option>`).join('');qDecoStyle.innerHTML=decoStyleOptions;
 const bgColorOptions=[...bgColorPreset.options].map(o=>`<option value="${o.value}">${o.textContent}</option>`).join('');qBgColor.innerHTML=bgColorOptions;
-const chipDefs=[['blue','#cfefff'],['pink','#ffd8e9'],['yellow','#fff0b8'],['lavender','#eadcff'],['mint','#d8f7ec'],['white','#f8f7fb'],['peach','#ffe0d2'],['sky','#d8f3ff'],['lilac','#efe3ff'],['lemon','#fff5b2']];
+const chipDefs=[['blue','#cfefff'],['pink','#ffd8e9'],['yellow','#fff0b8'],['lavender','#eadcff'],['mint','#d8f7ec'],['white','#f8f7fb']];
 chipDefs.forEach(([v,c])=>{const b=document.createElement('button');b.type='button';b.className='color-chip';b.style.background=c;b.title=v;b.onclick=()=>{bgColorPreset.value=v;state.bgColorPreset=v;syncQuick();draw();};qColorChips.appendChild(b);});
 function syncQuick(){
   qTone.value=tone.value;qDecoStyle.value=decoStyle.value;qBgColor.value=bgColorPreset.value;qDensity.value=state.density;qDensityO.value=state.density;
   qX.value=Math.round(state.x);qXO.value=Math.round(state.x);qY.value=Math.round(state.y);qYO.value=Math.round(state.y);qScale.value=Math.round(state.scale*100);qScaleO.value=Math.round(state.scale*100)+'%';
   [...qColorChips.children].forEach((b,i)=>b.classList.toggle('active',chipDefs[i][0]===bgColorPreset.value));
 }
-qRandomMsg.onclick=()=>setRandomMessage();qTone.onchange=()=>{tone.value=qTone.value;setRandomMessage();};
+qRandomMsg.onclick=()=>setRandomMessage();qTone.onchange=()=>{tone.value=qTone.value;setRandomMessage();};qTitleSize.oninput=()=>{state.titleScale=+qTitleSize.value/100;syncTextControls();draw();};qSubSize.oninput=()=>{state.subScale=+qSubSize.value/100;syncTextControls();draw();};
 qDecoStyle.onchange=()=>{decoStyle.value=qDecoStyle.value;state.decoStyle=qDecoStyle.value;draw();};qRandomDeco.onclick=()=>randomDeco.click();
 qDensity.oninput=()=>{state.density=+qDensity.value;density.value=state.density;densityo.value=state.density;qDensityO.value=state.density;draw();};
 qBgColor.onchange=()=>{bgColorPreset.value=qBgColor.value;state.bgColorPreset=qBgColor.value;syncQuick();draw();};qRandomBg.onclick=()=>randomBg.click();
@@ -2313,90 +2260,6 @@ qX.oninput=()=>{state.x=+qX.value;sync();syncQuick();draw();};qY.oninput=()=>{st
 qRandomAll.onclick=()=>randomAll.click();qSave.onclick=()=>save.click();
 const oldSync=sync;sync=function(){oldSync();if(typeof syncQuick==='function')syncQuick();};
 
-const DAILY_OPEN_STATE_KEY='ohayou_daily_open_state_v91';
-function todayKeyJST(){
-  const now=new Date();
-  const y=now.getFullYear();
-  const m=String(now.getMonth()+1).padStart(2,'0');
-  const d=String(now.getDate()).padStart(2,'0');
-  return `${y}-${m}-${d}`;
-}
-function getYesterdayKeyFrom(dateKey){
-  const [y,m,d]=String(dateKey).split('-').map(Number);
-  const dt=new Date(y,m-1,d);
-  dt.setDate(dt.getDate()-1);
-  const yy=dt.getFullYear();
-  const mm=String(dt.getMonth()+1).padStart(2,'0');
-  const dd=String(dt.getDate()).padStart(2,'0');
-  return `${yy}-${mm}-${dd}`;
-}
-function currentOhayouSignature(){
-  return JSON.stringify({
-    msg:(subText?.value||'').trim(),
-    tone:tone?.value||'',
-    mood:state.designMood||designMood?.value||'',
-    bgColor:state.bgColorPreset||bgColorPreset?.value||'auto',
-    bg:state.bg,
-    bgEffect:state.bgEffect||bgEffect?.value||'',
-    decoTheme:decoTheme?.value||'',
-    decoStyle:state.decoStyle||decoStyle?.value||'',
-    deco:state.deco,
-    frame:state.frame,
-    frameWidth:state.frameWidth,
-    layout:state.layout,
-    density:state.density
-  });
-}
-function storeDailySignature(){
-  try{
-    const day=todayKeyJST();
-    const all=JSON.parse(localStorage.getItem(DAILY_OPEN_STATE_KEY)||'{}');
-    all[day]=currentOhayouSignature();
-    const keys=Object.keys(all).sort();
-    while(keys.length>14){ delete all[keys.shift()]; }
-    localStorage.setItem(DAILY_OPEN_STATE_KEY, JSON.stringify(all));
-  }catch(e){}
-}
-function randomizeAllCore(){
-  state.designMood=designMood.value;
-  state.bg=rand((curatedLooks[state.designMood]?.bg||moods).length);
-  state.bgEffect=(document.getElementById('bgEffect')?.value==='auto')?pick(['pattern','text','both','pattern']):document.getElementById('bgEffect').value;
-  state.deco=pickDecoIndex();
-  state.frame=rand(5);
-  state.frameWidth=2+rand(3);
-  state.density=pick([2,3,5]);
-  density.value=state.density;densityo.value=state.density;
-  frameWidth.value=state.frameWidth;frameWidtho.value=state.frameWidth;
-  setRandomMessage();
-  if(document.getElementById('decoStyle').value==='mix')state.decoStyle='mix';
-  randomComposition();
-  sync();draw();
-}
-function autoGenerateTodayOhayou(){
-  const today=todayKeyJST();
-  const yesterday=getYesterdayKeyFrom(today);
-  let prevSig='';
-  let all={};
-  try{ all=JSON.parse(localStorage.getItem(DAILY_OPEN_STATE_KEY)||'{}')||{}; prevSig=all[yesterday]||''; }catch(e){}
-  if(all[today]) return false;
-  let tries=0;
-  let sig='';
-  do{
-    randomizeAllCore();
-    sig=currentOhayouSignature();
-    tries++;
-  }while(prevSig && sig===prevSig && tries<8);
-  storeDailySignature();
-  status('🌞 今日は昨日と少し違う雰囲気になるように、自動で日替わりおはようを作りました。');
-  return true;
-}
-
-randomAll.onclick=()=>{
-  randomizeAllCore();
-  storeDailySignature();
-};
-
-sync();draw();updateHistoryButtons();
-autoGenerateTodayOhayou();
+syncTextControls();sync();draw();updateHistoryButtons();
 </script>
 </body></html>
