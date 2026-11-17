@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おはよう画像メーカー v9.3</title>
+<title>おはよう画像メーカー v9.4</title>
 <style>
 :root{
   --ink:#352f44; --muted:#81798e; --line:#ece7f4; --panel:#fff;
@@ -90,12 +90,12 @@ input[type=range]{width:100%}
 </head>
 <body>
 <div class="wrap">
-<h1>🌞 おはよう画像メーカー v9.3</h1>
+<h1>🌞 おはよう画像メーカー v9.4</h1>
 <details class="helpbox lead-summary">
   <summary>ℹ️ このメーカーの説明を見る</summary>
   <div class="helpbody">透過の手直し機能はそのまま。今回はデザインをさらに盛りました。
   <b>大きい絵文字＋小さい絵文字＋太めのかわいいフレーム</b>をランダム配置。
-  v8.0は内部設計を整理して作り直した版です。<strong>AI切り抜き → 輪郭復元 → 顔パーツ保護 → 構図決定 → 大中小の飾り配置 → 最終バランス補正</strong>の順で処理します。目・鼻・口は画像から自動推定し、確信度が低い時は安全な中央保護へ切り替えます。必要なら<strong>4点タップ補正</strong>で左右の目・鼻・口を直接指定できます。女の子全体や透過された空白は避けず、髪・頬の外側・肩・服まわりにも飾りを置きます。女の子はランダムで勝手に左右反転しません。v8.1では<strong>目の二重保護</strong>と<strong>右上・上辺の最終バランス補正</strong>を強化しました。v8.2では<strong>目の安全マージンをさらに約18%拡張</strong>し、背景に<strong>淡い模様 / テキスト後ろの色面 / 両方</strong>をランダムで加える背景アレンジを追加しました。v8.8では<strong>ハートの色バリエーション</strong>を増やし、<strong>下の文章の見た目の中央</strong>がより揃うように調整しました。v8.9では<strong>最近出た文章を15件避ける履歴</strong>と、<strong>新しい言い回しを組み立てるフレッシュ生成</strong>を追加しました。v9.2では<strong>長い文章の自動改行・自動縮小</strong>と、<strong>おはよう／下の文の文字サイズ調整</strong>を追加しました。v9.3では<strong>透過後に人物本体が薄くなる問題</strong>を抑えるため、AIマスクの不透明度補正・細い輪郭の救出・補正済みマスクからの再合成を強化しました。</div>
+  v8.0は内部設計を整理して作り直した版です。<strong>AI切り抜き → 輪郭復元 → 顔パーツ保護 → 構図決定 → 大中小の飾り配置 → 最終バランス補正</strong>の順で処理します。目・鼻・口は画像から自動推定し、確信度が低い時は安全な中央保護へ切り替えます。必要なら<strong>4点タップ補正</strong>で左右の目・鼻・口を直接指定できます。女の子全体や透過された空白は避けず、髪・頬の外側・肩・服まわりにも飾りを置きます。女の子はランダムで勝手に左右反転しません。v8.1では<strong>目の二重保護</strong>と<strong>右上・上辺の最終バランス補正</strong>を強化しました。v8.2では<strong>目の安全マージンをさらに約18%拡張</strong>し、背景に<strong>淡い模様 / テキスト後ろの色面 / 両方</strong>をランダムで加える背景アレンジを追加しました。v8.8では<strong>ハートの色バリエーション</strong>を増やし、<strong>下の文章の見た目の中央</strong>がより揃うように調整しました。v8.9では<strong>最近出た文章を15件避ける履歴</strong>と、<strong>新しい言い回しを組み立てるフレッシュ生成</strong>を追加しました。v9.2では<strong>長い文章の自動改行・自動縮小</strong>と、<strong>おはよう／下の文の文字サイズ調整</strong>を追加しました。v9.3では<strong>透過後に人物本体が薄くなる問題</strong>を抑えるため、AIマスクの不透明度補正・細い輪郭の救出・補正済みマスクからの再合成を強化しました。v9.4では<strong>単色背景保護</strong>を追加し、外周からつながる背景だけを消し、人物の内側にある白服・髪・指などを優先して残すようにしました。</div>
 </details>
 
 <div class="card preview-card">
@@ -139,6 +139,15 @@ input[type=range]{width:100%}
   <div class="grid2" style="margin-top:8px">
     <button id="removeBg" class="pink">✂️ AIで女の子を切り抜く</button>
     <button id="useOriginal" class="soft">元画像に戻す</button>
+  </div>
+  <div class="field" style="margin-top:10px;padding:10px;border:1px solid #eee8f7;border-radius:14px;background:#faf8ff">
+    <label style="display:flex;align-items:center;gap:9px;font-weight:900">
+      <input id="solidBgProtect" type="checkbox" checked style="width:auto;transform:scale(1.25)">
+      🎨 単色背景を優先して守る
+    </label>
+    <div class="hint" style="margin-top:6px">背景がほぼ単色のスクショ向け。外周からつながる背景だけを消して、人物の内側はできるだけ残します。</div>
+    <label class="slider" style="margin-top:8px"><span>背景判定</span><input id="solidBgTolerance" type="range" min="28" max="90" value="58"><output id="solidBgToleranceO">58</output></label>
+    <div id="detectedBgStatus" class="hint">背景色は画像を入れた時に自動判定します。</div>
   </div>
 
   <div class="section-title" style="margin-top:16px">② 透過を手直しする</div>
@@ -321,7 +330,7 @@ input[type=range]{width:100%}
   </div>
 </div>
 
-<div class="footer">おはよう画像メーカー v9.3</div>
+<div class="footer">おはよう画像メーカー v9.4</div>
 </div>
 
 <script>
@@ -333,7 +342,7 @@ const state={
   bg:0,deco:0,frame:0,frameWidth:4,layout:0,density:5,designMood:'pop',bgEffect:'pattern',decoStyle:'iphone',bgColorPreset:'auto',titleScale:1,subScale:1,autoFitText:true,maxTextLines:3,
   mode:'move',drag:false,lastX:0,lastY:0,lastPaint:null,rebuildTimer:null,
   edgeGuide:null,
-  faceFeatures:null, faceGuide:false, faceCalib:null
+  faceFeatures:null, faceGuide:false, faceCalib:null, solidBgProtect:true, solidBgTolerance:58, detectedBgColor:null
 };
 
 const messages={
@@ -507,6 +516,88 @@ function buildEdgeGuide(img){
     edge[i]=Math.min(255,Math.hypot(gx,gy)*0.24);
   }
   state.edgeGuide={width:w,height:h,edge};
+}
+
+function getSourceImageData(){
+  if(!state.sourceImg) return null;
+  const w=state.sourceImg.naturalWidth,h=state.sourceImg.naturalHeight;
+  const off=document.createElement('canvas');off.width=w;off.height=h;
+  const o=off.getContext('2d',{willReadFrequently:true});o.drawImage(state.sourceImg,0,0,w,h);
+  return o.getImageData(0,0,w,h);
+}
+function median(vals){
+  if(!vals.length)return 0;
+  vals.sort((a,b)=>a-b);const m=vals.length>>1;
+  return vals.length%2?vals[m]:(vals[m-1]+vals[m])/2;
+}
+function estimateSolidBackgroundColor(){
+  const id=getSourceImageData();if(!id)return null;
+  const {width:w,height:h,data:d}=id;
+  const rs=[],gs=[],bs=[];
+  const step=Math.max(2,Math.floor(Math.min(w,h)/180));
+  const band=Math.max(3,Math.floor(Math.min(w,h)*0.035));
+  function add(x,y){const i=(y*w+x)*4;rs.push(d[i]);gs.push(d[i+1]);bs.push(d[i+2]);}
+  for(let x=0;x<w;x+=step){for(let y=0;y<band;y+=step)add(x,y);for(let y=h-band;y<h;y+=step)add(x,y);}
+  for(let y=band;y<h-band;y+=step){for(let x=0;x<band;x+=step)add(x,y);for(let x=w-band;x<w;x+=step)add(x,y);}
+  const c={r:Math.round(median(rs)),g:Math.round(median(gs)),b:Math.round(median(bs))};
+  state.detectedBgColor=c;
+  const el=document.getElementById('detectedBgStatus');
+  if(el)el.innerHTML=`背景候補：<span style="display:inline-block;width:14px;height:14px;border-radius:50%;vertical-align:-2px;background:rgb(${c.r},${c.g},${c.b});border:1px solid #bbb"></span> rgb(${c.r}, ${c.g}, ${c.b})`;
+  return c;
+}
+function rgbDistToBg(data,i,bg){
+  const dr=data[i]-bg.r,dg=data[i+1]-bg.g,db=data[i+2]-bg.b;
+  return Math.sqrt(dr*dr+dg*dg+db*db);
+}
+function protectInteriorAgainstSolidBackground(mask){
+  if(!mask||!state.sourceImg||!state.solidBgProtect)return mask;
+  const srcId=getSourceImageData();if(!srcId)return mask;
+  const bg=state.detectedBgColor||estimateSolidBackgroundColor();if(!bg)return mask;
+  const w=mask.width,h=mask.height,d=mask.data,src=srcId.data;
+  const tol=+state.solidBgTolerance||58;
+  const n=w*h, outside=new Uint8Array(n), queued=new Uint8Array(n);
+  const q=new Int32Array(n);let head=0,tail=0;
+  function isBgLike(p,extra=0){
+    const i=p*4;
+    return rgbDistToBg(src,i,bg) <= tol+extra;
+  }
+  function push(p){if(p<0||p>=n||queued[p])return;queued[p]=1;q[tail++]=p;}
+  // 画像外周からのみ開始。単色背景と近い画素だけが内部へ進める。
+  for(let x=0;x<w;x++){if(isBgLike(x,8))push(x);const p=(h-1)*w+x;if(isBgLike(p,8))push(p);}
+  for(let y=1;y<h-1;y++){let p=y*w;if(isBgLike(p,8))push(p);p=y*w+w-1;if(isBgLike(p,8))push(p);}
+  while(head<tail){
+    const p=q[head++];outside[p]=1;
+    const x=p%w,y=(p/w)|0;
+    const neigh=[x>0?p-1:-1,x<w-1?p+1:-1,y>0?p-w:-1,y<h-1?p+w:-1];
+    for(const np of neigh){
+      if(np<0||queued[np])continue;
+      // 少しだけ色むらを許容。ただし人物alphaが強い場所は壁として扱う。
+      const ai=np*4+3;
+      const a=d[ai];
+      if(isBgLike(np,a<70?10:0) && a<215)push(np);
+    }
+  }
+  let removed=0,restored=0;
+  for(let p=0;p<n;p++){
+    const ai=p*4+3, a=d[ai], dist=rgbDistToBg(src,p*4,bg);
+    if(outside[p]){
+      if(a!==0){d[ai]=0;removed++;}
+      continue;
+    }
+    // 外周背景とつながっていない＋背景色から十分違う = 人物内部として強く保護。
+    if(dist>tol*1.12){
+      const target=a>=90?255:(a>=28?238:218);
+      if(d[ai]<target){d[ai]=target;restored++;}
+    }else if(a>=55){
+      // 背景色に少し近くてもAIが人物寄りなら薄くしない。
+      const target=a>=105?255:220;
+      if(d[ai]<target){d[ai]=target;restored++;}
+    }
+  }
+  // 内側保護後に細線救出をもう一度。指・髪先・服端をつなげる。
+  recoverThinMaskDetails(mask);
+  state._solidBgStats={removed,restored};
+  return mask;
 }
 function normalizeMaskAlpha(id){
   if(!id) return id;
@@ -2043,7 +2134,7 @@ autoFace.onclick=()=>detectFaceFeatures();
 manualFace.onclick=()=>startManualFaceCalibration();
 toggleFaceGuide.onclick=()=>{state.faceGuide=!state.faceGuide;toggleFaceGuide.textContent=state.faceGuide?'🙈 保護位置を隠す':'👀 保護位置を表示';draw();};
 
-file.onchange=e=>{const f=e.target.files?.[0];if(!f)return;const url=URL.createObjectURL(f),img=new Image();img.onload=()=>{state.sourceImg=img;buildEdgeGuide(img);state.cutoutImg=null;state.mask=null;state.charImg=img;state.faceFeatures=null;draw();detectFaceFeatures();status('画像を読み込みました。顔パーツを自動認識しました。次にAI切り抜きを押してください。')};img.src=url};
+file.onchange=e=>{const f=e.target.files?.[0];if(!f)return;const url=URL.createObjectURL(f),img=new Image();img.onload=()=>{state.sourceImg=img;buildEdgeGuide(img);estimateSolidBackgroundColor();state.cutoutImg=null;state.mask=null;state.charImg=img;state.faceFeatures=null;draw();detectFaceFeatures();status('画像を読み込みました。顔パーツを自動認識しました。次にAI切り抜きを押してください。')};img.src=url};
 
 removeBg.onclick=async()=>{
  const f=file.files?.[0];if(!f){status('先に画像を選んでください。');return}
@@ -2058,12 +2149,13 @@ removeBg.onclick=async()=>{
      const o=off.getContext('2d');o.drawImage(img,0,0,off.width,off.height);
      const id=o.getImageData(0,0,off.width,off.height);
      normalizeMaskAlpha(id);
+     if(state.solidBgProtect) protectInteriorAgainstSolidBackground(id);
      state.mask=id;
      clearMaskHistory();
      // v9.3: 補正前のAI画像を表示せず、補正済みマスクを元画像へ適用してから表示する。
      rebuildChar();
      detectFaceFeatures();
-     status('✨ AI切り抜き完了。人物本体は濃く、輪郭だけ自然に残るよう透過を補強しました。白い服・髪先・指などがまだ欠けた場合は「✨ タップで輪郭まで戻す」、背景が残った場合は「🫧 タップで輪郭まで消す」で調整してください。');
+     status('✨ AI切り抜き完了。単色背景は外周からつながる部分だけを優先して消し、人物の内側は濃く残すよう補強しました。白い服・髪先・指などがまだ欠けた場合は「✨ タップで輪郭まで戻す」、背景が残った場合は「🫧 タップで輪郭まで消す」で調整してください。');
      removeBg.disabled=false;removeBg.textContent='✂️ AIで女の子を切り抜く';
    };
    img.src=url;
@@ -2224,6 +2316,23 @@ bgColorPreset.onchange=()=>{state.bgColorPreset=bgColorPreset.value;syncQuick();
 
 
 
+
+solidBgProtect.onchange=()=>{
+  state.solidBgProtect=solidBgProtect.checked;
+  if(state.mask){
+    pushMaskHistory();
+    if(state.solidBgProtect)protectInteriorAgainstSolidBackground(state.mask);
+    rebuildChar();
+  }
+  status(state.solidBgProtect?'🎨 単色背景保護をONにしました。次の切り抜きから、外周背景だけを優先して消します。':'単色背景保護をOFFにしました。');
+};
+solidBgTolerance.oninput=()=>{
+  state.solidBgTolerance=+solidBgTolerance.value;
+  solidBgToleranceO.value=solidBgTolerance.value;
+};
+solidBgTolerance.onchange=()=>{
+  if(state.mask&&state.solidBgProtect){pushMaskHistory();protectInteriorAgainstSolidBackground(state.mask);rebuildChar();status('🎨 背景判定の強さを更新しました。');}
+};
 densityClean.onclick=()=>{state.density=2;density.value=2;densityo.value=2;draw()};
 densityNormal.onclick=()=>{state.density=3;density.value=3;densityo.value=3;draw()};
 densityFull.onclick=()=>{state.density=5;density.value=5;densityo.value=5;draw()};
@@ -2282,7 +2391,7 @@ save.onclick=async()=>{
     }
   }
 };
-reset.onclick=()=>{clearMaskHistory();brush.value=22;brusho.value=22;hardnessEl.value=96;hardnesso.value=96;document.getElementById('decoTheme').value='mixed';document.getElementById('designMood').value='pop';document.getElementById('bgEffect').value='auto';document.getElementById('decoStyle').value='iphone';document.getElementById('bgColorPreset').value='auto';state.designMood='pop';state.bgEffect='pattern';state.decoStyle='iphone';state.bgColorPreset='auto';state.bg=0;state.deco=0;state.frame=0;state.frameWidth=4;state.layout=0;state.density=5;state.x=-250;state.y=18;state.scale=1.72;state.flip=false;state.faceFeatures=null;state.faceGuide=false;state.faceCalib=null;titleText.value='おはよう！';subText.value='素敵を集めに\\n行ってみよー！';density.value=5;densityo.value=5;frameWidth.value=4;frameWidtho.value=4;sync();draw()};
+reset.onclick=()=>{clearMaskHistory();brush.value=22;brusho.value=22;hardnessEl.value=96;hardnesso.value=96;document.getElementById('decoTheme').value='mixed';document.getElementById('designMood').value='pop';document.getElementById('bgEffect').value='auto';document.getElementById('decoStyle').value='iphone';document.getElementById('bgColorPreset').value='auto';state.designMood='pop';state.bgEffect='pattern';state.decoStyle='iphone';state.bgColorPreset='auto';state.bg=0;state.deco=0;state.frame=0;state.frameWidth=4;state.layout=0;state.density=5;state.x=-250;state.y=18;state.scale=1.72;state.flip=false;state.faceFeatures=null;state.faceGuide=false;state.faceCalib=null;state.solidBgProtect=true;state.solidBgTolerance=58;state.detectedBgColor=null;solidBgProtect.checked=true;solidBgTolerance.value=58;solidBgToleranceO.value=58;titleText.value='おはよう！';subText.value='素敵を集めに\\n行ってみよー！';density.value=5;densityo.value=5;frameWidth.value=4;frameWidtho.value=4;sync();draw()};
 
 const quickTabs=[...document.querySelectorAll('[data-qtab]')];
 quickTabs.forEach(btn=>btn.onclick=()=>{
