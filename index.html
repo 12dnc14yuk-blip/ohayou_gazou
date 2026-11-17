@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>おはよう画像メーカー v9.2</title>
+<title>おはよう画像メーカー v9.3</title>
 <style>
 :root{
   --ink:#352f44; --muted:#81798e; --line:#ece7f4; --panel:#fff;
@@ -90,12 +90,12 @@ input[type=range]{width:100%}
 </head>
 <body>
 <div class="wrap">
-<h1>🌞 おはよう画像メーカー v9.2</h1>
+<h1>🌞 おはよう画像メーカー v9.3</h1>
 <details class="helpbox lead-summary">
   <summary>ℹ️ このメーカーの説明を見る</summary>
   <div class="helpbody">透過の手直し機能はそのまま。今回はデザインをさらに盛りました。
   <b>大きい絵文字＋小さい絵文字＋太めのかわいいフレーム</b>をランダム配置。
-  v8.0は内部設計を整理して作り直した版です。<strong>AI切り抜き → 輪郭復元 → 顔パーツ保護 → 構図決定 → 大中小の飾り配置 → 最終バランス補正</strong>の順で処理します。目・鼻・口は画像から自動推定し、確信度が低い時は安全な中央保護へ切り替えます。必要なら<strong>4点タップ補正</strong>で左右の目・鼻・口を直接指定できます。女の子全体や透過された空白は避けず、髪・頬の外側・肩・服まわりにも飾りを置きます。女の子はランダムで勝手に左右反転しません。v8.1では<strong>目の二重保護</strong>と<strong>右上・上辺の最終バランス補正</strong>を強化しました。v8.2では<strong>目の安全マージンをさらに約18%拡張</strong>し、背景に<strong>淡い模様 / テキスト後ろの色面 / 両方</strong>をランダムで加える背景アレンジを追加しました。v8.8では<strong>ハートの色バリエーション</strong>を増やし、<strong>下の文章の見た目の中央</strong>がより揃うように調整しました。v8.9では<strong>最近出た文章を15件避ける履歴</strong>と、<strong>新しい言い回しを組み立てるフレッシュ生成</strong>を追加しました。v9.2では<strong>長い文章の自動改行・自動縮小</strong>と、<strong>おはよう／下の文の文字サイズ調整</strong>を追加しました。</div>
+  v8.0は内部設計を整理して作り直した版です。<strong>AI切り抜き → 輪郭復元 → 顔パーツ保護 → 構図決定 → 大中小の飾り配置 → 最終バランス補正</strong>の順で処理します。目・鼻・口は画像から自動推定し、確信度が低い時は安全な中央保護へ切り替えます。必要なら<strong>4点タップ補正</strong>で左右の目・鼻・口を直接指定できます。女の子全体や透過された空白は避けず、髪・頬の外側・肩・服まわりにも飾りを置きます。女の子はランダムで勝手に左右反転しません。v8.1では<strong>目の二重保護</strong>と<strong>右上・上辺の最終バランス補正</strong>を強化しました。v8.2では<strong>目の安全マージンをさらに約18%拡張</strong>し、背景に<strong>淡い模様 / テキスト後ろの色面 / 両方</strong>をランダムで加える背景アレンジを追加しました。v8.8では<strong>ハートの色バリエーション</strong>を増やし、<strong>下の文章の見た目の中央</strong>がより揃うように調整しました。v8.9では<strong>最近出た文章を15件避ける履歴</strong>と、<strong>新しい言い回しを組み立てるフレッシュ生成</strong>を追加しました。v9.2では<strong>長い文章の自動改行・自動縮小</strong>と、<strong>おはよう／下の文の文字サイズ調整</strong>を追加しました。v9.3では<strong>透過後に人物本体が薄くなる問題</strong>を抑えるため、AIマスクの不透明度補正・細い輪郭の救出・補正済みマスクからの再合成を強化しました。</div>
 </details>
 
 <div class="card preview-card">
@@ -321,7 +321,7 @@ input[type=range]{width:100%}
   </div>
 </div>
 
-<div class="footer">おはよう画像メーカー v9.2</div>
+<div class="footer">おはよう画像メーカー v9.3</div>
 </div>
 
 <script>
@@ -511,16 +511,54 @@ function buildEdgeGuide(img){
 function normalizeMaskAlpha(id){
   if(!id) return id;
   const d=id.data, guide=state.edgeGuide?.edge;
+  // v9.3: AIの半透明マスクをそのまま使わず、人物本体をしっかり不透明に寄せる。
+  // 輪郭だけは段階的に残し、白服・髪先・指が「薄いまま」になるのを抑える。
   for(let i=3,j=0;i<d.length;i+=4,j++){
-    let a=d[i];
-    if(a<10) { d[i]=0; continue; }
-    let n=Math.pow(a/255,0.68)*255;
+    const a=d[i];
+    if(a<8){ d[i]=0; continue; }
+    let n;
+    if(a>=112){
+      n=255; // 本体は完全不透明
+    }else{
+      const t=Math.max(0,Math.min(1,(a-8)/(112-8)));
+      n=Math.pow(t,0.50)*255; // 中間alphaを強めに持ち上げる
+    }
     if(guide){
       const e=guide[j]||0;
-      if(e>70 && a>16) n=Math.max(n,190+Math.min(50,(e-70)*0.5));
+      // 元画像に強い輪郭がある場所は、AIが弱く判定していても救出する。
+      if(e>82 && a>10) n=Math.max(n,222);
+      else if(e>58 && a>14) n=Math.max(n,188);
     }
-    if(n>236) n=255;
+    if(n>232) n=255;
     d[i]=Math.max(0,Math.min(255,Math.round(n)));
+  }
+  recoverThinMaskDetails(id);
+  return id;
+}
+function recoverThinMaskDetails(id){
+  if(!id) return id;
+  const w=id.width,h=id.height,d=id.data,guide=state.edgeGuide?.edge;
+  const src=new Uint8ClampedArray(d);
+  // 1pxだけ外側へ救出。周囲に人物alphaが十分ある時だけなので背景の復活を抑える。
+  for(let y=1;y<h-1;y++){
+    for(let x=1;x<w-1;x++){
+      const p=y*w+x, ai=p*4+3;
+      if(src[ai]>=120) continue;
+      let maxA=0,strong=0;
+      for(let yy=y-1;yy<=y+1;yy++) for(let xx=x-1;xx<=x+1;xx++){
+        if(xx===x&&yy===y) continue;
+        const na=(yy*w+xx)*4+3, a=src[na];
+        if(a>maxA)maxA=a;
+        if(a>=220)strong++;
+      }
+      const edge=guide?(guide[p]||0):0;
+      if(strong>=3 && maxA>=235){
+        const rescued=edge>38?Math.min(230,maxA):Math.min(165,maxA);
+        if(rescued>d[ai]) d[ai]=rescued;
+      }else if(edge>78 && strong>=1 && maxA>=220){
+        d[ai]=Math.max(d[ai],185);
+      }
+    }
   }
   return id;
 }
@@ -1651,7 +1689,12 @@ function drawFrontDeco(){drawEmojiLayer(true)}
 function rebuildChar(){
  if(!state.sourceImg||!state.mask){state.charImg=state.cutoutImg||state.sourceImg;return}
  const off=document.createElement('canvas');off.width=state.sourceImg.naturalWidth;off.height=state.sourceImg.naturalHeight;
- const o=off.getContext('2d');o.drawImage(state.sourceImg,0,0);
+ const o=off.getContext('2d',{willReadFrequently:true});
+ // v9.3: 毎回「元画像RGB + 現在のマスク」から再合成。半透明済み画像を再利用しない。
+ o.clearRect(0,0,off.width,off.height);
+ o.globalAlpha=1;
+ o.globalCompositeOperation='source-over';
+ o.drawImage(state.sourceImg,0,0,off.width,off.height);
  const src=o.getImageData(0,0,off.width,off.height),d=src.data,m=state.mask.data;
  for(let i=0;i<d.length;i+=4)d[i+3]=m[i+3];
  o.putImageData(src,0,0);
@@ -1660,7 +1703,10 @@ function rebuildChar(){
 function drawCharacter(){
  if(!state.charImg)return;
  const img=state.charImg,h=790*state.scale,w=h*(img.naturalWidth/img.naturalHeight),cx=W/2+state.x,bottom=H/2+195+state.y;
- ctx.save();ctx.translate(cx,bottom);ctx.scale(state.flip?-1:1,1);ctx.drawImage(img,-w/2,-h,w,h);ctx.restore();
+ ctx.save();
+ ctx.globalAlpha=1;
+ ctx.globalCompositeOperation='source-over';
+ ctx.translate(cx,bottom);ctx.scale(state.flip?-1:1,1);ctx.drawImage(img,-w/2,-h,w,h);ctx.restore();
 }
 
 function font(size){
@@ -2014,8 +2060,10 @@ removeBg.onclick=async()=>{
      normalizeMaskAlpha(id);
      state.mask=id;
      clearMaskHistory();
-     state.charImg=img;detectFaceFeatures();draw();
-     status('✨ AI切り抜き完了。できるだけ綺麗に自動透過しています。白い服・羽・髪などが欠けた場合は「✨ タップで輪郭まで戻す」を選び、欠けた部分の内側をタップしてください。元画像のアウトラインを自動検出して、その内側をまとめて復元します。細部だけ「🩷 なぞって戻す」で調整できます。飾りは四隅に大きく置き、アバター側上 / 文字側下をメイン、文字側上 / アバター側下をサブとして対角に固定。さらに上下左右と文字下の空白を、四隅より少し小さめと小さめの2段階絵文字でしっかり埋め、顔周辺だけ避けて散らしやすくしています。');
+     // v9.3: 補正前のAI画像を表示せず、補正済みマスクを元画像へ適用してから表示する。
+     rebuildChar();
+     detectFaceFeatures();
+     status('✨ AI切り抜き完了。人物本体は濃く、輪郭だけ自然に残るよう透過を補強しました。白い服・髪先・指などがまだ欠けた場合は「✨ タップで輪郭まで戻す」、背景が残った場合は「🫧 タップで輪郭まで消す」で調整してください。');
      removeBg.disabled=false;removeBg.textContent='✂️ AIで女の子を切り抜く';
    };
    img.src=url;
